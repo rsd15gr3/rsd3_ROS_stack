@@ -18,7 +18,7 @@ def pol2cart(dist, angle):
 class WallExtractorNode():
     def __init__(self):
         # Topics
-        laser_scan_topic = rospy.get_param("~laser_scan_sub", "/base_scan")  # TODO default value
+        laser_scan_topic = rospy.get_param("~laser_scan_sub", "/scan")  # TODO default value
         marker_topic = rospy.get_param("~visualization_marker", "visualization_marker")
         rows_topic = rospy.get_param("~rows", "rows")
 
@@ -52,7 +52,7 @@ class WallExtractorNode():
     def publish_visualization_marker(self, x, y, mtype, ns, rgb):
         marker = Marker()
         marker.header.stamp = rospy.Time.now()
-        marker.header.frame_id = "visualization_marker_frame"
+        marker.header.frame_id = "laser"
         marker.type = mtype
         marker.action = Marker.ADD
         marker.ns = ns
@@ -64,6 +64,29 @@ class WallExtractorNode():
         marker.color.b = rgb[2]
         marker.points = self.format_viz_points(x, y)
         self.marker_pub.publish(marker)
+
+    def publish_row(self, left_model, right_model):
+        rowmsg = row()
+        rowmsg.header.stamp = rospy.Time.now()
+        rowmsg.header.frame_id = "laser"
+
+        rowmsg.rightvalid = 1 # TODO
+        rowmsg.rightdistance = right_model.params[0]
+        rowmsg.rightangle = right_model.params[1]
+        rowmsg.rightvar = 0
+
+        rowmsg.leftvalid = 1 # TODO
+        rowmsg.leftdistance = left_model.params[0]
+        rowmsg.leftangle = left_model.params[1]
+        rowmsg.leftvar = 0
+
+        rowmsg.headland = 0
+        rowmsg.error_angle = 0
+        rowmsg.error_distance = 0
+        rowmsg.var = 0
+
+        self.rows_pub.publish(rowmsg)
+
 
     def loop(self):
         while not rospy.is_shutdown():
@@ -89,6 +112,8 @@ class WallExtractorNode():
             # Fit lines with RANSAC algorithm
             left_model, left_inliers = ransac(left, LineModel, min_samples=3, residual_threshold=0.1, max_trials=100)
             right_model, right_inliers = ransac(right, LineModel, min_samples=3, residual_threshold=0.1, max_trials=100)
+
+            self.publish_row(left_model, right_model)
 
             # Predict y's using the two outermost points. This gives us two points on each line.
             left_wall_x = np.array([left[0][0], left[-1][0]])
