@@ -1,4 +1,3 @@
-
 <launch>
     <!-- frobit parameters -->
     <param name="diff_steer_wheel_distance" value="0.215"/>
@@ -8,7 +7,6 @@
     <!-- Notice: Use pkg="stage" if running ROS Groovy and pkg="stage_ros" if running ROS Hydro -->
     <node pkg="stage_ros" type="stageros" name="simulator" args="$(find frobit_demo)/stage/frobit_row_navigation.world"/>
     <remap from="/fmKnowledge/pose" to="/odom" />
-
 
     <!-- <node name="sick_tim310s01" pkg="sick_tim" type="sick_tim310s01" respawn="false" output="screen"> -->
         <!-- default values: -->
@@ -26,7 +24,8 @@
 
     <node pkg="frobit_lego_transporter" name="wall_extractor" type="wall_extractor_node.py" output="screen">
         <param name="laser_scan_sub" value="/base_scan"/>
-        <param name="visualization_marker" value="/visualization_marker" />
+        <param name="ransac_debug_marker" value="/ransac_debug_marker" />
+        <param name="walls" value="/walls" />
     </node>
 
     <group ns="fmSensors">
@@ -64,15 +63,6 @@
             <param name="keyboard_pub" value="/fmHMI/keyboard" />
         </node>
 
-        <!--node pkg="plot_velocity" name="plot_vel" type="plot_velocity_node.py" output="screen" >
-            <param name="velocity_sub" value="/fmCommand/cmd_vel" />
-            <param name="update_frequency" value="10" />
-            <param name="plot_title" value="cmd_vel" />
-            <param name="max_linear_velocity" value="1.2" />
-            <param name="max_angular_velocity" value="1.0" />
-            <param name="samples" value="100" />
-        </node-->
-
         <node pkg="frobit_plot" name="frobit_plot" type="frobit_plot_node.py" output="screen" >
             <param name="pose_sub" value="/fmKnowledge/pose" />
             <param name="gnss_sub" value="/fmInformation/gpgga_tranmerc" />
@@ -97,4 +87,3 @@
         </node>
     </group>
 </launch>
-
