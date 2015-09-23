@@ -3,7 +3,7 @@
 #include<ros/ros.h>
 #include<geometry_msgs/TwistStamped.h>
 #include<msgs/row.h>
-#include<msgs/BoolStamped.h>
+#include<msgs/IntStamped.h>
 #include<cmath>
 
 using namespace std;
@@ -22,7 +22,7 @@ double bearingDist = 0;
 bool wallFollowEnabled = false;
 
 void wallCallback(const msgs::row::ConstPtr& wallPtr);
-void wallEnableCallback(const msgs::BoolStamped& enable);
+void wallEnableCallback(const msgs::IntStamped& enable);
 double getMovingGoalTargetAngle();
 string wallsTopicName = "";
 string automodeTopicName = "";
@@ -37,7 +37,7 @@ int main(int argc, char **argv){
     n.param<double>("drive_max_output", maxOutput, 0.40);
     n.param<double>("target_dist",targetDist, 0.6);
     n.param<string>("walls_sub", wallsTopicName, "/walls");
-    n.param<string>("automode_sub", automodeTopicName, "/walls");
+    n.param<string>("automode_sub", automodeTopicName, "/automode");
 
     ros::Subscriber error_sub = n.subscribe(wallsTopicName, 1, wallCallback);
     ros::Subscriber enable_sub = n.subscribe(automodeTopicName,1,wallEnableCallback);
@@ -82,8 +82,8 @@ double getMovingGoalTargetAngle()
     return M_PI_2 - closetMovingGoalAngle - angleError;
 }
 
-void wallEnableCallback(const msgs::BoolStamped& enable)
+void wallEnableCallback(const msgs::IntStamped& enable)
 {
     ROS_INFO("AUTO RECIEVED");
-    wallFollowEnabled = enable.data;
+    wallFollowEnabled = (enable.data == 1);
 }
