@@ -45,7 +45,6 @@ int main(int argc, char **argv){
 
     ros::Rate r(updateRate);
     Pid_controller heading_controller(updateRate, kp, ki, kd, feedForward, maxOutput);
-    ROS_INFO("Starting wall following");
     while (n.ok())
     {
         if(wallFollowEnabled)
@@ -58,7 +57,6 @@ int main(int argc, char **argv){
             twistedStamped.header.stamp = ros::Time::now();
             double movingGoalTargetAngle = getMovingGoalTargetAngle();
             twistedStamped.twist.angular.z = heading_controller.update(movingGoalTargetAngle);
-            ROS_INFO("twist angular z %f",twistedStamped.twist.angular.z );
             pub.publish(twistedStamped);
         }
         else {
@@ -79,11 +77,11 @@ void wallCallback(const msgs::row::ConstPtr& wallPtr)
 double getMovingGoalTargetAngle()
 {
     double closetMovingGoalAngle = atan2(targetDist, distError);
-    return M_PI_2 - closetMovingGoalAngle - angleError;
+    double movingGoalTargetAngle = M_PI_2 - closetMovingGoalAngle - angleError;
+    return -movingGoalTargetAngle;
 }
 
 void wallEnableCallback(const msgs::IntStamped& enable)
 {
-    ROS_INFO("AUTO RECIEVED");
     wallFollowEnabled = (enable.data == 1);
 }
