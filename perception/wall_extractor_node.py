@@ -39,21 +39,24 @@ class WallExtractorNode():
     def on_laser_scan(self, msg):
         self.scan = msg
 
-    def publish_wall(self, left_model, right_model):
+    def publish_wall(self, left_model, left_valid, right_model, right_valid):
+        # skimage LineModel gives the angle to the line perpendicular to the
+        # actual line, so we rotate it 90 deg.
+        # Refer to Anders for documentation on error_ values
         row_msg = row()
         row_msg.header.stamp = rospy.Time.now()
         row_msg.header.frame_id = "laser"
-        row_msg.rightvalid = 1 # TODO
+        row_msg.rightvalid = right_valid
         row_msg.rightdistance = right_model.params[0]
-        row_msg.rightangle = right_model.params[1]
+        row_msg.rightangle = right_model.params[1] - np.pi / 2
         row_msg.rightvar = 0
-        row_msg.leftvalid = 1 # TODO
+        row_msg.leftvalid = left_valid
         row_msg.leftdistance = left_model.params[0]
-        row_msg.leftangle = left_model.params[1]
+        row_msg.leftangle = left_model.params[1] - np.pi / 2
         row_msg.leftvar = 0
-        row_msg.headland = 0
-        row_msg.error_angle = 0
-        row_msg.error_distance = 0
+        row_msg.headland = True if not left_valid or not right_valid else False
+        row_msg.error_angle = (left_model.params[1] + right_model.params[1]) / 2
+        row_msg.error_distance = (np.absolute(left_model.params[0]) - np.absolute(right_model.params[0])) / 2
         row_msg.var = 0
         self.rows_pub.publish(row_msg)
 
@@ -113,8 +116,18 @@ class WallExtractorNode():
             left_model, left_inliers = ransac(left_points, LineModel, min_samples=5, residual_threshold=0.1, max_trials=100)
             right_model, right_inliers = ransac(right_points, LineModel, min_samples=5, residual_threshold=0.1, max_trials=100)
 
+            # Determine validity of the lines
+            left_valid = True
+            right_valid = True
+
+            if np.size(left_inliers) < 15:
+                left_valid = False
+
+            if np.size(right_inliers) < 15:
+                right_valid = False
+
             # Publish row message.
-            self.publish_wall(left_model, right_model)
+            self.publish_wall(left_model, left_valid, right_model, right_valid)
 
             # RViz visualization of lines and which points are considered in/outliers.
             # Predict y's using the two outermost x's. This gives us two points on each line.
