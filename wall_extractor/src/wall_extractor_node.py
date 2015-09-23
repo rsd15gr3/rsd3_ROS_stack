@@ -43,19 +43,22 @@ class WallExtractorNode():
         # skimage LineModel gives the angle to the line perpendicular to the
         # actual line, so we rotate it 90 deg.
         # Refer to Anders for documentation on error_ values
+        right_angle = right_model.params[1] - np.pi / 2
+        left_angle = left_model.params[1] - np.pi / 2
+
         row_msg = row()
         row_msg.header.stamp = rospy.Time.now()
         row_msg.header.frame_id = "laser"
         row_msg.rightvalid = right_valid
         row_msg.rightdistance = right_model.params[0]
-        row_msg.rightangle = right_model.params[1] - np.pi / 2
+        row_msg.rightangle = right_angle
         row_msg.rightvar = 0
         row_msg.leftvalid = left_valid
         row_msg.leftdistance = left_model.params[0]
-        row_msg.leftangle = left_model.params[1] - np.pi / 2
+        row_msg.leftangle = left_angle
         row_msg.leftvar = 0
         row_msg.headland = True if not left_valid or not right_valid else False
-        row_msg.error_angle = (left_model.params[1] + right_model.params[1]) / 2
+        row_msg.error_angle = (right_angle + left_angle) / 2
         row_msg.error_distance = (np.absolute(left_model.params[0]) - np.absolute(right_model.params[0])) / 2
         row_msg.var = 0
         self.rows_pub.publish(row_msg)
