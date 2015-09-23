@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
 )
 
+catkin_package()
+
 # Compiler flags
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11 -Wall -Wextra" HAS_FLAGS)
