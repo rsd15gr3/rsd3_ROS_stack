@@ -50,9 +50,9 @@
     <group ns="fmExecutors">
 		<node pkg="wall_follow_control" name="wall_follower" type="wall_follow_control_node" output="screen">
 			<param name="update_rate" value="20"/>
-            <param name="drive_kp" value="10.0"/>
-            <param name="drive_ki" value="3.35"/>
-            <param name="drive_kd" value="10.0"/>
+            <param name="drive_kp" value="11.0"/>
+            <param name="drive_ki" value="0.01"/>
+            <param name="drive_kd" value="7.0"/>
             <param name="drive_feed_forward" value="0.00"/>
             <param name="drive_max_output" value="0.40"/>
 			<param name="walls_sub" value="/perception/walls" />
