@@ -3,11 +3,13 @@ project(frobit_lego_transporter)
 
 # Find dependencies
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
   rospy
   std_msgs
-  roslaunch
+  geometry_msgs
+  sensor_msgs
+  visualization_msgs
   msgs
+  roslaunch
 )
 
 # Install from setup.py
