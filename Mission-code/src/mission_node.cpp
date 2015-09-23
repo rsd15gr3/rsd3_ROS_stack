@@ -1,26 +1,32 @@
 #include<ros/ros.h>
-//#include<mission/mission_msg.h>
+#include<mission/mission_msg.h>
 
 using namespace std;
 using namespace ros;
 int loopRate = 10;
 
+void exampleCallback(const mission::mission_msg::ConstPtr& msg)
+{
+	cout << msg->header.seq << endl;
+
+}
+
 int main(int argc, char **argv){
 
 	ros::init(argc, argv, "mission_node");
-	NodeHandle n;
+	NodeHandle nodeHandler;
 	n.param<int>("loopRate", loopRate, 10);
-	//Subscriber sub = n.subscribe("")
-	//ros::Subscriber sub = n.subscribe("perception/wall_error", 1, wallCallback);
-	//Publisher pub = n.advertise<lego_dispenser_msgs::wall_error>("/fmCommand/cmd_vel",1);
-	//ros::Rate r(this->loopRate);
-	/*while (ros::ok())
-	{
-	// perform kalman fusion
-	r.sleep();
-	}*/
 
-	ros::spin();
+	ros::Subscriber example_subscriber = nodeHandle.subscribe("example_behavior_node/msg", 1, exampleCallback);
+	
+	ros::spinOnce();
+
+	while(ros::ok())
+	{
+	
+
+
+	}
     
 	return 0;
 }
