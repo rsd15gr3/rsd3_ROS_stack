@@ -217,6 +217,17 @@ RoboCard based frobits using 1800/700 ohm voltage dividers:
 		</node>
 	</group>
 
+	<group ns="safety_speed_parameters">
+        <param name="vel_topic" value="/fmCommand/cmd_vel"/>
+        <param name="safe_vel_topic" value="/safe_vel"/>
+        <param name="reg_ratio_topic" value="/reg_ratio"/>
+        <param name="scan_topic" value="/external/scan"/>
+    </group>
+
+    <node pkg="safety_speed_node" name="obstacle_detector" type="lidar_obstacle_node.py" output="screen">
+    </node>
+
+    <node pkg="safety_speed_node" name="safety_speed" type="safety_speed_node.py" output="screen">
+    </node>
 
 </launch>
-
