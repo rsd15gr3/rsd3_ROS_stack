@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package()
 
+SET(CMAKE_BUILD_TYPE Debug)
+
 # Compiler flags
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11 -Wall -Wextra" HAS_FLAGS)

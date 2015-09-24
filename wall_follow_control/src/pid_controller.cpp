@@ -1,15 +1,14 @@
 #include "pid_controller.h"
 
-Pid_controller::Pid_controller(double timeInterval)
+Pid_controller::Pid_controller()
 {
-    T = timeInterval;
-	kp = ki = kd = feed_forward = max_output = integral = 0;
+    kp = ki = kd = feed_forward = max_output = 0;
     first_time = true;
 }
 
-Pid_controller::Pid_controller(double timeInterval, double kp, double ki, double kd, double feed_forward, double max_output)
+Pid_controller::Pid_controller(double kp, double ki, double kd, double feed_forward, double max_output, double max_i)
 {
-    T = timeInterval;
+    this->max_i = max_i;
     this->kp = kp;
     this->ki = ki;
     this->kd = kd;
@@ -24,8 +23,9 @@ Pid_controller::~Pid_controller()
 
 }
 
-void Pid_controller::set_parameters(double kp, double ki, double kd, double feed_forward, double max_output)
+void Pid_controller::set_parameters(double kp, double ki, double kd, double feed_forward, double max_output, double max_i)
 {
+    this->max_i = max_i;
 	this->kp = kp;
 	this->ki = ki;
 	this->kd = kd;
@@ -36,19 +36,31 @@ void Pid_controller::set_parameters(double kp, double ki, double kd, double feed
 void Pid_controller::reset()
 {
 	this->error_prev = 0.0;
-	this->integral = 0.0;
 	this->first_time = true;
 }
 
-double Pid_controller::update(double error)
+double Pid_controller::update(double error, double T_now)
 {
+    double T;
+    if (first_time) {
+        T = 0;
+    }
+    else {
+        T = T_now - this->T_prev;
+    }
+    this->T_prev = T_now;
+
 	this->error = error;
 	// proportional
 	p = kp*error;
 
-	// integral
-	integral += error * T;
-	i = ki*integral;
+    // integral
+    i += ki*error * T;
+    if(i > max_i) {
+        i = max_i;
+    } else if(i < -max_i) {
+        i = -max_i;
+    }
 
 	// derivative
 	if (first_time) {

@@ -1,7 +1,7 @@
 <!-- -->
 <launch>
     <!-- frobit parameters -->
-    <param name="diff_steer_wheel_distance" value="0.215"/>
+    <param name="diff_steer_wheel_distance" value="0.23"/>
     <param name="ticks_per_meter_left" value="562" />
     <param name="ticks_per_meter_right" value="562" />
 
@@ -49,13 +49,13 @@
 
     <group ns="fmExecutors">
 		<node pkg="wall_follow_control" name="wall_follower" type="wall_follow_control_node" output="screen">
-			<param name="update_rate" value="20"/>
-            <param name="drive_kp" value="11.0"/>
+            <param name="drive_kp" value="5.0"/>
             <param name="drive_ki" value="0.01"/>
-            <param name="drive_kd" value="7.0"/>
+            <param name="drive_kd" value="2.0"/>
             <param name="drive_feed_forward" value="0.00"/>
             <param name="drive_max_output" value="0.40"/>
 			<param name="walls_sub" value="/perception/walls" />
+			<param name="drive_max_i" value="1" />
 			<param name="automode_sub" value="/fmPlan/automode" />
 		</node>
     </group>

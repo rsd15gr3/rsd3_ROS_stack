@@ -19,6 +19,7 @@ double targetDist = 0;
 double angleError = 0;
 double distError = 0;
 double bearingDist = 0;
+double maxI = 0;
 bool wallFollowEnabled = false;
 
 void wallCallback(const msgs::row::ConstPtr& wallPtr);
@@ -35,6 +36,7 @@ int main(int argc, char **argv){
     n.param<double>("drive_kd", kd, 10.0);
     n.param<double>("drive_feed_forward", feedForward, 0.0);
     n.param<double>("drive_max_output", maxOutput, 0.40);
+    n.param<double>("drive_max_i", maxI, 0.1);
     n.param<double>("target_dist",targetDist, 0.6);
     n.param<string>("walls_sub", wallsTopicName, "/walls");
     n.param<string>("automode_sub", automodeTopicName, "/automode");
@@ -44,7 +46,7 @@ int main(int argc, char **argv){
     Publisher pub = n.advertise<geometry_msgs::TwistStamped>("/fmCommand/cmd_vel",1);
 
     ros::Rate r(updateRate);
-    Pid_controller heading_controller(updateRate, kp, ki, kd, feedForward, maxOutput);
+    Pid_controller heading_controller(kp, ki, kd, feedForward, maxOutput, maxI);
     while (n.ok())
     {
         if(wallFollowEnabled)
@@ -56,7 +58,9 @@ int main(int argc, char **argv){
             twistedStamped.twist.linear.x = maxOutput;
             twistedStamped.header.stamp = ros::Time::now();
             double movingGoalTargetAngle = getMovingGoalTargetAngle();
-            twistedStamped.twist.angular.z = heading_controller.update(movingGoalTargetAngle);
+            Time Tnow = Time::now();
+            double T = Tnow.toNSec() /1000000000.0;
+            twistedStamped.twist.angular.z = heading_controller.update(movingGoalTargetAngle, T);
             pub.publish(twistedStamped);
         }
         else {
