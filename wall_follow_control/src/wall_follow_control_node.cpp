@@ -82,7 +82,7 @@ double getMovingGoalTargetAngle()
 {
     double closetMovingGoalAngle = atan2(targetDist, distError);
     double movingGoalTargetAngle = M_PI_2 - closetMovingGoalAngle - angleError;
-    return -movingGoalTargetAngle;
+    return movingGoalTargetAngle;
 }
 
 void wallEnableCallback(const msgs::IntStamped& enable)
