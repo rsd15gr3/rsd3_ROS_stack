@@ -2,6 +2,7 @@
 #include <mutex>
 #include <msgs/BoolStamped.h>
 #include "../../defines/action_states.h"
+#include <std_msgs/Int32.h>
 
 using namespace std;
 using namespace ros;
@@ -99,6 +100,8 @@ int main(int argc, char **argv){
 	nodeHandler.param<int>("loopRate", loopRate, 10);
 
     ros::Subscriber example_subscriber = nodeHandler.subscribe("perception/example_verify_pub", 1, exampleCallback);
+    ros::Publisher pub = nodeHandler.advertise<std_msgs::Int32>("mission/action_state",1);
+
     ros::Rate loop_rate(5); //freq (for testing)
 	//ros::spinOnce();
 
@@ -107,11 +110,19 @@ int main(int argc, char **argv){
 	while(ros::ok())
 	{
 		exampleMsg_lock.lock();
+        std_msgs::Int32 msg;
         if(exampleMsg.data)
+        {
             verify = "true";
+            msg.data = 0;
+        }
         else
+        {
             verify = "false";
-        cout << "Main: " << endl << "seq: " << exampleMsg.header.seq << endl << "Verify: " << verify << endl;
+            msg.data = 1;
+        }
+            cout << "Main: " << endl << "seq: " << exampleMsg.header.seq << endl << "Verify: " << verify << endl;
+        pub.publish(msg);
 		exampleMsg_lock.unlock();
 		ros::spinOnce();
 
