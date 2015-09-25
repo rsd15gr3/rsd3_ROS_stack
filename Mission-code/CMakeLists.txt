@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   genmsg 
   message_generation
+  msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,11 +47,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   mission_msg.msg
+ #add_message_files(
+ #  FILES
+ #  mission_msg.msg
 #  Message2.msg
- )
+ #)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,12 +68,12 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   std_msgs
-   geometry_msgs
-   mission
- )
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+#   geometry_msgs
+#   mission
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

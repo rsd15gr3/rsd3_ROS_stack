@@ -1,16 +1,14 @@
-#include<ros/ros.h>
-#include<mutex>
-#include<mission/mission_msg.h>
-#include<geometry_msgs/Twist.h>
+#include <ros/ros.h>
+#include <mutex>
+#include <msgs/BoolStamped.h>
+#include "../../defines/action_states.h"
 
 using namespace std;
 using namespace ros;
 
-//enum state_type {IDLE,GPS,LINE,BRIDGE,CHARGE,MANUAL,BACKTRACK};
-
 int loopRate = 10;
 std::mutex exampleMsg_lock;
-mission::mission_msg exampleMsg;
+msgs::BoolStamped exampleMsg;
 
 /*struct task
 {
@@ -19,7 +17,7 @@ mission::mission_msg exampleMsg;
 }*/
 
 
-void exampleCallback(const mission::mission_msg::ConstPtr& msg)
+void exampleCallback(const msgs::BoolStamped::ConstPtr& msg)
 {
 	exampleMsg_lock.lock();
 	exampleMsg = *msg;
@@ -100,19 +98,24 @@ int main(int argc, char **argv){
 	NodeHandle nodeHandler;
 	nodeHandler.param<int>("loopRate", loopRate, 10);
 
-	ros::Subscriber example_subscriber = nodeHandler.subscribe("example_behavior_node/msg", 1, exampleCallback);
-	
-
-
+    ros::Subscriber example_subscriber = nodeHandler.subscribe("perception/example_verify_pub", 1, exampleCallback);
+    ros::Rate loop_rate(5); //freq (for testing)
 	//ros::spinOnce();
+
+    string verify;
 
 	while(ros::ok())
 	{
 		exampleMsg_lock.lock();
-		cout << "Main: " << exampleMsg.header.seq << endl;
+        if(exampleMsg.data)
+            verify = "true";
+        else
+            verify = "false";
+        cout << "Main: " << endl << "seq: " << exampleMsg.header.seq << endl << "Verify: " << verify << endl;
 		exampleMsg_lock.unlock();
-
 		ros::spinOnce();
+
+        loop_rate.sleep(); //no spamming (for testing)
 	}
     
 	return 0;
