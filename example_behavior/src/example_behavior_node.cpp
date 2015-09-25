@@ -26,7 +26,7 @@ int main(int argc, char **argv){
 	mission::mission_msg msg;
 	msg.header.stamp = ros::Time::now();
 	msg.done = 1;
-	msg.fail = 0;
+    msg.fail = 1;
 	msg.verify = 1;
 	msg.velocity_cmd = cmd;
 	pub.publish(msg);
