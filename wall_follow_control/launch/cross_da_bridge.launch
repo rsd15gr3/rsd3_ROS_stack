@@ -133,12 +133,16 @@ RoboCard based frobits using 1800/700 ohm voltage dividers:
             <param name="update_rate" value="20"/>
             <param name="drive_kp" value="5.0"/>
             <param name="drive_ki" value="0.01"/>
+			<param name="drive_max_i" value="3" />
             <param name="drive_kd" value="2.0"/>
-            <param name="drive_max_i" value="1" />
             <param name="drive_feed_forward" value="0.00"/>
             <param name="drive_max_output" value="0.4"/>
+			<param name="forward_speed" value="0.5" />
             <param name="walls_sub" value="/perception/walls" />
-            <param name="automode_sub" value="/fmPlan/automode" />
+            <param name="automode_sub" value="/fmPlan/automode" />			
+			<param name="pid_debug_pub" value="/fmInformation/pid" />
+			<param name="command_pub" value="/fmCommand/cmd_vel" />
+
         </node>
     </group>
 
