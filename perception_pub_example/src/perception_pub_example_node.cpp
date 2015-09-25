@@ -3,14 +3,14 @@
 
 using namespace std;
 using namespace ros;
-int loopRate = 2; //publish freq
+int loopRate = 5; //publish freq
 
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "example_perception_node");
     NodeHandle n;
     ros::Publisher pub = n.advertise<msgs::BoolStamped>("perception/example_verify_pub",1);
-    ros::Rate loop_rate(1);
+    ros::Rate loop_rate(loopRate);
 
     bool verify = false; /* Verify is set true when is likley that a "preception" is valid,
                         (eksample: The line is present, so it will be possible to follow it)*/

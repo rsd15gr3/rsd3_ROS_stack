@@ -1,5 +1,4 @@
 #include <ros/ros.h>
-#include <mutex>
 #include <msgs/BoolStamped.h>
 #include "../../defines/action_states.h"
 #include <std_msgs/Int32.h>
@@ -8,7 +7,6 @@ using namespace std;
 using namespace ros;
 
 int loopRate = 10;
-std::mutex exampleMsg_lock;
 msgs::BoolStamped exampleMsg;
 
 /*struct task
@@ -20,11 +18,8 @@ msgs::BoolStamped exampleMsg;
 
 void exampleCallback(const msgs::BoolStamped::ConstPtr& msg)
 {
-	exampleMsg_lock.lock();
 	exampleMsg = *msg;
-	exampleMsg_lock.unlock();
-	cout << "Callback: Recived message" << endl;
-
+    cout << "Callback: Recived message" << endl;
 }
 
 /*geometry_msgs::Twist State_pick()
@@ -109,7 +104,6 @@ int main(int argc, char **argv){
 
 	while(ros::ok())
 	{
-		exampleMsg_lock.lock();
         std_msgs::Int32 msg;
         if(exampleMsg.data)
         {
@@ -123,8 +117,9 @@ int main(int argc, char **argv){
         }
             cout << "Main: " << endl << "seq: " << exampleMsg.header.seq << endl << "Verify: " << verify << endl;
         pub.publish(msg);
-		exampleMsg_lock.unlock();
+        cout << "1" << endl;
 		ros::spinOnce();
+        cout << "3" << endl;
 
         loop_rate.sleep(); //no spamming (for testing)
 	}
