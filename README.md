@@ -12,5 +12,5 @@ Each part (eks. line follow) must publish a bool, if its able verify where it is
 This is a example of how to subscripbe to mission/decition making for a action.
 Subscribes to an Int32. This Int32 is compared to a actions defined value. The actions value's is defined in actions_states.h.
 
-#Defines
+#/Defines
 Folder contating defines used by multiple packages.
