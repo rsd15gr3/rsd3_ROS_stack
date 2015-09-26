@@ -6,7 +6,7 @@ Pid_controller::Pid_controller()
     first_time = true;
 }
 
-Pid_controller::Pid_controller(double kp, double ki, double kd, double feed_forward, double max_output, double max_i)
+Pid_controller::Pid_controller(double kp, double ki, double kd, double feed_forward, double max_output, double max_i, double updateInterval)
 {
     this->max_i = max_i;
     this->kp = kp;
@@ -14,6 +14,7 @@ Pid_controller::Pid_controller(double kp, double ki, double kd, double feed_forw
     this->kd = kd;
     this->feed_forward = feed_forward;
     this->max_output = max_output;
+    this->T = updateInterval;
     first_time = true;
 }
 
@@ -23,7 +24,7 @@ Pid_controller::~Pid_controller()
 
 }
 
-void Pid_controller::set_parameters(double kp, double ki, double kd, double feed_forward, double max_output, double max_i)
+void Pid_controller::set_parameters(double kp, double ki, double kd, double feed_forward, double max_output, double max_i, double updateInterval)
 {
     this->max_i = max_i;
 	this->kp = kp;
@@ -31,6 +32,7 @@ void Pid_controller::set_parameters(double kp, double ki, double kd, double feed
 	this->kd = kd;
 	this->feed_forward = feed_forward;
 	this->max_output = max_output;
+    this->T = updateInterval;
 }
 
 void Pid_controller::reset()
@@ -39,21 +41,12 @@ void Pid_controller::reset()
 	this->first_time = true;
 }
 
-double Pid_controller::update(double error, double T_now)
+double Pid_controller::update(double error)
 {
-    double T;
-    if (first_time) {
-        T = 0;
-    }
-    else {
-        T = T_now - this->T_prev;
-    }
-    this->T_prev = T_now;
-
 	this->error = error;
 	// proportional
 	p = kp*error;
-
+    ROS_INFO("T = %f", T);
     // integral
     i += ki*error * T;
     if(i > max_i) {

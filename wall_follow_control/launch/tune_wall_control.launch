@@ -35,21 +35,22 @@
 
     <group ns="fmExecutors">
 		<node pkg="wall_follow_control" name="wall_follower" type="wall_follow_control_node" output="screen">
-            <param name="drive_kp" value=".5"/>
-            <param name="drive_ki" value="0.1"/>
-			<param name="drive_max_i" value="3" />
-            <param name="drive_kd" value="0."/>
-            <param name="drive_feed_forward" value="0.00"/>
-            <param name="drive_max_output" value="1.0"/>
-			<param name="forward_speed" value="0.5" />
+			<param name="update_rate" value="20" />
+			<param name="drive_kp" value="2."/>
+			<param name="drive_ki" value="1."/>
+			<param name="drive_kd" value="0.0"/>
+			<param name="drive_max_i" value="0.5" />
+			<param name="drive_feed_forward" value="0.00"/>
+			<param name="drive_max_output" value="1."/>
+			<param name="forward_speed" value="1." />
 			<param name="walls_sub" value="/perception/walls" />
 			<param name="automode_sub" value="/fmPlan/automode" />
 			<param name="pid_debug_pub" value="/fmInformation/pid" />
 			<param name="command_pub" value="/fmCommand/cmd_vel" />
 		</node>
 		<node pkg="plot_pid" name="wptnav_pid" type="plot_pid_node.py" output="screen" >
- 			<param name="pid_sub" value="/fmInformation/pid" />
- 			<param name="update_rate" value="10" />
+			<param name="pid_sub" value="/fmInformation/pid" />
+			<param name="update_rate" value="10" />
 			<param name="plot_title" value="PID state" />
 			<param name="samples" value="100" />
 			<param name="max_error" value="1.0" />
@@ -94,5 +95,6 @@
             <param name="avatar_extension_lateral" value="0.13" />
             <param name="avatar_reverse" value="false" />
         </node>
+
     </group>
 </launch>

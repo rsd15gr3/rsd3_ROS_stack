@@ -13,6 +13,10 @@ using namespace ros;
 void wallCallback(const msgs::row::ConstPtr& wallPtr);
 void wallEnableCallback(const msgs::IntStamped& enable);
 double getMovingGoalTargetAngle();
+void callbackPid(const ros::TimerEvent&);
+
+Publisher commandPub;
+Publisher pidDebugPub;
 
 int updateRate = 10;
 double kp = 0;
@@ -30,8 +34,11 @@ bool wallFollowEnabled = false;
 
 string wallsTopicName = "";
 string automodeTopicName = "";
-string pidDebugPub = "";
-string commandPub = "";
+string pidDebugPubName = "";
+string commandPubName = "";
+
+Pid_controller heading_controller;
+
 int main(int argc, char **argv){
     init(argc, argv, "wall_follow_control_node");
     NodeHandle n("~");
@@ -46,46 +53,45 @@ int main(int argc, char **argv){
     n.param<double>("forward_speed", feedFordSpeed, 0.4);
     n.param<string>("walls_sub", wallsTopicName, "/walls");
     n.param<string>("automode_sub", automodeTopicName, "/automode");
-    n.param<string>("pid_debug_pub", pidDebugPub, "/debug/pid_pub");
-    n.param<string>("command_pub", commandPub, "/fmCommand/cmd_vel");
+    n.param<string>("pid_debug_pub", pidDebugPubName, "/debug/pid_pub");
+    n.param<string>("command_pub", commandPubName, "/fmCommand/cmd_vel");
 
-    ros::Subscriber error_sub = n.subscribe(wallsTopicName, 1, wallCallback);
-    ros::Subscriber enable_sub = n.subscribe(automodeTopicName,1,wallEnableCallback);
+    ros::Subscriber errorSub = n.subscribe(wallsTopicName, 1, wallCallback);
+    ros::Subscriber enableSub = n.subscribe(automodeTopicName,1,wallEnableCallback);
 
-    Publisher pub = n.advertise<geometry_msgs::TwistStamped>(commandPub,1);
-    Publisher pid_debug_pub = n.advertise<msgs::FloatArrayStamped>(pidDebugPub,1);
+    commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName,1);
+    pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName,1);
+
+    double updateInterval = 1.0 / updateRate;
+    ros::Timer timerPid = n.createTimer(ros::Duration(updateInterval), callbackPid);
 
     ros::Rate r(updateRate);
 
-    Pid_controller heading_controller(kp, ki, kd, feedForward, maxOutput, maxI);
-    while (n.ok())
-    {
-        if(wallFollowEnabled)
-        {
-            geometry_msgs::TwistStamped twistedStamped;
-            // twistedStamped.twist.angular.z = 0.1; // yaw speed forward speed
-            // twistedStamped.twist.linear.x = 0.1;
-            // twistedStamped.header.stamp = ros::Time::now();
-            twistedStamped.twist.linear.x = feedFordSpeed;
-            twistedStamped.header.stamp = ros::Time::now();
-            double movingGoalTargetAngle = getMovingGoalTargetAngle();
-            Time Tnow = Time::now();
-            double T = Tnow.toNSec() /1000000000.0;
-            twistedStamped.twist.angular.z = heading_controller.update(movingGoalTargetAngle, T);
-            pub.publish(twistedStamped);
-            // publish PID debug msgs
-            msgs::FloatArrayStamped pid_debug_msg;
-            pid_debug_msg.header.stamp = ros::Time::now();
-            pid_debug_msg.data = heading_controller.getLatestUpdateValues();
-            pid_debug_pub.publish(pid_debug_msg);
-        }
-        else {
-            heading_controller.reset();
-        }
-        spinOnce();
-        r.sleep();
-    }
+    heading_controller.set_parameters(kp, ki, kd, feedForward, maxOutput, maxI, updateInterval);
+    spin();
     return 0;
+}
+
+void callbackPid(const ros::TimerEvent&)
+{
+    if(wallFollowEnabled)
+    {
+        geometry_msgs::TwistStamped twistedStamped;
+        twistedStamped.twist.linear.x = feedFordSpeed;
+        twistedStamped.header.stamp = ros::Time::now();
+        double movingGoalTargetAngle = getMovingGoalTargetAngle();
+        twistedStamped.twist.angular.z = heading_controller.update(movingGoalTargetAngle);
+        commandPub.publish(twistedStamped);
+
+        // publish PID debug msgs
+        msgs::FloatArrayStamped pidDebugMsg;
+        pidDebugMsg.header.stamp = ros::Time::now();
+        pidDebugMsg.data = heading_controller.getLatestUpdateValues();
+        pidDebugPub.publish(pidDebugMsg);
+    }
+    else {
+        heading_controller.reset();
+    }
 }
 
 void wallCallback(const msgs::row::ConstPtr& wallPtr)
