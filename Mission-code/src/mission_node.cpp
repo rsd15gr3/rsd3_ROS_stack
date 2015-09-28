@@ -2,6 +2,7 @@
 #include <msgs/BoolStamped.h>
 #include "../../defines/action_states.h"
 #include <std_msgs/Int32.h>
+#include <msgs/IntStamped.h>
 
 using namespace std;
 using namespace ros;
@@ -95,7 +96,7 @@ int main(int argc, char **argv){
 	nodeHandler.param<int>("loopRate", loopRate, 10);
 
     ros::Subscriber example_subscriber = nodeHandler.subscribe("perception/example_verify_pub", 1, exampleCallback);
-    ros::Publisher pub = nodeHandler.advertise<std_msgs::Int32>("mission/action_state",1);
+    ros::Publisher pub = nodeHandler.advertise<msgs::IntStamped>("mission/action_state",1);
 
     ros::Rate loop_rate(5); //freq (for testing)
 	//ros::spinOnce();
@@ -104,7 +105,8 @@ int main(int argc, char **argv){
 
 	while(ros::ok())
 	{
-        std_msgs::Int32 msg;
+        msgs::IntStamped msg;
+        msg.header.stamp = ros::Time::now();
         if(exampleMsg.data)
         {
             verify = "true";
