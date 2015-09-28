@@ -232,4 +232,7 @@ RoboCard based frobits using 1800/700 ohm voltage dividers:
         <param name="reg_ratio_topic" value="/reg_ratio"/>
     </node>
 
+    <node pkg="rosserial_python" name="rosserial_python" type="serial_node.py" output="screen" args="/dev/ttyACM0" >
+    </node>
+
 </launch>
