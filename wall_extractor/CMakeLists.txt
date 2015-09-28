@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(frobit_lego_transporter)
+project(wall_extractor)
 
 # Find dependencies
 find_package(catkin REQUIRED COMPONENTS
