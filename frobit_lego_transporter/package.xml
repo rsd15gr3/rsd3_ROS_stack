@@ -1,18 +1,9 @@
 <package>
   <name>frobit_lego_transporter</name>
   <version>0.0.1</version>
-  <description>The frobit_lego_transporter metapackage.</description>
+  <description>The frobit_lego_transporter top-level package.</description>
   <maintainer email="kschw10@student.sdu.dk">Kim Lindberg Schwaner</maintainer>
   <license>BSD</license>
   <url type="repository">https://github.com/rsd15gr3/frobit_lego_transporter</url>
-
   <buildtool_depend>catkin</buildtool_depend>
-
-  <run_depend>safety_speed</run_depend>
-  <run_depend>wall_extractor</run_depend>
-  <run_depend>wall_follow_control</run_depend>
-
-  <export>
-    <metapackage/>
-  </export>
 </package>
