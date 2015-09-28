@@ -3,15 +3,15 @@ project(wall_follow_control)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rospy
-  std_msgs
   geometry_msgs
   msgs
+  roslaunch
 )
 
 catkin_package()
 
-SET(CMAKE_BUILD_TYPE Debug)
+# Check launch files in launch/ for errors
+roslaunch_add_file_check(launch)
 
 # Compiler flags
 include(CheckCXXCompilerFlag)
@@ -24,7 +24,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(wall_follow_control_node src/pid_controller.cpp src/pid_controller.h src/wall_follow_control_node.cpp )
+add_executable(wall_follow_control_node src/pid_controller.cpp src/pid_controller.h src/wall_follow_control_node.cpp)
 
 target_link_libraries(wall_follow_control_node
   ${catkin_LIBRARIES}

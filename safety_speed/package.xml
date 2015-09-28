@@ -1,18 +1,20 @@
 <?xml version="1.0"?>
 <package>
-  <name>safety_speed_node</name>
-  <version>0.0.0</version>
-  <description>The safety_speed_node package</description>
+    <name>safety_speed</name>
+    <version>0.0.0</version>
+    <description>The safety_speed package</description>
+    <maintainer email="camor14@student.sdu.dk">Carlos Moro García</maintainer>
+    <license>BSD</license>
 
-  <maintainer email="camor14@student.sdu.dk">Carlos Moro García</maintainer>
-  <url type="website">http://www.frobomind.org</url>
-  <license>BSD 3-Clause</license>
+    <buildtool_depend>catkin</buildtool_depend>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>msgs</build_depend>
-  <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
-  <run_depend>msgs</run_depend>
-  <run_depend>roscpp</run_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>msgs</build_depend>
+
   <run_depend>rospy</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>msgs</run_depend>
 </package>
