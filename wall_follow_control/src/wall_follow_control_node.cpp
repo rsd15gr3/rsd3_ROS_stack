@@ -10,10 +10,10 @@
 using namespace std;
 using namespace ros;
 
-void wallCallback(const msgs::row::ConstPtr& wallPtr);
-void wallEnableCallback(const msgs::IntStamped& enable);
+void wallCallback(const msgs::row::ConstPtr &wallPtr);
+void wallEnableCallback(const msgs::IntStamped &enable);
 double getMovingGoalTargetAngle();
-void callbackPid(const ros::TimerEvent&);
+void callbackPid(const ros::TimerEvent &);
 
 Publisher commandPub;
 Publisher pidDebugPub;
@@ -39,7 +39,8 @@ string commandPubName = "";
 
 Pid_controller heading_controller;
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
     init(argc, argv, "wall_follow_control_node");
     NodeHandle n("~");
     n.param<int>("update_rate", updateRate, 20);
@@ -49,7 +50,7 @@ int main(int argc, char **argv){
     n.param<double>("drive_feed_forward", feedForward, 0.0);
     n.param<double>("drive_max_output", maxOutput, 0.40);
     n.param<double>("drive_max_i", maxI, 0.1);
-    n.param<double>("target_dist",targetDist, 0.6);
+    n.param<double>("target_dist", targetDist, 0.6);
     n.param<double>("forward_speed", feedFordSpeed, 0.4);
     n.param<string>("walls_sub", wallsTopicName, "/walls");
     n.param<string>("automode_sub", automodeTopicName, "/automode");
@@ -57,10 +58,10 @@ int main(int argc, char **argv){
     n.param<string>("command_pub", commandPubName, "/fmCommand/cmd_vel");
 
     ros::Subscriber errorSub = n.subscribe(wallsTopicName, 1, wallCallback);
-    ros::Subscriber enableSub = n.subscribe(automodeTopicName,1,wallEnableCallback);
+    ros::Subscriber enableSub = n.subscribe(automodeTopicName, 1, wallEnableCallback);
 
-    commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName,1);
-    pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName,1);
+    commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName, 1);
+    pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
 
     double updateInterval = 1.0 / updateRate;
     ros::Timer timerPid = n.createTimer(ros::Duration(updateInterval), callbackPid);
@@ -72,10 +73,9 @@ int main(int argc, char **argv){
     return 0;
 }
 
-void callbackPid(const ros::TimerEvent&)
+void callbackPid(const ros::TimerEvent &)
 {
-    if(wallFollowEnabled)
-    {
+    if (wallFollowEnabled) {
         geometry_msgs::TwistStamped twistedStamped;
         twistedStamped.twist.linear.x = feedFordSpeed;
         twistedStamped.header.stamp = ros::Time::now();
@@ -88,13 +88,12 @@ void callbackPid(const ros::TimerEvent&)
         pidDebugMsg.header.stamp = ros::Time::now();
         pidDebugMsg.data = heading_controller.getLatestUpdateValues();
         pidDebugPub.publish(pidDebugMsg);
-    }
-    else {
+    } else {
         heading_controller.reset();
     }
 }
 
-void wallCallback(const msgs::row::ConstPtr& wallPtr)
+void wallCallback(const msgs::row::ConstPtr &wallPtr)
 {
     angleError = wallPtr->error_angle;
     distError = wallPtr->error_distance;
@@ -107,7 +106,7 @@ double getMovingGoalTargetAngle()
     return movingGoalTargetAngle;
 }
 
-void wallEnableCallback(const msgs::IntStamped& enable)
+void wallEnableCallback(const msgs::IntStamped &enable)
 {
     wallFollowEnabled = (enable.data == 1);
 }
