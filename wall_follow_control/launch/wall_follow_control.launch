@@ -1,0 +1,16 @@
+<launch>
+    <node pkg="wall_follow_control" name="wall_follower" type="wall_follow_control_node" output="screen">
+        <param name="update_rate" value="20"/>
+        <param name="drive_kp" value="5.0"/>
+        <param name="drive_ki" value="0.01"/>
+        <param name="drive_max_i" value="3" />
+        <param name="drive_kd" value="2.0"/>
+        <param name="drive_feed_forward" value="0.00"/>
+        <param name="drive_max_output" value="0.4"/>
+        <param name="forward_speed" value="0.5" />
+        <param name="walls_sub" value="/walls" />
+        <param name="automode_sub" value="/fmPlan/automode" />
+        <param name="pid_debug_pub" value="/fmInformation/pid" />
+        <param name="command_pub" value="/fmCommand/cmd_vel" />
+    </node>
+</launch>
