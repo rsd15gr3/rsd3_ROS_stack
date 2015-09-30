@@ -1,4 +1,4 @@
-//Action state definitions
+//Action state definitions /published to mission/action_state
 #define TEST        0
 #define IDLE        1
 #define CHARGE      2
