@@ -1,0 +1,36 @@
+<robot name="frobit">
+  <link name="base_link">
+  </link>
+
+  <!-- Lower chassis -->
+  <link name="lower_chassis">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.395 0.3 0.015"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_lower_chassis_to_base_link" type="fixed">
+    <parent link="base_link" />
+    <child link="lower_chassis" />
+    <origin xyz="0.075 0 0" rpy="0 0 0" />
+  </joint>
+
+  <!-- Laser scanner -->
+  <link name="base_laser_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_lower_chassis_to_base_laser_link" type="fixed">
+    <parent link="lower_chassis" />
+    <child link="base_laser_link" />
+    <origin xyz="0.1975 0 0.065" rpy="0 0 0" />
+  </joint>
+</robot>
