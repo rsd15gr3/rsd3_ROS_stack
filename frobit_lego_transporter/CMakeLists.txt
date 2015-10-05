@@ -6,7 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 # This is a catkin package
-catkin_metapackage()
+catkin_package()
 
 # Check launch files in launch/ for errors
 roslaunch_add_file_check(launch)
