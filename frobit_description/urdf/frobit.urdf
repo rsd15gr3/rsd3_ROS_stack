@@ -7,30 +7,90 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.395 0.3 0.015"/>
+        <box size="0.43 0.32 0.015"/>
       </geometry>
     </visual>
   </link>
 
-  <joint name="joint_lower_chassis_to_base_link" type="fixed">
+  <joint name="joint_lower_chassis" type="fixed">
     <parent link="base_link" />
     <child link="lower_chassis" />
-    <origin xyz="0.075 0 0" rpy="0 0 0" />
+    <origin xyz="0.105 0 0" rpy="0 0 0" />
   </joint>
 
-  <!-- Laser scanner -->
+  <!-- Left wheel -->
+  <link name="left_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796 0 0" />
+      <geometry>
+        <cylinder length="0.02" radius="0.109" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_left_wheel" type="continuous">
+    <parent link="lower_chassis" />
+    <child link="left_wheel" />
+    <origin xyz="-0.105 -0.17 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" rpy="0 0 0" />
+  </joint>
+
+  <!-- Right wheel -->
+  <link name="right_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796 0 0" />
+      <geometry>
+        <cylinder length="0.02" radius="0.109" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_right_wheel" type="continuous">
+    <parent link="lower_chassis" />
+    <child link="right_wheel" />
+    <origin xyz="-0.105 0.17 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" rpy="0 0 0" />
+  </joint>
+
+  <!-- SICK TiM310 laser scanner -->
   <link name="base_laser_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.05 0.05 0.05"/>
+        <box size="0.06 0.06 0.075" />
       </geometry>
     </visual>
   </link>
 
-  <joint name="joint_lower_chassis_to_base_laser_link" type="fixed">
+  <joint name="joint_base_laser" type="fixed">
     <parent link="lower_chassis" />
     <child link="base_laser_link" />
-    <origin xyz="0.1975 0 0.065" rpy="0 0 0" />
+    <origin xyz="0.18 0 0.05" rpy="0 0 0" />
+  </joint>
+
+  <!-- VN-100 IMU -->
+  <link name="imu_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.036 0.033 0.009" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_imu" type="fixed">
+    <parent link="lower_chassis" />
+    <child link="imu_link" />
+    <origin xyz="0.125 0 0.017" rpy="0 0 0" />
+  </joint>
+
+  <!-- Camera -->
+  <link name="camera_link">
+  </link>
+
+  <joint name="joint_camera" type="fixed">
+    <parent link="lower_chassis" />
+    <child link="camera_link" />
+    <origin xyz="0.21 0.022 0.13" rpy="0 1.15 0" />
   </joint>
 </robot>
