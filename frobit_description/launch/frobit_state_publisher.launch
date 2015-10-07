@@ -1,6 +1,7 @@
 <launch>
   <param name="robot_description" textfile="$(find frobit_description)/urdf/frobit.urdf" />
-  <node name="frobit_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
     <param name="publish_frequency" value="100"/>
   </node>
 </launch>
