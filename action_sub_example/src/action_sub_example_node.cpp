@@ -10,7 +10,7 @@ bool action_active = false;
 void stateCallback(const msgs::IntStamped::ConstPtr& msg)
 {
     msgs::IntStamped state = *msg;
-    if(state.data == TEST) //Change TEST to the corrent define (define's can be found in action_states.h), all action has a #define
+    if(state.data == CTR_TEST) //Change TEST to the corrent define (define's can be found in action_states.h), all action has a #define
         action_active = true;
     else
         action_active = false;
