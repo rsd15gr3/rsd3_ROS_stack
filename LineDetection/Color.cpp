@@ -1,10 +1,14 @@
 #include <stdio.h>
+#include <vector>
 #include <opencv2/opencv.hpp>
 #include <math.h>
 #include <algorithm>
 #include <eigen3/Eigen/Dense>
+#include <string>
 
 using namespace cv;
+using std::vector;
+using std::string;
 #define PI          3.14159265
 #define STEPSIZE    10
 #define SWAPDIST    80
