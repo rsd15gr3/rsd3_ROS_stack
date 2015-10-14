@@ -37,7 +37,7 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add "message_generation" and every package in MSG_DEP_SET to
 ##     find_package(catkin REQUIRED COMPONENTS ...)
 ##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     catkin_package(CATKIN_DEPENDS ...)
+     catkin_package(CATKIN_DEPENDS msgs)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
@@ -129,6 +129,7 @@ include_directories(
 
 ## Declare a C++ executable
  add_executable(perception_pub_example_node src/perception_pub_example_node.cpp)
+ add_dependencies(perception_pub_example_node ${catkin_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

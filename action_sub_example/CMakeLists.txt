@@ -7,6 +7,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") ##use C++11
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -124,11 +125,11 @@ include_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(action_sub_example ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 add_executable(action_sub_example_node src/action_sub_example_node.cpp)
 
+add_dependencies(action_sub_example_node ${catkin_EXPORTED_TARGETS})
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(action_sub_example_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

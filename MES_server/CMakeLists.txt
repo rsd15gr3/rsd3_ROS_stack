@@ -38,7 +38,7 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add "message_generation" and every package in MSG_DEP_SET to
 ##     find_package(catkin REQUIRED COMPONENTS ...)
 ##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     catkin_package(CATKIN_DEPENDS ...)
+     catkin_package(CATKIN_DEPENDS msgs mission)
 ##   * uncomment the add_*_files sections below as needed
 ##     and list every .msg/.srv/.action file to be processed
 ##   * uncomment the generate_messages entry below
@@ -100,12 +100,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES mes
-#  CATKIN_DEPENDS msgs roscpp std_msgs
-#  DEPENDS system_lib
-)
 
 ###########
 ## Build ##
@@ -130,6 +124,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(mes_node src/mes_node.cpp src/Node.cpp)
+add_dependencies(mes_node ${catkin_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

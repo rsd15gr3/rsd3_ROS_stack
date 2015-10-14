@@ -31,6 +31,8 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(line_detection_node src/line_detection_node.cpp )
+add_dependencies(line_detection_node ${catkin_EXPORTED_TARGETS})
+
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(line_detection_node
