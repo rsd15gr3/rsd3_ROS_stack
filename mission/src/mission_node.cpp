@@ -2,7 +2,7 @@
 #include <msgs/BoolStamped.h>
 #include <msgs/IntStamped.h>
 #include <std_msgs/Int32.h>
-#include "../../defines/action_states.h"
+#include "mission/action_states.h"
 #include "deque"
 
 using namespace std;

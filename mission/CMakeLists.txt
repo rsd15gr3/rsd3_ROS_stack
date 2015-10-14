@@ -6,8 +6,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   geometry_msgs
-  genmsg 
-  message_generation
+#  genmsg 
+#  message_generation
   msgs
 )
 
@@ -17,6 +17,7 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  include
 )
 
 ## Declare a C++ executable

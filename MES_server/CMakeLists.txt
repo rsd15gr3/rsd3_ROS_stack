@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   msgs
   roscpp
   std_msgs
+  mission
 )
 
 ## System dependencies are found with CMake's conventions
