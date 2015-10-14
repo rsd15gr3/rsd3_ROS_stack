@@ -9,7 +9,7 @@
         <node pkg="serial_string" name="imu_serial_string_node" type="serial_string_node" output="screen">
             <param name="publisher_topic" value="/fmData/imu_rx" />
             <param name="subscriber_topic" value="/fmData/imu_tx" />
-            <param name="device" value="/dev/ttyUSB1" />
+            <param name="device" value="/dev/imu" />
             <param name="baudrate" value="115200" />
             <param name="termination_character" value="10"/>
         </node>
