@@ -6,16 +6,27 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   roscpp
   sensor_msgs
-  msgs
   std_msgs
+  msgs
+  message_generation
+  genmsg
 )
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+add_message_files(
+  FILES
+  line.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package()
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  CATKIN_DEPENDS
+    message_runtime
 )
 
 ## Declare a C++ executable
