@@ -53,7 +53,7 @@
   </joint>
 
   <!-- SICK TiM310 laser scanner -->
-  <link name="base_laser_link">
+  <link name="laser_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
@@ -64,7 +64,7 @@
 
   <joint name="joint_base_laser" type="fixed">
     <parent link="lower_chassis" />
-    <child link="base_laser_link" />
+    <child link="laser_link" />
     <origin xyz="0.18 0 0.05" rpy="0 0 0" />
   </joint>
 
