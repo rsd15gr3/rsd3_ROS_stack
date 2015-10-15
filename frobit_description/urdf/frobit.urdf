@@ -2,6 +2,18 @@
   <link name="base_link">
   </link>
 
+  <!-- Base footprint
+       The projection of base_link unto the ground.
+       See http://answers.ros.org/question/12770/base_link-to-base_footprint-transform/ -->
+  <link name="base_footprint">
+  </link>
+
+  <joint name="joint_base_footprint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_footprint" />
+    <origin xyz="0 0 -0.11650" rpy="0 0 0" />
+  </joint>
+
   <!-- Lower chassis -->
   <link name="lower_chassis">
     <visual>
