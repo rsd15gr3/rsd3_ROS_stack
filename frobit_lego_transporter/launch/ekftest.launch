@@ -24,7 +24,7 @@
         </node>
 
         <!-- Serial comm with Arduino -->
-        <node pkg="rosserial_python" name="rosserial_python" type="serial_node.py" output="screen" args="/dev/ttyACM0" />
+        <node pkg="rosserial_python" name="rosserial_python" type="serial_node.py" output="screen" args="/dev/ttyACM0" /> <!-- TODO udev symlink -->
     </group>
 
     <group ns="fmSensors">
@@ -67,17 +67,29 @@
             <rosparam param="twist_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
         </node>
 
+        <!-- MarkerLocator "GPS" -->
+        <node pkg="markerlocator_odometry" name="markerlocator_odometry" type="markerlocator_odometry_node.py" output="screen">
+            <param name="host" value="10.115.253.233" />
+            <param name="port" value="21212" />
+            <param name="frame_id" value="base_link" />
+            <param name="covariance_x" value="0.001" />
+            <param name="covariance_y" value="0.001" />
+            <param name="covariance_z" value="0.001" />
+            <param name="rot_covariance" value="99999" />
+        </node>
+
         <!-- EKF -->
         <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" output="screen">
             <remap from="imu_data" to="/fmInformation/imu" />
             <remap from="odom" to="/fmKnowledge/odom" />
+            <remap from="vo" to="gps_meas" />
             <param name="output_frame" value="odom_combined" />
             <param name="base_footprint_frame" value="base_link" />
             <param name="freq" value="30.0" />
             <param name="sensor_timeout" value="1.0" />
             <param name="odom_used" value="true" />
             <param name="imu_used" value="true" />
-            <param name="vo_used" value="false" />
+            <param name="vo_used" value="true" />
             <param name="debug" value="false" />
             <param name="self_diagnose" value="false" />
         </node>
