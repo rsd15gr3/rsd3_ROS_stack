@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package(
   INCLUDE_DIRS include
+  CATKIN_DEPENDS msgs
 )
 
 include_directories(
@@ -26,7 +27,6 @@ add_dependencies(mission_node ${catkin_EXPORTED_TARGETS})
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(mission_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-catkin_package(CATKIN_DEPENDS msgs)
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(mission_node

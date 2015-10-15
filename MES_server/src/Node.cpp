@@ -1,7 +1,7 @@
 #include "Node.h"
 #include "iostream"
 #include "queue"
-#include "../../defines/action_states.h"
+#include "mission/action_states.h"
 
 struct search_graph
 {

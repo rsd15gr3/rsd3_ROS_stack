@@ -34,8 +34,9 @@ inline bool advancedEdgeDetection(const Mat &image, Mat &edges);
 Line_type scanline(Mat lineImage, int line, int &mid);
 
 image_transport::Publisher image_pub;
+
 ros::Publisher line_pub;
-int loop_rate = 20;
+int loop_rate = 1;
 bool verification = false; /* Verify is set true when is likley that a "preception" is valid, */
 unsigned threshold_gray = 120;
 
@@ -56,27 +57,25 @@ int main(int argc, char** argv)
     ros::NodeHandle n("~");
     image_transport::ImageTransport it(n);
     image_transport::Subscriber image_sub;
-
-    image_sub = it.subscribe("/usb_cam/image_raw", 1, &imageCb);
-    image_pub = it.advertise("/perception/floor_lines", 1);
+    image_sub = it.subscribe("/usb_cam/image_raw", 1, &imageCb,image_transport::TransportHints("compressed"));
+    //image_pub = it.advertise("/perception/floor_lines", 1);
 
     ros::Publisher verify_pub = n.advertise<msgs::BoolStamped>("perception/line_verify",1);
     line_pub = n.advertise<line_detection::line>("perception/line",1);
-    ros::Rate loop_rate(loop_rate);
+
+    ros::Rate r(loop_rate);
 
     while (ros::ok()) //Code loop
     {
-
         msgs::BoolStamped msg;
         msg.header.stamp = ros::Time::now();
         msg.data = verification;
 
         verify_pub.publish(msg);
-
-        loop_rate.sleep(); //sleep to match pub freq for testing
+        r.sleep(); //sleep to match pub freq for testing
         ros::spinOnce();
     }
-
+    ROS_INFO("line detector is dead!!!");
     return 0;
 }
 
@@ -133,20 +132,21 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 
     //Calculate line
     Eigen::Vector2d gradient = param_line.direction();
-    double angle = atan2(gradient[1], gradient[0]);
+    double angle = atan2(gradient[1], gradient[0]) - CV_PI/2;
 
-    Eigen::NumTraits<Scalar>::Real offset_real = param_line.distance(cam_center);
+    Eigen::NumTraits<Scalar>::Real offset_real = param_line.distance(Eigen::Vector2d(0,0));
 
     double offset = offset_real[0];
-    offset *=  (midOfTop > 0 ? 1 : -1);
+    offset *=  (pr0[0] > 0 ? 1 : -1);
     cv::circle(lineImage, Point(lineImage.cols/2+offset,0), 2, 255, 2);
-    imshow("slider", lineImage);
+
     line_detection::line line_msg;
     line_msg.header.stamp = ros::Time::now();
     line_msg.header.frame_id = ""; // TODO:
     line_msg.angle = angle;
     line_msg.offset = offset;
     line_pub.publish(line_msg);
+    imshow("slider", lineImage);
     cv::waitKey(5);
 }
 
