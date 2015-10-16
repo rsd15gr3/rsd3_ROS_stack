@@ -75,7 +75,7 @@
             <param name="covariance_x" value="0.001" />
             <param name="covariance_y" value="0.001" />
             <param name="covariance_z" value="0.001" />
-            <param name="rot_covariance" value="99999" />
+            <param name="covariance_rot" value="99999" />
         </node>
 
         <!-- EKF -->
