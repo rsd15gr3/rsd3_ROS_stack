@@ -1,0 +1,24 @@
+<!-- -->
+<launch>
+  <param name="use_sim_time" value="true" />
+
+  <node pkg="stage_ros" type="stageros" name="simulator" args="$(find frobit_launch_sim)/world/box_and_surroundings.world">
+    <param name="base_watchdog_timeout" value="0.2"/>
+  </node>
+  <include file="$(find frobit_launch_sim)/launch/move_frobit_launch.xml" />
+
+  <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_launch_sim)/world/box_and_surroundings.yaml" /> 
+
+  <node pkg="tf" type="static_transform_publisher" name="initial_pose_link_broadcaster" args="4.75 2.8180 0 0 0 0 map odom 100" /> 
+
+  <node name="costmap" pkg="costmap_2d" type="costmap_2d_node" output="screen">
+    <rosparam file="$(find overwatch_mapping)/launch/overwatch_mapping_costmap_params.yaml" command="load" ns="costmap" />
+  </node>
+
+    <param name="robot_description" textfile="$(find frobit_description)/urdf/frobit.urdf" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+        <param name="publish_frequency" value="100"/>
+    </node>
+  <node name="visulizer" pkg="rviz" type="rviz" args="-d $(find overwatch_mapping)/config/overwatch_mapping.rviz"/>
+</launch>
