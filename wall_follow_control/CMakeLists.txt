@@ -8,7 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
   roslaunch
 )
 
-catkin_package()
+catkin_package(
+    CATKIN_DEPENDS msgs
+)
 
 # Check launch files in launch/ for errors
 roslaunch_add_file_check(launch)
@@ -25,6 +27,8 @@ include_directories(
 )
 
 add_executable(wall_follow_control_node src/pid_controller.cpp src/pid_controller.h src/wall_follow_control_node.cpp)
+
+add_dependencies(wall_follow_control_node ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(wall_follow_control_node
   ${catkin_LIBRARIES}
