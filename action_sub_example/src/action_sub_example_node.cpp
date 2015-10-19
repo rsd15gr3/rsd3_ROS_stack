@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
-#include "../../defines/action_states.h"
+#include "mission/action_states.h"
 #include <msgs/IntStamped.h>
 using namespace std;
 using namespace ros;
