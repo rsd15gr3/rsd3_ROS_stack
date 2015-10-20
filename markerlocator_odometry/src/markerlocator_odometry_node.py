@@ -17,7 +17,7 @@ class MarkerLocatorOdometryNode:
         self.cov_rot = rospy.get_param("~covariance_rot", 99999)
 
         # Publishers
-        self.gps_pub = rospy.Publisher("gps_meas", Odometry, queue_size=1)
+        self.gps_pub = rospy.Publisher("odom_gps", Odometry, queue_size=1)
 
         # Socket connection to the MarkerLocator server
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # SOCK_STREAM is a TCP socket
