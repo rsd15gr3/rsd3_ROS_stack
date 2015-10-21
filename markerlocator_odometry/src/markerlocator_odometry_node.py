@@ -2,74 +2,71 @@
 
 import rospy
 import socket
+import tf
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Quaternion
 
 
 class MarkerLocatorOdometryNode:
     def __init__(self):
         # Params
-        host = rospy.get_param("~host", '10.115.253.233')
-        port = rospy.get_param("~port", 21212)
+        self.host = rospy.get_param("~host", '10.115.253.233')
+        self.port = rospy.get_param("~port", 21212)
         self.frame_id = rospy.get_param("~frame_id", "base_link")
-        self.cov_x = rospy.get_param("~covariance_x", 0.01)
-        self.cov_y = rospy.get_param("~covariance_y", 0.01)
-        self.cov_z = rospy.get_param("~covariance_z", 0.01)
-        self.cov_rot = rospy.get_param("~covariance_rot", 99999)
+        self.cov_diag_list = rospy.get_param("~pose_covariance_diagonal", [0.001, 0.001, 99999, 99999, 99999, 0.001])
+        self.time_offset = rospy.get_param("~time_offset", 0.0)
 
         # Publishers
-        self.gps_pub = rospy.Publisher("odom_gps", Odometry, queue_size=1)
-
-        # Socket connection to the MarkerLocator server
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # SOCK_STREAM is a TCP socket
-        self.sock.connect((host, port))
+        self.odom_gps_pub = rospy.Publisher("odom_gps", Odometry, queue_size=1)
 
         # Loop
-        self.rate = rospy.Rate(30)
+        self.rate = rospy.Rate(1)
         self.loop()
 
-    def get_marker5_position(self):
-        sent = self.sock.send("Get position 5")
+    def get_marker7_position(self):
+        # Socket connection to the MarkerLocator server
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # SOCK_STREAM is a TCP socket
+        sock.connect((self.host, self.port))
+        sent = sock.send("get position 7")
 
         if sent == 0:
-            raise RuntimeError("Connection broken")
+            raise RuntimeError("Connection lost: Send failed")
 
-        reply = self.sock.recv(16384)  # limit reply to 16K
+        reply = sock.recv(16384)  # limit reply to 16K
 
         if reply == '':
-            raise RuntimeError("Connection broken")
+            raise RuntimeError("Connection lost: Empty reply")
 
-        return reply
+        sock.close()
 
-    def publish_gps_message(self, position):
+        s = reply.strip().split(",")
+        return {"order": s[0], "x": float(s[1]), "y": float(s[2]), "angle": float(s[3]), "quality": float(s[4])}
+
+    def publish_odom_gps_message(self, marloc):
         msg = Odometry()
-        msg.header.stamp = rospy.Time.now()
+        msg.header.stamp = rospy.Time.now() + rospy.Duration(self.time_offset)
         msg.header.frame_id = self.frame_id
-        msg.pose.pose.position.x = position[0]
-        msg.pose.pose.position.y = position[1]
-        msg.pose.pose.position.z = position[2]
-        msg.pose.pose.orientation.x = 1  # identity quaternion
-        msg.pose.pose.orientation.y = 0
-        msg.pose.pose.orientation.z = 0
-        msg.pose.pose.orientation.w = 0
-        msg.pose.covariance = [self.cov_x, 0, 0, 0, 0, 0,  # covariance on x
-                               0, self.cov_y, 0, 0, 0, 0,  # covariance on y
-                               0, 0, self.cov_z, 0, 0, 0,  # covariance on z
-                               0, 0, 0, self.cov_rot, 0, 0,  # large covariance on rot x
-                               0, 0, 0, 0, self.cov_rot, 0,  # large covariance on rot y
-                               0, 0, 0, 0, 0, self.cov_rot]  # large covariance on rot z
-        self.gps_pub.publish(msg)
+        msg.pose.pose.position.x = marloc["x"]
+        msg.pose.pose.position.y = marloc["y"]
+        q = tf.transformations.quaternion_from_euler(0, 0, marloc["angle"])
+        msg.pose.pose.orientation = Quaternion(*q)
+        msg.pose.covariance = [self.cov_diag_list[0], 0, 0, 0, 0, 0,  # x
+                               0, self.cov_diag_list[1], 0, 0, 0, 0,  # y
+                               0, 0, self.cov_diag_list[2], 0, 0, 0,  # z
+                               0, 0, 0, self.cov_diag_list[3], 0, 0,  # rot x
+                               0, 0, 0, 0, self.cov_diag_list[4], 0,  # rot y
+                               0, 0, 0, 0, 0, self.cov_diag_list[5]]  # rot z
+        self.odom_gps_pub.publish(msg)
 
     def loop(self):
         while not rospy.is_shutdown():
-            loc = self.get_marker5_position()
-            # self.publish_gps_message(position)
-            print loc
+            marloc = self.get_marker7_position()
+            self.publish_odom_gps_message(marloc)
             self.rate.sleep()
 
-        self.sock.close()
 
 if __name__ == '__main__':
-    rospy.init_node('markerlocator_odometry_node')
+    rospy.init_node("markerlocator_odometry_node")
 
     try:
         node = MarkerLocatorOdometryNode()
