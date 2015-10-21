@@ -8,8 +8,19 @@
 
 int loopRate = 10;
 
+int currentState = BOX_CHARGE;
+
 //Publishers
 ros::Publisher action_publisher;
+
+//Subscribers
+ros::Subscriber state_subscriber;
+
+void stateCallback(const msgs::IntStamped::ConstPtr& msg)
+{
+    msgs::IntStamped _msg = *msg;
+    currentState = _msg.data;
+}
 
 int main(int argc, char **argv)
 {
@@ -19,6 +30,10 @@ int main(int argc, char **argv)
 
 	//init publishers
 	action_publisher = nodeHandler.advertise<msgs::IntStamped>("mission/deque",1);
+
+	//init subscribers
+    	state_subscriber = nodeHandler.subscribe("mission/action_state", 1, stateCallback);
+
 
 	Nodes graph;
 	graph.Construct();
