@@ -40,7 +40,7 @@ class MarkerLocatorOdometryNode:
         sock.close()
 
         s = reply.strip().split(",")
-        return {"order": s[0], "x": float(s[1]), "y": float(s[2]), "angle": float(s[3]), "quality": float(s[4])}
+        return {"order": s[0], "timestamp": float(s[1]), "x": float(s[2]), "y": float(s[3]), "angle": float(s[4])}
 
     def publish_odom_gps_message(self, marloc):
         msg = Odometry()
