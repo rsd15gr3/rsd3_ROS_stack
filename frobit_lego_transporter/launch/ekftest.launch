@@ -69,9 +69,10 @@
 
         <!-- MarkerLocator "GPS" -->
         <node pkg="markerlocator_odometry" name="markerlocator_odometry" type="markerlocator_odometry_node.py" output="screen">
+            <remap from="odom_marloc" to="/fmKnowledge/odom_marloc"/>
             <param name="host" value="10.115.253.233" />
             <param name="port" value="21212" />
-            <param name="frame_id" value="base_link" />
+            <param name="frame_id" value="marker_link" />
             <param name="time_offset" type="double" value="-0.001" />
             <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 99999, 99999, 99999, 0.001]</rosparam>
         </node>
@@ -123,7 +124,7 @@
 
                   <param name="transform_time_offset" value="0.0"/>
                   <param name="odom0" value="/fmKnowledge/odom"/>
-                  <param name="odom1" value="/fmKnowledge/odom_gps"/>
+                  <param name="odom1" value="/fmKnowledge/odom_marloc"/>
                   <param name="imu0" value="/fmInformation/imu"/>
 
                   <rosparam param="odom0_config">[true, true, false,              <!-- x, y, z -->
