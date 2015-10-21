@@ -34,9 +34,9 @@
             <param name="imu_pub" value="/fmInformation/imu" />
             <param name="frame_id" value="imu_link" />
             <param name="use_enu" value="true" />
-            <param name="covariance_x" value="0.001" />
-            <param name="covariance_y" value="0.001" />
-            <param name="covariance_z" value="0.001" />
+            <param name="covariance_x" value="0.01" />
+            <param name="covariance_y" value="0.01" />
+            <param name="covariance_z" value="0.01" />
         </node>
 
         <!-- SICK laser scanner -->
@@ -92,23 +92,23 @@
             <param name="odom0" value="/fmKnowledge/odom"/>
             <param name="imu0" value="/fmInformation/imu"/>
 
-            <rosparam param="odom0_config">[true, true, false,             <!-- x, y, z -->
-                                            false, false, false,           <!-- roll, pitch, yaw -->
-                                            false, false, false,           <!-- x velocity, y velocity, z velocity -->
-                                            false, false, true,            <!-- roll velocity, pitch velocity, yaw velocity -->
+            <rosparam param="odom0_config">[true, true, false,              <!-- x, y, z -->
+                                            false, false, true,             <!-- roll, pitch, yaw -->
+                                            true, false, false,             <!-- x velocity, y velocity, z velocity -->
+                                            false, false, true,             <!-- roll velocity, pitch velocity, yaw velocity -->
                                             false, false, false]</rosparam> <!-- x accel., y accel., z accel. -->
             <rosparam param="imu0_config">[true, true, true,
                                            true, true, true,
-                                           false, false, false,
-                                           false, false, false,
-                                           false, false, false]</rosparam>
+                                           true, true, true,
+                                           true, true, true,
+                                           true, true, true]</rosparam>
             <param name="odom0_differential" value="true"/>
             <param name="imu0_differential" value="false"/>
             <param name="odom0_relative" value="false"/>
             <param name="imu0_relative" value="true"/>
 
-            <param name="imu0_remove_gravitational_acceleration" value="false"/> <!-- FIXME -->
-            <param name="print_diagnostics" value="true"/> <!-- FIXME -->
+            <param name="imu0_remove_gravitational_acceleration" value="false"/>
+            <param name="print_diagnostics" value="true"/>
         </node>
 
         <!-- MAP EKF -->
