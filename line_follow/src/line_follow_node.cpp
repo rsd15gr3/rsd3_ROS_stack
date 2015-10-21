@@ -1,7 +1,6 @@
 #include "pid_controller.h"
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <msgs/row.h>
 #include <msgs/IntStamped.h>
 #include <cmath>
 #include <msgs/FloatArrayStamped.h>
@@ -16,6 +15,7 @@ void lineCb(const line_detection::line::ConstPtr &wallPtr);
 void lineEnableCb(const msgs::IntStamped &enable);
 double getMovingGoalTargetAngle();
 void pidCb(const ros::TimerEvent &);
+void actionStateCb(const msgs::IntStamped& action_state);
 
 Publisher commandPub;
 Publisher pidDebugPub;
@@ -35,7 +35,7 @@ double feedFordSpeed = 0;
 bool lineFollowEnabled = false;
 
 string lineTopicName = "";
-string automodeTopicName = "";
+string actionTopicName = "";
 string pidDebugPubName = "";
 string commandPubName = "";
 
@@ -55,16 +55,16 @@ int main(int argc, char **argv)
     n.param<double>("target_dist", targetDist, 0.6);
     n.param<double>("forward_speed", feedFordSpeed, 0.4);
     n.param<string>("line_sub", lineTopicName, "perception/line");
-    n.param<string>("automode_sub", automodeTopicName, "/automode");
+    n.param<string>("action_topic", actionTopicName, "mission/action_state");
     n.param<string>("pid_debug_pub", pidDebugPubName, "/debug/pid_pub");
     n.param<string>("command_pub", commandPubName, "/fmCommand/cmd_vel");
 
     ros::Subscriber errorSub = n.subscribe(lineTopicName, 1, lineCb);
-    ros::Subscriber enableSub = n.subscribe(automodeTopicName, 1, lineEnableCb);
+    ros::Subscriber enableSub = n.subscribe(actionTopicName, 1, lineEnableCb);
 
     commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName, 1);
     pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
-
+    n.subscribe(actionTopicName, 1, &actionStateCb);
     double updateInterval = 1.0 / updateRate;
     ros::Timer timerPid = n.createTimer(ros::Duration(updateInterval), pidCb);
 
@@ -111,4 +111,11 @@ double getMovingGoalTargetAngle()
 void lineEnableCb(const msgs::IntStamped &enable)
 {
     lineFollowEnabled = (enable.data == 1);
+}
+void actionStateCb(const msgs::IntStamped& action_state)
+{
+    if(action_state.data == LINE_GPS || action_state.data == LINE_TIPPER)
+    {
+        lineFollowEnabled = true;
+    }
 }
