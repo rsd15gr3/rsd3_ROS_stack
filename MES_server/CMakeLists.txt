@@ -10,11 +10,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   mission
 )
-catkin_package(CATKIN_DEPENDS )
+catkin_package()
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ${mission_INCLUDE_DIRS}
 )
 
 ## Declare a C++ executable

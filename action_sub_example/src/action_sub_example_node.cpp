@@ -1,7 +1,9 @@
 #include <ros/ros.h>
 #include <std_msgs/Int32.h>
-#include "mission/action_states.h"
 #include <msgs/IntStamped.h>
+
+#include "mission/action_states.h"
+
 using namespace std;
 using namespace ros;
 
