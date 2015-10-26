@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(CATKIN_DEPENDS)
 
 # Check launch files in launch/ for errors
-roslaunch_add_file_check(launch)
+# roslaunch_add_file_check(launch)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
