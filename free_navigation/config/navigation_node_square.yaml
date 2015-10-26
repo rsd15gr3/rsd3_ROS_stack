@@ -1,0 +1,18 @@
+
+base_link_id: /map #base_link
+action_topic: mission/action_state
+# waypoints formated as x, y, yaw(radians)
+line_to_manipulator: 
+  [1.0, 0.0, 0.0] # 3pi/4
+line_from_manipulator:
+  [2., 0.0, 1.5708 ]
+load_bricks:
+  [1.0, 1.0, 4.7124]
+charge:
+  [2.0, 1.0, 3.14]
+
+# line to manipulator = 7
+# line from =   8
+# charge 4
+# load bricks = 5
+# 7  8 4 5

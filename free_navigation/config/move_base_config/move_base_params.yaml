@@ -1,0 +1,17 @@
+footprint_padding: 0.01 
+shutdown_costmaps: false
+base_global_planner: global_planner/GlobalPlanner # navfn/NavfnROS # global_planner
+planner_patience: 10.0 
+
+controller_frequency: 10.0 
+controller_patience: 15.0 
+oscillation_timeout: 20.0 
+oscillation_distance: 0.5 
+conservative_reset_dist: 3.0 
+
+recovery_behaviors: [
+  {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}, 
+  {name: rotate_recovery, type: rotate_recovery/RotateRecovery},
+  {name: aggressive_reset, type: clear_costmap_recovery/ClearCostmapRecovery} 
+]
+meter_scoring: true  

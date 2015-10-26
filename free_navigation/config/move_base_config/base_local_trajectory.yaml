@@ -1,0 +1,55 @@
+#For full documentation of the parameters in this file, and a list of all the
+#parameters available for TrajectoryPlannerROS, please see
+# http://wiki.ros.org/base_local_planner#TrajectoryPlannerROS
+
+TrajectoryPlannerROS:
+
+## Robot Configuration Parameters
+  #Acceleration limits
+  acc_lim_x: 16.2
+  acc_lim_y: 0.0
+  acc_lim_theta: 16.0 
+  #Velocity limits
+  max_vel_x: 1.2
+  min_vel_x: 0.0
+
+  max_vel_theta: 1.0
+  min_vel_theta: 0.0
+  min_in_place_vel_theta: 0.0
+
+  holonomic_robot: false
+  escape_vel: -0.1
+  holonomic_robot: false
+## Goal Tolerance Parameters
+  #Set the tolerance on achieving a goal
+  xy_goal_tolerance: 0.05
+  yaw_goal_tolerance: 0.025
+  latch_xy_goal_tolerance: false 
+
+#Forward simulate trajectories
+  sim_time: 1.0
+  sim_granularity: 0.025
+  angular_sim_granularity: 0.025
+  vx_samples: 20
+  vy_samples: 0
+  vtheta_samples: 20
+
+
+##Parameters for scoring trajectories
+  meter_scoring: true
+  pdist_scale: 0.6
+  gdist_scale: 0.8
+  occdist_scale : 0.01
+  heading_lookahead : 0.1 # 0.325
+#  heading_scoring : true
+#  heading_scoring_timestep: 0.8
+  dwa: true
+
+  global_frame_id: odom
+
+
+  prune_plan: true
+  oscillation_reset_dist: 0.05
+
+  publish_traj_pc: true
+  publish_cost_grid_pc: true
