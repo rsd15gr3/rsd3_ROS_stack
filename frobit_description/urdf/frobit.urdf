@@ -1,0 +1,118 @@
+<robot name="frobit">
+  <link name="base_link">
+  </link>
+
+  <!-- Base footprint
+       The projection of base_link unto the ground.
+       See http://answers.ros.org/question/12770/base_link-to-base_footprint-transform/ -->
+  <link name="base_footprint">
+  </link>
+
+  <joint name="joint_base_footprint" type="fixed">
+    <parent link="base_link" />
+    <child link="base_footprint" />
+    <origin xyz="0 0 -0.11650" rpy="0 0 0" />
+  </joint>
+
+  <!-- Lower chassis -->
+  <link name="lower_chassis">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.43 0.32 0.015"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_lower_chassis" type="fixed">
+    <parent link="base_link" />
+    <child link="lower_chassis" />
+    <origin xyz="0.105 0 0" rpy="0 0 0" />
+  </joint>
+
+  <!-- Left wheel -->
+  <link name="left_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796 0 0" />
+      <geometry>
+        <cylinder length="0.02" radius="0.109" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_left_wheel" type="continuous">
+    <parent link="lower_chassis" />
+    <child link="left_wheel" />
+    <origin xyz="-0.105 -0.17 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" rpy="0 0 0" />
+  </joint>
+
+  <!-- Right wheel -->
+  <link name="right_wheel">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.570796 0 0" />
+      <geometry>
+        <cylinder length="0.02" radius="0.109" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_right_wheel" type="continuous">
+    <parent link="lower_chassis" />
+    <child link="right_wheel" />
+    <origin xyz="-0.105 0.17 0" rpy="0 0 0" />
+    <axis xyz="0 1 0" rpy="0 0 0" />
+  </joint>
+
+  <!-- Marker mount -->
+  <link name="marker_link">
+  </link>
+
+  <joint name="joint_marker_link" type="fixed">
+    <parent link="lower_chassis" />
+    <child link="marker_link" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
+  <!-- SICK TiM310 laser scanner -->
+  <link name="laser_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.06 0.06 0.075" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_base_laser" type="fixed">
+    <parent link="lower_chassis" />
+    <child link="laser_link" />
+    <origin xyz="0.18 0 0.05" rpy="0 0 0" />
+  </joint>
+
+  <!-- VN-100 IMU -->
+  <link name="imu_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.036 0.033 0.009" />
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint_imu" type="fixed">
+    <parent link="lower_chassis" />
+    <child link="imu_link" />
+    <origin xyz="0.125 0 0.017" rpy="0 0 0" />
+  </joint>
+
+  <!-- Camera -->
+  <link name="camera_link">
+  </link>
+
+  <joint name="joint_camera" type="fixed">
+    <parent link="lower_chassis" />
+    <child link="camera_link" />
+    <origin xyz="0.21 0.022 0.13" rpy="0 1.15 0" />
+  </joint>
+</robot>

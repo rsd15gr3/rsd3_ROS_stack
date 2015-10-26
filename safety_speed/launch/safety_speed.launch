@@ -1,0 +1,15 @@
+<!-- Safety speed launch file -->
+
+<launch>
+    <node pkg="safety_speed" name="obstacle_detector" type="lidar_obstacle_node.py" output="screen">
+        <param name="reg_ratio_topic" value="/reg_ratio"/>
+        <param name="scan_topic" value="/scan"/>
+    </node>
+
+    <node pkg="safety_speed" name="safety_speed" type="safety_speed_node.py" output="screen">
+        <param name="vel_topic" value="/fmCommand/cmd_vel"/>
+        <param name="safe_vel_topic" value="/safe_vel"/>
+        <param name="reg_ratio_topic" value="/reg_ratio"/>
+    </node>
+</launch>
+
