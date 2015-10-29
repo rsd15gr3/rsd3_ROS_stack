@@ -218,8 +218,8 @@
             <param name="keyboard_sub" value="/fmHMI/keyboard"/>
             <param name="remote_control_pub" value="/fmHMI/remote_control"/>
         </node>
-        <node pkg="keyboard_interface" type="keyboard_node" name="keyboard">
+        <!-- <node pkg="keyboard_interface" type="keyboard_node" name="keyboard">
             <param name="keyboard_pub" value="/fmHMI/keyboard" />
-        </node>
+        </node> -->
     </group>
 </launch>
