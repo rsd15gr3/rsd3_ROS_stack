@@ -7,13 +7,16 @@
     <remap from="/odom" to="/base_pose_ground_truth" />  <!-- for GPS -->
 
     <rosparam file="$(find free_navigation)/config/move_base_config/move_base_params.yaml" command="load" />
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />  
+    <rosparam file="$(find free_navigation)/config/move_base_config/dwa_local_planner_params.yaml" command="load" />
+
+<!--   
     <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS" /> 
     <rosparam file="$(find free_navigation)/config/move_base_config/base_local_trajectory.yaml" command="load" /> 
 
-<!--   
 
-    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS " />  
-    <rosparam file="$(find free_navigation)/config/move_base_config/dwa_local_planner_params.yaml" command="load" />
+
+
 -->
 
     <rosparam file="$(find free_navigation)/config/move_base_config/costmap_common_params.yaml" command="load" ns="global_costmap" />

@@ -10,11 +10,11 @@ TrajectoryPlannerROS:
   acc_lim_y: 0.0
   acc_lim_theta: 16.0 
   #Velocity limits
-  max_vel_x: 1.2
+  max_vel_x: 0.5 # max = 1.2
   min_vel_x: 0.0
 
   max_vel_theta: 1.0
-  min_vel_theta: 0.0
+  min_vel_theta: -1.0
   min_in_place_vel_theta: 0.0
 
   holonomic_robot: false
@@ -34,15 +34,14 @@ TrajectoryPlannerROS:
   vy_samples: 0
   vtheta_samples: 20
 
-
 ##Parameters for scoring trajectories
   meter_scoring: true
   pdist_scale: 0.6
-  gdist_scale: 0.8
+  gdist_scale: 0.08
   occdist_scale : 0.01
-  heading_lookahead : 0.1 # 0.325
-#  heading_scoring : true
-#  heading_scoring_timestep: 0.8
+  heading_lookahead : 0.325
+  #heading_scoring : true
+  #heading_scoring_timestep: 0.8
   dwa: true
 
   global_frame_id: odom

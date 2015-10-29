@@ -1,4 +1,4 @@
-footprint_padding: 0.01 
+footprint_padding: 0.05 
 shutdown_costmaps: false
 base_global_planner: global_planner/GlobalPlanner # navfn/NavfnROS # global_planner
 planner_patience: 10.0 

@@ -5,21 +5,24 @@
 DWAPlannerROS:
 
 ## Robot Configuration Parameters
-  #Acceleration limits
+  prune_plan: true
+    
+#Acceleration limits
   acc_lim_x: 16.2
   acc_lim_y: 16.2
-  acc_lim_th: 16.0 
+  acc_lim_theta: 16.0 
+  acc_limit_trans: 16.0
   #Velocity limits
 
-  max_trans_vel: 1.2
+  max_trans_vel: 0.5
   min_trans_vel: 0.0
-  max_vel_x: 1.2
+  max_vel_x: 0.5
   min_vel_x: 0.0
   max_vel_y: 0.0
   min_vel_y: 0.0
 
   max_rot_vel: 1.0
-  min_rot_vel: 0.0
+  min_rot_vel: -1.0
 
   holonomic_robot: false
 
@@ -30,25 +33,25 @@ DWAPlannerROS:
   latch_xy_goal_tolerance: false 
 
 #Forward simulate trajectories
-  sim_time: 3.7
+  sim_time: 1.7
   sim_granularity: 0.05
   vx_samples: 50
   vy_samples: 20
-  vtheta_samples: 30
-
+  vtheta_samples: 50
+  
 
 ##Parameters for scoring trajectories
-  path_distance_bias: 32.0
-  goal_distance_bias: 24.0
-  occdist_scale : 0.01
+  path_distance_bias: 10.0
+  goal_distance_bias: 1.0
+  occdist_scale : 0.1
   forward_point_distance: 0.325
   stop_time_buffer: 0.2
   scaling_speed: 0.25
   max_scaling_factor: 0.3
-
+  
   global_frame_id: odom
 
   oscillation_reset_dist: 0.05
-
+  oscillation_reset_angle: 3.14
   publish_traj_pc: true
   publish_cost_grid_pc: true

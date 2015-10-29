@@ -41,7 +41,7 @@ define laser_scanner ranger
 )
 define racking model
 (
-  size [0.7 2.0 1]
+  size [0.5 1.0 1]
   gui_nose 0    
   ranger_return 1 
     gui_move 1   
@@ -55,7 +55,7 @@ define obstacles model
   color "gray30"
    
   gui_move 0
-  boundary 1
+  boundary 0
   gui_nose 0
   gui_grid 0
 
@@ -104,6 +104,6 @@ define frobit position
    laser_scanner(pose [ 0.275 0 0 0 ])    
    obstacle_return 1
 )
-frobit(pose [ 4.75 4.0 0.0 0.0 ] name "Frobit" color "red")
-racking(pose [0.4 2.0 0 0] name "Left racking" color "brown")
+frobit(pose [ 4.5 3.5 0.0 0.0 ] name "Frobit" color "red")
+racking(pose [0.25 1.25 0 0] name "Left racking" color "brown")
 racking(pose [2.4 4.0 0 -90] name "right racking" color "brown")
