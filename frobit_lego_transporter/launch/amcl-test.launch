@@ -77,7 +77,8 @@
             <param name="encoder_output" value="absolute" />
             <param name="max_ticks_per_update" value="200" />
             <param name="yaw_angle_source" value="odometry" /> <!-- Do not use IMU as yaw source; EKF fuses the measurements -->
-            <param name="publish_transform" value="false" />
+            <param name="publish_transform" value="true" />
+            <param name="odom_frame" value="differential_odom" />
             <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
             <rosparam param="twist_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
         </node>
