@@ -108,19 +108,19 @@
             <param name="imu0" value="/fmInformation/imu"/>
 
             <!-- See http://wiki.ros.org/robot_localization/Tutorials/Sensor%20Configuration -->
-            <rosparam param="odom0_config">[false, false, false,            <!-- x, y, z -->
-                                            false, false, false,            <!-- roll, pitch, yaw -->
-                                            true, true, false,              <!-- x velocity, y velocity, z velocity -->
-                                            false, false, true,             <!-- roll velocity, pitch velocity, yaw velocity -->
+            <rosparam param="odom0_config">[true, true, false,            <!-- x, y, z -->
+                                            false, false, true,            <!-- roll, pitch, yaw -->
+                                            false, false, false,              <!-- x velocity, y velocity, z velocity -->
+                                            false, false, false,             <!-- roll velocity, pitch velocity, yaw velocity -->
                                             false, false, false]</rosparam> <!-- x accel., y accel., z accel. -->
             <rosparam param="imu0_config">[false, false, false,
                                            false, false, true,
-                                           false, false, false,
+                                           true, true, false,
                                            false, false, true,
-                                           true, false, false]</rosparam>
+                                           false, false, false]</rosparam>
 
-            <param name="odom0_differential" value="true"/>
-            <param name="imu0_differential" value="false"/>
+            <param name="odom0_differential" value="false"/>
+            <param name="imu0_differential" value="true"/>
             <param name="odom0_relative" value="false"/>
             <param name="imu0_relative" value="true"/>
 
