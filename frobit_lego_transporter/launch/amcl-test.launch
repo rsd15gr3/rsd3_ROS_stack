@@ -243,7 +243,7 @@
     <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_launch_sim)/world/box_and_surroundings.yaml" />
 
     <node pkg="amcl" type="amcl" name="amcl" respawn="true">
-        <!-- <remap from="scan" to="base_scan" /> -->
+        <remap from="scan" to="/fmSensors/scan" />
         <!-- Particle filter -->
         <param name="min_particles" value="500" />
         <param name="max_particles" value="5000" />
