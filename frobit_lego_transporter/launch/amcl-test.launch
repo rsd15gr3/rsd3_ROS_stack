@@ -298,7 +298,7 @@
         <param name="odom_alpha5" value="0." />
 -->
         <param name="odom_frame_id" value="odom" />
-        <param name="base_fram_id" value="base_link" />
+        <param name="base_frame_id" value="base_link" />
         <param name="global_fram_id" value="map" />
         <param name="tf_broadcast" value="true" />
     </node>
