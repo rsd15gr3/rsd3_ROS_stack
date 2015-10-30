@@ -124,7 +124,7 @@
             <param name="odom0_relative" value="false"/>
             <param name="imu0_relative" value="true"/>
 
-            <param name="imu0_remove_gravitational_acceleration" value="false"/>
+            <param name="imu0_remove_gravitational_acceleration" value="true"/>
             <param name="print_diagnostics" value="true"/>
         </node>
 
@@ -258,9 +258,9 @@
         <param name="recovery_alpha_fast" value="0.0" />
 
         <!-- Inital pose -->
-        <param name="initial_pose_x" value="0.0" />
-        <param name="initial_pose_y" value="0.0" />
-        <param name="initial_pose_a" value="0.0" />
+        <param name="initial_pose_x" value="4.5" />
+        <param name="initial_pose_y" value="2.3" />
+        <param name="initial_pose_a" value="0.7" />
         <param name="initial_pose_xx" value="0.25" />
         <param name="initial_pose_yy" value="0.25" />
         <param name="initial_pose_aa" value="0.0685" />
@@ -272,7 +272,7 @@
         <param name="first_map_only" value="true" />
         <!-- Laser model parameters -->
         <param name="laser_min_range" value="0.05" /> <!-- -1 to use lasers reported range -->
-        <param name="laser_max_range" value="3.5" />
+        <param name="laser_max_range" value="4.0" />
         <param name="laser_max_beams" value="270" />
         <param name="laser_z_hit" value="0.95" />
         <param name="laser_z_short" value="0.1" />
