@@ -126,6 +126,7 @@
     <param name="cross_width" value="210" />
     <param name="threshold_gray" value="95" />
     <param name="camera_frame_id" value="camera_link" />
+    <param name="show_lines" value="true" />
  </node>
 
 </launch>
