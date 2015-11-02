@@ -4,6 +4,7 @@
 #include <msgs/IntStamped.h>
 #include <cmath>
 #include <msgs/FloatArrayStamped.h>
+#include <msgs/StringStamped.h>
 #include <vector>
 #include <mission/action_states.h>
 #include <line_detection/line.h>
@@ -16,6 +17,8 @@ void lineEnableCb(const msgs::IntStamped &enable);
 double getMovingGoalTargetAngle();
 void pidCb(const ros::TimerEvent &);
 void actionStateCb(const msgs::IntStamped& action_state);
+void turningLeft(const msgs::StringStamped &qr_detected);
+void encoder_left_callback(const msgs::IntStamped &ticks);
 
 Publisher commandPub;
 Publisher pidDebugPub;
@@ -34,10 +37,15 @@ double maxI = 0;
 double feedFordSpeed = 0;
 bool lineFollowEnabled = false;
 
+int moveForwardTicks = 0;
+
 string lineTopicName = "";
 string actionTopicName = "";
 string pidDebugPubName = "";
 string commandPubName = "";
+
+string turningTopicName = "";
+string encoderTopicName = "";
 
 Pid_controller heading_controller;
 
@@ -54,11 +62,17 @@ int main(int argc, char **argv)
     n.param<double>("drive_max_i", maxI, 0.1);
     n.param<double>("target_dist", targetDist, 0.6);
     n.param<double>("forward_speed", feedFordSpeed, 0.4);
+
+    n.param<string>("qr_sub", turningTopicName, "/perception/qr_tag");
+    n.param<string>("left_encoder_sub", encoderTopicName, "/fmInformation/enconder_left");
+
     n.param<string>("line_sub", lineTopicName, "/line_detector/perception/line");
     n.param<string>("action_topic", actionTopicName, "/mission/action_state");   
     n.param<string>("pid_debug_pub", pidDebugPubName, "/debug/pid_pub");
     n.param<string>("command_pub", commandPubName, "/fmCommand/cmd_vel");
 
+    ros::Subscriber leftEncoder = n.subscribe(encoderTopicName, 1, encoder_left_callback);
+    ros::Subscriber turning = n.subscribe(turningTopicName, 1, turningLeft);
     ros::Subscriber errorSub = n.subscribe(lineTopicName, 1, lineCb);
     ros::Subscriber enableSub = n.subscribe(actionTopicName, 1, lineEnableCb);
 
@@ -79,10 +93,10 @@ void pidCb(const ros::TimerEvent &)
 {
     if (lineFollowEnabled) {
         geometry_msgs::TwistStamped twistedStamped;
-        twistedStamped.twist.linear.x = feedFordSpeed;
+        twistedStamped.twist.linear.x = 0; //feedFordSpeed;
         twistedStamped.header.stamp = ros::Time::now();
         double movingGoalTargetAngle = getMovingGoalTargetAngle();
-        twistedStamped.twist.angular.z = heading_controller.update(movingGoalTargetAngle);
+        twistedStamped.twist.angular.z = 0;//heading_controller.update(movingGoalTargetAngle);
         commandPub.publish(twistedStamped);
 
         // publish PID debug msgs TODO: disable debug publish
@@ -119,4 +133,35 @@ void actionStateCb(const msgs::IntStamped& action_state)
         lineFollowEnabled = true;
         ROS_INFO("line activated");
     }
+}
+
+void encoder_left_callback(const msgs::IntStamped &ticks){
+    moveForwardTicks = moveForwardTicks + 1;
+}
+
+void turningLeft(const msgs::StringStamped &qr_detected)
+{
+    if (qr_detected.data == "wc_3_entrance")
+    lineFollowEnabled = 0;
+    int positionZeroTicks = moveForwardTicks;
+
+    while(moveForwardTicks - positionZeroTicks < 340){
+        geometry_msgs::TwistStamped twistedStamped;
+        twistedStamped.twist.linear.x = feedFordSpeed * 0.5;
+        twistedStamped.header.stamp = ros::Time::now();
+        twistedStamped.twist.angular.z = 0;
+        commandPub.publish(twistedStamped);
+    }
+
+    positionZeroTicks = moveForwardTicks;
+    while(moveForwardTicks - positionZeroTicks < 400){
+        geometry_msgs::TwistStamped twistedStamped;
+        twistedStamped.twist.linear.x = 0;
+        twistedStamped.header.stamp = ros::Time::now();
+        twistedStamped.twist.angular.z = - 0.2;
+        commandPub.publish(twistedStamped);
+    }   
+
+    lineFollowEnabled = 1;
+
 }
