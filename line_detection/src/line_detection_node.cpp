@@ -44,7 +44,7 @@ bool verification = false; /* Verify is set true when is likley that a "precepti
 int threshold_gray = 105;
 double threshold_top, threshold_bot;
 int line_width = 60;
-int cross_width = 300;
+double line_to_cross_scale = 3.0;
 string camera_frame_id;
 bool show_line_enb;
 // TODO: read in camera matrix from file or camera
@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     threshold_top = threshold_gray; 
     threshold_bot = threshold_gray;
     n.param<int>("line_width", line_width, 60);
-    n.param<int>("cross_width",cross_width, 300);
+    n.param<double>("line_to_cross_scale",line_to_cross_scale, 3.0);
     int verify_pub_rate;
     n.param<int>("verification_pub_rate", verify_pub_rate, 5);
     string verification_topic;
@@ -234,7 +234,7 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
                     type = Line_type::LINE;
                     mid = start+width/2;
                 }
-                if(total_width > (lineWidth(line)*2+10))
+                if(total_width > (lineWidth(line)*line_to_cross_scale+10))
                 {
                     type = Line_type::CROSS;
                 }
