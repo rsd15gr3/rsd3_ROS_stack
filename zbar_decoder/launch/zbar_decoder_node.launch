@@ -1,0 +1,8 @@
+<launch>
+  <group ns="perception">
+    <node name="zbar_decoder_node" pkg="zbar_decoder" type="zbar_decoder_node" respawn="false" output="screen" >
+      <remap from="/tag" to="qr_tag" />
+      <rosparam param="known_qr_codes" file="$(find zbar_decoder)/config/known_qr_codes.yaml" command="load"/>
+    </node>
+  </group>
+</launch>
