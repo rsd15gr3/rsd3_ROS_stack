@@ -109,9 +109,9 @@
  <node name="line_pid_control" pkg="line_pid" type="line_pid_node" output="screen" > 
     <param name="update_rate" value="20"/>
     <param name="drive_kp" value="1.0"/>
-    <param name="drive_ki" value="0.00"/>
-    <param name="drive_kd" value="0.0"/>
-    <param name="drive_max_i" value="3" />
+    <param name="drive_ki" value="0.05"/>
+    <param name="drive_kd" value="0.5"/>
+    <param name="drive_max_i" value="1" />
     <param name="drive_feed_forward" value="0.00"/>
     <param name="drive_max_output" value="0.4"/>
     <param name="forward_speed" value="0.3" />
