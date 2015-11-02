@@ -41,11 +41,12 @@ ros::Publisher line_pub;
 ros::Publisher verify_pub;
 
 bool verification = false; /* Verify is set true when is likley that a "preception" is valid, */
-int threshold_gray = 120;
+int threshold_gray = 105;
 double threshold_top, threshold_bot;
 int line_width = 60;
 int cross_width = 300;
 string camera_frame_id;
+bool show_line_enb;
 // TODO: read in camera matrix from file or camera
 vector<double> cam_mat {1232.801045, 0, 640, 0, 1240.089791, 360, 0, 0, 1};
 const double f_x = 1232.801045;
@@ -58,7 +59,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "line_detector");
     ros::NodeHandle n("~");
-    n.param<int>("threshold_gray",threshold_gray, 120);
+    n.param<int>("threshold_gray",threshold_gray, 105);
     threshold_top = threshold_gray; 
     threshold_bot = threshold_gray;
     n.param<int>("line_width", line_width, 60);
@@ -68,15 +69,15 @@ int main(int argc, char** argv)
     string verification_topic;
     n.param<string>("verification_topic", verification_topic, "line_verify");
     string line_topic;
-    n.param<string>("line_topic", line_topic, "line");    
-    n.param<string>("camera_frame_id", camera_frame_id, "camera_link");
-    bool show_line_enb;
+    n.param<string>("line_topic", line_topic, "/line_detector/perception/line");
+    n.param<string>("camera_frame_id", camera_frame_id, "camera_link");    
     n.param<bool>("show_lines", show_line_enb, false);
     image_transport::ImageTransport it(n);
     image_transport::Subscriber image_sub;
     image_sub = it.subscribe("/usb_cam/image_raw", 1, &imageCb);
     verify_pub = n.advertise<msgs::BoolStamped>(verification_topic,1);
     line_pub = n.advertise<line_detection::line>(line_topic,1);
+    image_pub = it.advertise("line_debug_image", 1);
     ros::Timer timeVerify = n.createTimer(ros::Duration(1.0 / verify_pub_rate), verifyPubCb);
     ros::spin();
     return 0;
@@ -136,6 +137,8 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     {
         verification = true;
     } else {
+        threshold_top = threshold_gray;
+        threshold_bot = threshold_gray;
         //ROS_WARN("No valid line found");
     }
 
@@ -165,31 +168,33 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     {
         angle=0;
         offset=0;
+    }    
+    if(show_line_enb) {
+        // Publish line pose
+        line_detection::line line_msg;
+        line_msg.header.stamp = ros::Time::now();
+        line_msg.header.frame_id = ""; // TODO:
+        line_msg.angle = angle;
+        line_msg.offset = offset;
+        line_pub.publish(line_msg);
+
+        // Debug plot ( TODO: move debug plot to other node )
+        Mat line_img;
+        cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
+
+        threshold(cv_ptr->image, line_img,threshold_top,255,0);
+        cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
+        //cv::circle(line_img, Point(cv_ptr->image.cols/2+offset,0), 2, 100, 2);
+        imshow("lines top", line_img);
+
+        threshold(cv_ptr->image, line_img,threshold_bot,255,0);
+        cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
+        //imshow("lines bot", line_img);
+
+        //cv::waitKey(1);
+        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", line_img).toImageMsg();
+        image_pub.publish(msg);
     }
-
-    // Publish line pose
-    line_detection::line line_msg;
-    line_msg.header.stamp = ros::Time::now();
-    line_msg.header.frame_id = ""; // TODO:
-    line_msg.angle = angle;
-    line_msg.offset = offset;
-    line_pub.publish(line_msg);
-
-    // Debug plot ( TODO: move debug plot to other node )
-    Mat line_img;
-    cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
-
-    threshold(cv_ptr->image, line_img,threshold_top,255,0);
-    cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
-    //cv::circle(line_img, Point(cv_ptr->image.cols/2+offset,0), 2, 100, 2);
-    imshow("lines top", line_img);
-
-    threshold(cv_ptr->image, line_img,threshold_bot,255,0);
-    cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
-    //cv::circle(line_img, Point(cv_ptr->image.cols/2+offset,0), 2, 100, 2);
-    imshow("lines bot", line_img);
-
-    cv::waitKey(1);
 }
 
 inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray, int &mid)
