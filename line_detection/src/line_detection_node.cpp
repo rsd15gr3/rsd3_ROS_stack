@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <vector>
+#include <list>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
@@ -24,7 +25,6 @@ namespace line_types
         NO_LINE,
         LINE,
         CROSS,
-        MULTIPLE_LINES,
     };
 }
 typedef line_types::Line_type Line_type;
@@ -33,18 +33,21 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg);
 void camInfoCb(const sensor_msgs::CameraInfoConstPtr& info_msg);
 inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray, int &mid);
 void verifyPubCb(const ros::TimerEvent &);
+void getRow(Mat Image, Mat &lineImage, int line);
+void getColumn(Mat Image, Mat &lineImage, int line);
 double lineWidth(int line);
+uchar runningAverage(uchar value);
 
 image_transport::Publisher image_pub;
 
 ros::Publisher line_pub;
 ros::Publisher verify_pub;
 
-bool verification = false; /* Verify is set true when is likley that a "preception" is valid, */
-int threshold_gray = 120;
+bool verification = false;
 double threshold_top, threshold_bot;
-int line_width = 60;
-int cross_width = 300;
+int line_width, cross_width, threshold_gray;
+std::list<uchar> average;
+
 string camera_frame_id;
 // TODO: read in camera matrix from file or camera
 vector<double> cam_mat {1232.801045, 0, 640, 0, 1240.089791, 360, 0, 0, 1};
@@ -72,6 +75,7 @@ int main(int argc, char** argv)
     n.param<string>("camera_frame_id", camera_frame_id, "camera_link");
     bool show_line_enb;
     n.param<bool>("show_lines", show_line_enb, false);
+
     image_transport::ImageTransport it(n);
     image_transport::Subscriber image_sub;
     image_sub = it.subscribe("/usb_cam/image_raw", 1, &imageCb);
@@ -84,7 +88,6 @@ int main(int argc, char** argv)
 
 void verifyPubCb(const ros::TimerEvent &) 
 {
-    ROS_INFO("timer");
     msgs::BoolStamped msg;
     msg.header.stamp = ros::Time::now();
     msg.data = verification;
@@ -104,45 +107,41 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         return;
     }
 
-    //search from top until a line without intersection is found or center of image
+    //search from top until a line without intersection is found
     int midOfTop, top_scanline=0;
-
-
+    Mat line;
+    getRow(cv_ptr->image, line, top_scanline);
     ROS_INFO("Threshold top: %f\n", threshold_top);
-    Line_type type_top = scanline(cv_ptr->image, top_scanline, threshold_top, midOfTop);
+    Line_type type_top = scanline(line, top_scanline, threshold_top, midOfTop);
+    //search until a line without intersection is found
     while(type_top == line_types::CROSS && top_scanline < cv_ptr->image.rows)
     {
         top_scanline += 50;
+        getRow(cv_ptr->image, line, top_scanline);
         double temp = threshold_top;
-        type_top = scanline(cv_ptr->image, top_scanline, threshold_top, midOfTop);
+        type_top = scanline(line, top_scanline, threshold_top, midOfTop);
         threshold_top = temp;
     }
 
-    //search from bottum until a line without intersection is found or center of image
+    //search from bottum until a line without intersection is found
     int midOfBot, bot_scanline = cv_ptr->image.rows-1;
+    getRow(cv_ptr->image, line, bot_scanline);
     ROS_INFO("Threshold bot: %f\n", threshold_bot);
-    Line_type type_bot = scanline(cv_ptr->image, bot_scanline, threshold_bot, midOfBot);
+    Line_type type_bot = scanline(line, bot_scanline, threshold_bot, midOfBot);
     //search until a line without intersection is found
     while(type_bot == line_types::CROSS && bot_scanline >= 0)
     {
         bot_scanline -= 50;
         double temp = threshold_bot;
-        type_bot = scanline(cv_ptr->image, bot_scanline, threshold_bot, midOfBot);
+        type_bot = scanline(line, bot_scanline, threshold_bot, midOfBot);
         threshold_bot = temp;
-    }
-
-    // Set verification flag
-    if(type_top == line_types::LINE && type_bot == line_types::LINE)
-    {
-        verification = true;
-    } else {
-        //ROS_WARN("No valid line found");
     }
 
     // Determine angle
     double angle, offset; // zero error if no line found
-    if(verification)
+    if(type_top == line_types::LINE && type_bot == line_types::LINE)
     {
+        verification = true;
         //
         Eigen::Vector2d pr0(midOfTop, top_scanline); Eigen::Vector2d pr1(midOfBot, bot_scanline);
         pr0 -= cam_center;
@@ -163,6 +162,10 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     }
     else
     {
+        verification = false;
+        threshold_bot = threshold_gray;
+        threshold_top = threshold_gray;
+
         angle=0;
         offset=0;
     }
@@ -188,8 +191,20 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
     //cv::circle(line_img, Point(cv_ptr->image.cols/2+offset,0), 2, 100, 2);
     imshow("lines bot", line_img);
+    imshow("line", line);
 
     cv::waitKey(1);
+}
+
+void getRow(Mat Image, Mat &lineImage, int line)
+{
+    lineImage = Image(cv::Range(line,line+1), cv::Range::all());
+}
+
+void getColumn(Mat Image, Mat &lineImage, int line)
+{
+    lineImage = Image(cv::Range::all(), cv::Range(line,line+1));
+    cv::transpose(lineImage, lineImage);
 }
 
 inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray, int &mid)
@@ -201,12 +216,14 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
     bool counting = false;
     Line_type type = Line_type::NO_LINE;
 
-    //scanline 1
     const uchar* p;
-    p = lineImage.ptr<uchar>(line);
-    for(unsigned x=0; x<lineImage.cols; x++)
+    p = lineImage.ptr<uchar>(0);
+    for(int x=0; x<lineImage.cols; x++)
     {
-        //threshold to seek for line
+        //uchar avg = runningAverage(p[x]);
+        //ROS_INFO("value: %d\n", (int)p[x]);
+        //cv::waitKey();
+
         if(p[x] < threshold_gray)
         {
             average_black += p[x];
@@ -249,7 +266,7 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
         threshold_gray = (average_black/total_width+average_white/(lineImage.cols-total_width))/2;
     }
 
-    //103 190
+    //if(total_width > )
 
     return type;
 }
@@ -258,4 +275,22 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
 double lineWidth(int line)
 {
     return 190.0-(190.0-103.0)/720.0*(double)line-10.0;
+}
+
+const int average_size_limit = 5;
+uchar runningAverage(uchar value)
+{
+    average.push_front(value);
+    if(average.size() > average_size_limit)
+    {
+        average.pop_back();
+    }
+    int sum = 0;
+    for(std::list<uchar>::iterator i=average.begin(); i != average.end(); i++)
+    {
+        sum += (int)*i;
+    }
+    sum /= average_size_limit;
+
+    return (uchar)sum;
 }
