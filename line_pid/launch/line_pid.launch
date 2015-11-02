@@ -1,22 +1,92 @@
 <!--
-In laptop
-Launch this file
-rosrun line_detection line_detection node
-rostopic pub /mission/action_state msgs/IntSmped to 1 
-rostopic pu/reg_ratio msgs/FloatArrayolStamped to [0-1]
-rostopic pu-r 100 /fmSafe/actuation_enable msgs/BoololStamped to True
-
-In the frobit
-
-
-
 
  -->
 
-
 <launch> 
+
+<group ns="fmDecisionMakers">
+    <node pkg="frobit_demo" name="mission" type="keyboard_mission_node.py" output="screen">
+        <param name="keyboard_sub" value="/fmHMI/keyboard" />
+        <param name="automode_pub" value="/fmPlan/automode" />
+        <param name="deadman_pub" value="/fmSafe/deadman" />
+        <param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
+        <param name="max_linear_velocity" value="50.7"/>
+        <param name="max_angular_velocity" value="50.5"/>
+        <param name="linear_velocity_step" value="0.1"/>
+        <param name="angular_velocity_step" value="0.2"/>
+    </node>
+</group>
+
+
+<group ns="fmControllers">
+    <!-- Frobit interface node -->
+    <node pkg="sdu_frobit_v2" name="frobit" type="frobit_interface_node.py" output="screen" >
+        <param name="actuation_enable_sub" value="/fmSafe/actuation_enable" />
+        <param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
+        <param name="enc_left_pub" value="/fmInformation/encoder_left" />
+        <param name="enc_right_pub" value="/fmInformation/encoder_right" />
+        <param name="wheel_status_left_pub" value="/fmInformation/wheel_status_left" />
+        <param name="wheel_status_right_pub" value="/fmInformation/wheel_status_right" />
+        <param name="wheel_feedback_left_pub" value="/fmInformation/wheel_feedback_left" />
+        <param name="wheel_feedback_right_pub" value="/fmInformation/wheel_feedback_right" />
+        <param name="wheel_pid_left_pub" value="/fmInformation/wheel_pid_left" />
+        <param name="wheel_pid_right_pub" value="/fmInformation/wheel_pid_right" />
+        <param name="nmea_from_frobit_sub" value="/fmSignal/nmea_from_frobit" />
+        <param name="nmea_to_frobit_pub" value="/fmSignal/nmea_to_frobit" />
+        <param name="publish_wheel_status_rate" value="10" />
+        <param name="publish_wheel_feedback_rate" value="10" />
+        <param name="publish_wheel_pid_rate" value="10" />
+        <param name="castor_front" value="true"/>
+        <param name="max_linear_acceleration" value="16.2"/>
+        <param name="max_angular_acceleration" value="16.0"/>
+        <param name="wheel_drive_feed_forward" value="85" />
+        <param name="wheel_drive_kp" value="5" />
+        <param name="wheel_drive_ki" value="10" />
+        <param name="wheel_drive_kd" value="5" />
+        <param name="wheel_drive_max_integral_output" value="300" />
+        <param name="wheel_turn_feed_forward" value="110" />
+        <param name="wheel_turn_kp" value="10" />
+        <param name="wheel_turn_ki" value="20" />
+        <param name="wheel_turn_kd" value="3" />
+        <param name="wheel_turn_max_integral_output" value="300" />
+        <param name="supply_voltage_scale_factor" value="0.03747" />
+        <param name="min_supply_voltage" value="12.1" />
+        <param name="show_voltage_interval" value="300" />
+    </node>
+ </group>
+
+ <group ns="fmLib">
+
+    <!-- frobit serial device and protocol interface -->
+    <node pkg="serial_nmea" name="frobit_nmea" type="serial_nmea_node" respawn="true" output="screen">
+        <param name="nmea_from_device_pub" value="/fmSignal/nmea_from_frobit"/>
+        <param name="nmea_to_device_sub" value="/fmSignal/nmea_to_frobit"/>
+        <param name="serial_device" value="/dev/frobit"/>
+        <param name="serial_baudrate" value="57600"/>
+        <param name="use_nmea_checksum" value="true"/>
+    </node>
+
+    <node pkg="keyboard_remote_control" name="kbd_remote" type="keyboard_remote_control_node.py" output="screen" >
+        <param name="keyboard_sub" value="/fmHMI/keyboard"/>
+        <param name="remote_control_pub" value="/fmHMI/remote_control"/>
+    </node>
+    
+    <node pkg="keyboard_interface" type="keyboard_node" name="keyboard">
+        <param name="keyboard_pub" value="/fmHMI/keyboard" />
+    </node>
+    <!-- serial communication with the IMU -->
+    <!--node pkg="serial_string" name="imu_serial" type="serial_string_node" respawn="true" output="screen">
+        <param name="publisher_topic" value="/fmData/imu_rx" />
+        <param name="subscriber_topic" value="/fmData/imu_tx" />
+        <param name="device" value="/dev/imu" />
+        <param name="baudrate" value="115200" />
+        <param name="termination_character" value="10"/>
+    </node-->
+ </group>
+
+
  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
-    <param name="video_device" value="/dev/video1" />   
+    <param name="video_device" value="/dev/video0" />   
     <param name="image_width" value="1280" />
     <param name="image_height" value="720" />
     <param name="pixel_format" value="mjpeg" />
@@ -38,23 +108,24 @@ In the frobit
 
  <node name="line_pid_control" pkg="line_pid" type="line_pid_node" output="screen" > 
     <param name="update_rate" value="20"/>
-    <param name="drive_kp" value="5.0"/>
-    <param name="drive_ki" value="0.01"/>
+    <param name="drive_kp" value="1.0"/>
+    <param name="drive_ki" value="0.00"/>
+    <param name="drive_kd" value="0.0"/>
     <param name="drive_max_i" value="3" />
-    <param name="drive_kd" value="2.0"/>
     <param name="drive_feed_forward" value="0.00"/>
     <param name="drive_max_output" value="0.4"/>
-    <param name="forward_speed" value="0.5" />
+    <param name="forward_speed" value="0.3" />
     <param name="line_sub" value="/line_detector/perception/line" />
     <param name="action_topic" value="/mission/action_state" />          
     <param name="pid_debug_pub" value="/fmInformation/pid" />
     <param name="command_pub" value="/fmCommand/cmd_vel" />
  </node>
 
- <node pkg="safety_speed_node" name="safety_speed" type="safety_speed_node.py" output="screen">
-    <param name="vel_topic" value="/fmCommand/cmd_vel"/>
-    <param name="safe_vel_topic" value="/safe_vel"/>
-    <param name="reg_ratio_topic" value="/reg_ratio"/>
+ <node name="line_detector" pkg="line_detection" type="line_detection_node" output="screen" > 
+    <param name="line_width" value="90" />
+    <param name="cross_width" value="210" />
+    <param name="threshold_gray" value="95" />
+    <param name="camera_frame_id" value="camera_link" />
  </node>
 
 </launch>
