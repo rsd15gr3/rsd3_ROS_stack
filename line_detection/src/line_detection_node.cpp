@@ -109,7 +109,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     int midOfTop, top_scanline=0;
 
 
-    ROS_INFO("Threshold top: %f\n", threshold_top);
+    ROS_DEBUG("Threshold top: %f\n", threshold_top);
     Line_type type_top = scanline(cv_ptr->image, top_scanline, threshold_top, midOfTop);
     while(type_top == line_types::CROSS && top_scanline < cv_ptr->image.rows)
     {
@@ -121,7 +121,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
 
     //search from bottum until a line without intersection is found or center of image
     int midOfBot, bot_scanline = cv_ptr->image.rows-1;
-    ROS_INFO("Threshold bot: %f\n", threshold_bot);
+    ROS_DEBUG("Threshold bot: %f\n", threshold_bot);
     Line_type type_bot = scanline(cv_ptr->image, bot_scanline, threshold_bot, midOfBot);
     //search until a line without intersection is found
     while(type_bot == line_types::CROSS && bot_scanline >= 0)
@@ -132,21 +132,11 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         threshold_bot = temp;
     }
 
-    // Set verification flag
+    // Determine angle
+    double angle, offset; // zero error if no line found
     if(type_top == line_types::LINE && type_bot == line_types::LINE)
     {
         verification = true;
-    } else {
-        threshold_top = threshold_gray;
-        threshold_bot = threshold_gray;
-        //ROS_WARN("No valid line found");
-    }
-
-    // Determine angle
-    double angle, offset; // zero error if no line found
-    if(verification)
-    {
-        //
         Eigen::Vector2d pr0(midOfTop, top_scanline); Eigen::Vector2d pr1(midOfBot, bot_scanline);
         pr0 -= cam_center;
         pr1 -= cam_center;
@@ -166,10 +156,14 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     }
     else
     {
+        threshold_top = threshold_gray;
+        threshold_bot = threshold_gray;
+        ROS_WARN("No valid line found");
         angle=0;
         offset=0;
     }    
-    if(show_line_enb) {
+    if(show_line_enb)
+    {
         // Publish line pose
         line_detection::line line_msg;
         line_msg.header.stamp = ros::Time::now();
@@ -185,7 +179,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         threshold(cv_ptr->image, line_img,threshold_top,255,0);
         cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
         //cv::circle(line_img, Point(cv_ptr->image.cols/2+offset,0), 2, 100, 2);
-        imshow("lines top", line_img);
+        //imshow("lines top", line_img);
 
         threshold(cv_ptr->image, line_img,threshold_bot,255,0);
         cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
