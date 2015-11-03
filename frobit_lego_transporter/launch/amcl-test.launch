@@ -73,12 +73,12 @@
             <param name="enc_right_sub" value="/fmInformation/encoder_right" />
             <param name="imu_sub" value="/fmInformation/imu" />
             <param name="odom_reset_sub" value="/fmInformation/odom_reset" />
-            <param name="odom_pub" value="/fmKnowledge/odom" />
+            <param name="odom_pub" value="/fmKnowledge/wheel_odom" />
             <param name="encoder_output" value="absolute" />
             <param name="max_ticks_per_update" value="200" />
             <param name="yaw_angle_source" value="odometry" /> <!-- Do not use IMU as yaw source; EKF fuses the measurements -->
             <param name="publish_transform" value="false" />
-            <param name="odom_estimate_frame" value="differential_odom" />
+            <param name="odom_estimate_frame" value="wheel_odom" />
             <param name="vehicle_frame" value="base_link" />
             <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
             <rosparam param="twist_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
@@ -106,7 +106,7 @@
             <param name="world_frame" value="odom"/>
 
             <param name="transform_time_offset" value="0.0"/>
-            <param name="odom0" value="/fmKnowledge/odom"/>
+            <param name="odom0" value="/fmKnowledge/wheel_odom"/>
             <param name="imu0" value="/fmInformation/imu"/>
 
             <!-- See http://wiki.ros.org/robot_localization/Tutorials/Sensor%20Configuration -->
@@ -142,7 +142,7 @@
             <param name="world_frame" value="map"/>
 
             <param name="transform_time_offset" value="0.0"/>
-            <param name="odom0" value="/fmKnowledge/odom"/>
+            <param name="odom0" value="/fmKnowledge/wheel_odom"/>
             <param name="odom1" value="/fmKnowledge/odom_marloc"/>
             <param name="imu0" value="/fmInformation/imu"/>
 
