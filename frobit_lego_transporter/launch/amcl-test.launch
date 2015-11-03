@@ -301,7 +301,7 @@
 -->
         <param name="odom_frame_id" value="odom" />
         <param name="base_frame_id" value="base_link" />
-        <param name="global_fram_id" value="map" />
+        <param name="global_frame_id" value="map" />
         <param name="tf_broadcast" value="true" />
     </node>
 </launch>
