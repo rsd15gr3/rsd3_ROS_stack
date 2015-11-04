@@ -10,8 +10,10 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+
 #include <msgs/BoolStamped.h>
 #include <line_detection/line.h>
+#include <line_detection/cross.h>
 
 using namespace cv;
 using std::vector;
@@ -31,11 +33,14 @@ typedef line_types::Line_type Line_type;
 
 void imageCb(const sensor_msgs::ImageConstPtr& msg);
 void camInfoCb(const sensor_msgs::CameraInfoConstPtr& info_msg);
-inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray, int &mid);
+inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray, int &mid, bool cross = false);
 void verifyPubCb(const ros::TimerEvent &);
 double lineWidth(int line);
+double sideLineWidth(int line);
+bool findCross(line_detection::cross::Request  &req, line_detection::cross::Response &res);
 
 image_transport::Publisher image_pub;
+cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/msg/Image.html
 
 ros::Publisher line_pub;
 ros::Publisher verify_pub;
@@ -43,7 +48,6 @@ ros::Publisher verify_pub;
 bool verification = false; /* Verify is set true when is likley that a "preception" is valid, */
 int threshold_gray = 105;
 double threshold_top, threshold_bot;
-int line_width = 60;
 double line_to_cross_scale = 3.0;
 string camera_frame_id;
 bool show_line_enb;
@@ -55,14 +59,16 @@ const double c_x = 640;
 const double c_y = 360;
 const Eigen::Vector2d cam_center(c_x, c_y);
 
+
+
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "line_detector");
     ros::NodeHandle n("~");
+
     n.param<int>("threshold_gray",threshold_gray, 105);
     threshold_top = threshold_gray; 
     threshold_bot = threshold_gray;
-    n.param<int>("line_width", line_width, 60);
     n.param<double>("line_to_cross_scale",line_to_cross_scale, 3.0);
     int verify_pub_rate;
     n.param<int>("verification_pub_rate", verify_pub_rate, 5);
@@ -78,9 +84,45 @@ int main(int argc, char** argv)
     verify_pub = n.advertise<msgs::BoolStamped>(verification_topic,1);
     line_pub = n.advertise<line_detection::line>(line_topic,1);
     image_pub = it.advertise("line_debug_image", 1);
+    ros::ServiceServer service = n.advertiseService("getCross", findCross);
     ros::Timer timeVerify = n.createTimer(ros::Duration(1.0 / verify_pub_rate), verifyPubCb);
     ros::spin();
     return 0;
+}
+
+bool findCross(line_detection::cross::Request &req,
+               line_detection::cross::Response &res)
+{
+    int column_nr;
+    if(req.right == 1)
+    {
+        column_nr = 0;
+    }
+    else
+    {
+        column_nr = cv_ptr->image.cols-2;
+    }
+
+    //Mask it as a row
+    Mat column = cv_ptr->image(cv::Range::all(), cv::Range(column_nr,column_nr+1) );
+    Mat line;
+    cv::transpose(column, line);
+    if(req.right == 0)
+    {
+        cv::flip(line,line, 0); // flip around x axis
+    }
+
+    int offset;
+    double temp_threshold = threshold_gray;
+    Line_type type = scanline(line, 0, temp_threshold, offset, true);
+    res.offset = offset;
+
+    if(type != line_types::LINE)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void verifyPubCb(const ros::TimerEvent &) 
@@ -94,7 +136,8 @@ void verifyPubCb(const ros::TimerEvent &)
 
 void imageCb(const sensor_msgs::ImageConstPtr& msg)
 {
-    cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/msg/Image.html
+    // cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/msg/Image.html
+    //moved up to share
     try
     {
         cv_ptr =  cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO8);
@@ -191,7 +234,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     }
 }
 
-inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray, int &mid)
+inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray, int &mid, bool cross)
 {
     unsigned int start, width, total_width = 0;
     double average_white = 0;
@@ -199,6 +242,14 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
     mid = -1;
     bool counting = false;
     Line_type type = Line_type::NO_LINE;
+
+    //assign different width if it is crossing detection
+    double (*fp_linewidth)(int);
+    fp_linewidth = lineWidth;
+    if(cross == true)
+    {
+        fp_linewidth = sideLineWidth;
+    }
 
     //scanline 1
     const uchar* p;
@@ -229,12 +280,12 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
             if(counting == true)
             {
                 counting = false;
-                if(width > lineWidth(line)) //this might happen twice and give a bug
+                if(width > fp_linewidth(line)) //this might happen twice and give a bug
                 {
                     type = Line_type::LINE;
                     mid = start+width/2;
                 }
-                if(total_width > (lineWidth(line)*line_to_cross_scale+10))
+                if(total_width > (fp_linewidth(line)*line_to_cross_scale+10))
                 {
                     type = Line_type::CROSS;
                 }
@@ -257,4 +308,9 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
 double lineWidth(int line)
 {
     return 190.0-(190.0-103.0)/720.0*(double)line-10.0;
+}
+
+double sideLineWidth(int line)
+{
+    return 100;
 }
