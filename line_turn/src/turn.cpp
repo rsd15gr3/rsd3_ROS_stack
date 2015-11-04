@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n("~");
 
     n.param<std::string>("line_topic", lineTopicName, "/line_detector/perception/line");
-    n.param<std::string>("odometry_topic", odometryTopicName, "/odometry/filtered");
+    n.param<std::string>("odometry_topic", odometryTopicName, "/fmProcessors/odometry/filtered");
     n.param<std::string>("command_pub", commandPubName, "/fmCommand/cmd_vel");
 
     ros::Subscriber lineSub = n.subscribe(lineTopicName, 1, lineCb);
