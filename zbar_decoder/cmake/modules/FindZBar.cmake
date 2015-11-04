@@ -1,12 +1,13 @@
-# - Try to find ZBar
+# Try to find ZBar
 # Once done this will define
-#  ZBAR_FOUND - System has LibXml2
-#  ZBAR_INCLUDE_DIRS - The LibXml2 include directories
-#  ZBAR_LIBRARIES - The libraries needed to use LibXml2
-#  ZBAR_DEFINITIONS - Compiler switches required for using LibXml2
+#  ZBAR_FOUND - System has libzbar
+#  ZBAR_INCLUDE_DIRS - The libzbar include directories
+#  ZBAR_LIBRARIES - The libraries needed to use libzbar
+#  ZBAR_DEFINITIONS - Compiler switches required for using libzbar
 
 find_package(PkgConfig)
 pkg_check_modules(PC_ZBAR QUIET zbar)
+
 set(ZBAR_DEFINITIONS ${PC_ZBAR_CFLAGS_OTHER})
 
 find_path(ZBAR_INCLUDE_DIR Decoder.h
