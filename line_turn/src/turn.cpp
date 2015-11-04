@@ -60,6 +60,7 @@ int main(int argc, char **argv)
 
     geometry_msgs::TwistStamped message;
     message.twist.angular.z = 0;
+    message.header.stamp = ros::Time::now();
     commandPub.publish(message);
     ros::spin();
     return 0;
