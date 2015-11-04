@@ -13,7 +13,8 @@ void lineCb(const line_detection::line &msg);
 void odometryCb(const nav_msgs::Odometry &msg);
 
 line_detection::line line_info;
-nav_msgs::Odometry odometry_info;
+//nav_msgs::Odometry odometry_info;
+tf::Quaternion odometry_info;
 
 std::string lineTopicName;
 std::string odometryTopicName;
@@ -34,17 +35,18 @@ int main(int argc, char **argv)
     ros::Publisher commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName, 1);
     ros::Rate rate(20);
 
-    double start_yaw = tf::getYaw(odometry_info.pose.pose.orientation);
+
+    double start_yaw = tf::getYaw(odometry_info);
 
     while(ros::ok())
     {
-        if(abs(start_yaw-tf::getYaw(odometry_info.pose.pose.orientation)) > 1.5)
+        if(abs(start_yaw-tf::getYaw(odometry_info)) > 1.5)
         {
             break;
         }
 
-        geometry_msgs::TwistStamped::Ptr message;
-        message->twist.angular.z = 1;
+        geometry_msgs::TwistStamped message;
+        message.twist.angular.z = 1;
         commandPub.publish(message);
 
         ros::spinOnce();
@@ -61,5 +63,5 @@ void lineCb(const line_detection::line &msg)
 
 void odometryCb(const nav_msgs::Odometry &msg)
 {
-    odometry_info = msg;
+    tf::quaternionMsgToTF(msg.pose.pose.orientation, odometry_info);
 }
