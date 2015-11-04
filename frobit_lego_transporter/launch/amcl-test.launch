@@ -44,7 +44,7 @@
 
     <group ns="fmSensors">
         <!-- Vectornav VN-100 IMU -->
-        <node pkg="vectornav_vn100" name="imu_node"  type="vectornav_vn100_node" output="screen">
+        <node pkg="vectornav_vn100" name="imu_node" type="vectornav_vn100_node" output="screen">
             <param name="vectornav_vn100_sub" value="/fmData/imu_rx" />
             <param name="imu_pub" value="/fmInformation/imu" />
             <param name="frame_id" value="imu_link" />
@@ -236,15 +236,15 @@
             <param name="remote_control_pub" value="/fmHMI/remote_control"/>
         </node>
 
-        <node pkg="keyboard_interface" type="keyboard_node" name="keyboard">
+        <node pkg="keyboard_interface" type="keyboard_node" name="keyboard" output="screen">
             <param name="keyboard_pub" value="/fmHMI/keyboard" />
         </node>
     </group>
 
     <!-- Map -->
-    <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_launch_sim)/world/box_and_surroundings.yaml" />
+    <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_launch_sim)/world/box_and_surroundings.yaml" output="screen"/>
 
-    <node pkg="amcl" type="amcl" name="amcl" respawn="true">
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
         <remap from="scan" to="/fmSensors/scan" />
         <!-- Particle filter -->
         <param name="min_particles" value="500" />
