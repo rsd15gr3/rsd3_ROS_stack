@@ -21,6 +21,8 @@ include_directories(${catkin_INCLUDE_DIRS} ${ZBAR_INCLUDE_DIRS})
 
 add_executable(zbar_decoder_node src/zbar_decoder_node)
 
+add_dependencies(zbar_decoder_node ${catkin_EXPORTED_TARGETS})
+
 target_link_libraries(zbar_decoder_node
   ${OpenCV_LIBS}
   ${ZBAR_LIBRARIES}
