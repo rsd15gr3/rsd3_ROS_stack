@@ -119,9 +119,9 @@
                                            false, false, true,
                                            true, false, false,
                                            false, false, true,
-                                           true, false, false]</rosparam>
+                                           false, false, false]</rosparam>
 
-            <param name="odom0_differential" value="true"/>
+            <param name="odom0_differential" value="false"/>
             <param name="imu0_differential" value="false"/>
             <param name="odom0_relative" value="false"/>
             <param name="imu0_relative" value="true"/>
