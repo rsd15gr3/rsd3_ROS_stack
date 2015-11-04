@@ -2,7 +2,6 @@
 #include <vector>
 #include <tf/transform_datatypes.h>
 #include <tf/tf.h>
-#include <math.h>
 #include <string>
 #include <cmath>
 
@@ -46,7 +45,7 @@ int main(int argc, char **argv)
 
     while(ros::ok())
     {        
-        if(abs(start_yaw-tf::getYaw(odometry_info)) > 1.5)
+        if(std::abs(start_yaw-tf::getYaw(odometry_info)) > 1.5)
         {
             break;
         }
