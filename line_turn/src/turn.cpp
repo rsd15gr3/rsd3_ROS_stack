@@ -53,6 +53,11 @@ int main(int argc, char **argv)
         rate.sleep();
     }
 
+    geometry_msgs::TwistStamped message;
+    message.twist.angular.z = 0;
+    commandPub.publish(message);
+
+
     return 0;
 }
 
