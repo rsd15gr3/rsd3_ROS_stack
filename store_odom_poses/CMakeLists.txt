@@ -6,11 +6,11 @@ project(store_odom_poses)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   nav_msgs
+  geometry_msgs
   roscpp
 )
 
 catkin_package(
-  INCLUDE_DIRS include
 )
 
 include_directories(

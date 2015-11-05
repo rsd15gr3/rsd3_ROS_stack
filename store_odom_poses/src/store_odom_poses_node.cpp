@@ -1,10 +1,11 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <iostream>
 #include <fstream>
 using namespace std;
 
-void filteredPoseCb(const nav_msgs::Odometry &filtered_pose);
+void filteredPoseCb(const geometry_msgs::PoseWithCovarianceStamped &filtered_pose);
 void odomPoseCb(const nav_msgs::Odometry &odom_pose);
 ofstream filtered_position_file;
 ofstream odom_position_file;
@@ -26,15 +27,15 @@ int main(int argc, char** argv)
   odom_position_file << header_str.c_str();
   filtered_position_file.open (filtered_filename.c_str());
   filtered_position_file << header_str.c_str() ;
-  ros::Subscriber odom_sub = n.subscribe("/fmKnowledge/wheel_odometry", 100, &odomPoseCb);
-  ros::Subscriber filtered_sub = n.subscribe("/fmProcessors/odometry/filtered", 100, &filteredPoseCb);
+  ros::Subscriber odom_sub = n.subscribe("/fmKnowledge/wheel_odom", 100, &odomPoseCb);
+  ros::Subscriber filtered_sub = n.subscribe("/fmProcessors/robot_pose_ekf/odom_combined", 100, &filteredPoseCb);
   ros::spin();
   odom_position_file.close();
   filtered_position_file.close();
   std::cout << "After spin" << std::endl;
 }
 
-void filteredPoseCb(const nav_msgs::Odometry &filtered_pose)
+void filteredPoseCb(const geometry_msgs::PoseWithCovarianceStamped  &filtered_pose)
 {
   ROS_INFO("Filtered msg recieved");
   filtered_position_file
