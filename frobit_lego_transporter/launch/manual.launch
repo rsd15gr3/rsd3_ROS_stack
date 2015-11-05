@@ -44,7 +44,7 @@
 
     <group ns="fmSensors">
         <!-- Vectornav VN-100 IMU -->
-        <node pkg="vectornav_vn100" name="imu_node"  type="vectornav_vn100_node" output="screen">
+        <node pkg="vectornav_vn100" name="imu_node" type="vectornav_vn100_node" output="screen">
             <param name="vectornav_vn100_sub" value="/fmData/imu_rx" />
             <param name="imu_pub" value="/fmInformation/imu" />
             <param name="frame_id" value="imu_link" />
@@ -56,8 +56,8 @@
 
         <!-- SICK laser scanner -->
         <node name="sick_tim310s01" pkg="sick_tim" type="sick_tim310s01" respawn="false" output="screen">
-            <param name="min_ang" type="double" value="-2.35619449019" />
-            <param name="max_ang" type="double" value="2.35619449019" />
+            <param name="min_ang" type="double" value="-1.8326" />
+            <param name="max_ang" type="double" value="1.8326" />
             <param name="intensity" type="bool" value="True" />
             <param name="skip" type="int" value="0" />
             <param name="frame_id" type="str" value="laser_link" />
@@ -73,11 +73,13 @@
             <param name="enc_right_sub" value="/fmInformation/encoder_right" />
             <param name="imu_sub" value="/fmInformation/imu" />
             <param name="odom_reset_sub" value="/fmInformation/odom_reset" />
-            <param name="odom_pub" value="/fmKnowledge/odom" />
+            <param name="odom_pub" value="/fmKnowledge/wheel_odom" />
             <param name="encoder_output" value="absolute" />
             <param name="max_ticks_per_update" value="200" />
             <param name="yaw_angle_source" value="odometry" /> <!-- Do not use IMU as yaw source; EKF fuses the measurements -->
             <param name="publish_transform" value="false" />
+            <param name="odom_estimate_frame" value="wheel_odom" />
+            <param name="vehicle_frame" value="base_link" />
             <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
             <rosparam param="twist_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
         </node>
@@ -92,84 +94,19 @@
             <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 99999, 99999, 99999, 0.001]</rosparam>
         </node>
 
-        <!-- ODOM EKF -->
-        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_odom" clear_params="true">
-            <param name="frequency" value="30"/>
-            <param name="sensor_timeout" value="0.1"/>
-            <param name="two_d_mode" value="true"/>
-
-            <param name="map_frame" value="map"/>
-            <param name="odom_frame" value="odom"/>
-            <param name="base_link_frame" value="base_link"/>
-            <param name="world_frame" value="odom"/>
-
-            <param name="transform_time_offset" value="0.0"/>
-            <param name="odom0" value="/fmKnowledge/odom"/>
-            <param name="imu0" value="/fmInformation/imu"/>
-
-            <!-- See http://wiki.ros.org/robot_localization/Tutorials/Sensor%20Configuration -->
-            <rosparam param="odom0_config">[false, false, false,            <!-- x, y, z -->
-                                            false, false, false,            <!-- roll, pitch, yaw -->
-                                            true, true, false,              <!-- x velocity, y velocity, z velocity -->
-                                            false, false, true,             <!-- roll velocity, pitch velocity, yaw velocity -->
-                                            false, false, false]</rosparam> <!-- x accel., y accel., z accel. -->
-            <rosparam param="imu0_config">[false, false, false,
-                                           false, false, true,
-                                           false, false, false,
-                                           false, false, true,
-                                           true, false, false]</rosparam>
-
-            <param name="odom0_differential" value="true"/>
-            <param name="imu0_differential" value="false"/>
-            <param name="odom0_relative" value="false"/>
-            <param name="imu0_relative" value="true"/>
-
-            <param name="imu0_remove_gravitational_acceleration" value="false"/>
-            <param name="print_diagnostics" value="true"/>
+        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+            <remap from="odom" to="/fmKnowledge/wheel_odom"/>
+            <remap from="imu_data" to="/fmInformation/imu"/>
+            <param name="output_frame" value="odom"/>
+            <param name="base_footprint_frame" value="base_link"/>
+            <param name="freq" value="30.0"/>
+            <param name="sensor_timeout" value="1.0"/>
+            <param name="odom_used" value="true"/>
+            <param name="imu_used" value="true"/>
+            <param name="vo_used" value="false"/>
+            <param name="debug" value="false"/>
+            <param name="self_diagnose" value="true"/>
         </node>
-
-        <!-- MAP EKF -->
-        <!-- <node pkg="robot_localization" type="ekf_localization_node" name="ekf_map" clear_params="true">
-            <param name="frequency" value="30"/>
-            <param name="sensor_timeout" value="0.1"/>
-            <param name="two_d_mode" value="true"/>
-
-            <param name="map_frame" value="map"/>
-            <param name="odom_frame" value="odom"/>
-            <param name="base_link_frame" value="base_link"/>
-            <param name="world_frame" value="map"/>
-
-            <param name="transform_time_offset" value="0.0"/>
-            <param name="odom0" value="/fmKnowledge/odom"/>
-            <param name="odom1" value="/fmKnowledge/odom_marloc"/>
-            <param name="imu0" value="/fmInformation/imu"/>
-
-            <rosparam param="odom0_config">[false, false, false,
-                                            false, false, false,
-                                            true, true, false,
-                                            false, false, true,
-                                            false, false, false]</rosparam>
-            <rosparam param="odom1_config">[true, true, false,
-                                            false, false, true,
-                                            false, false, false,
-                                            false, false, false,
-                                            false, false, false]</rosparam>
-            <rosparam param="imu0_config">[false, false, false,
-                                           false, false, true,
-                                           false, false, false,
-                                           false, false, true,
-                                           true, false, false]</rosparam>
-
-            <param name="odom0_differential" value="true"/>
-            <param name="odom1_differential" value="false"/>
-            <param name="imu0_differential" value="false"/>
-            <param name="odom0_relative" value="false"/>
-            <param name="odom1_relative" value="true"/>
-            <param name="imu0_relative" value="true"/>
-
-            <param name="imu0_remove_gravitational_acceleration" value="false"/>
-            <param name="print_diagnostics" value="true"/>
-        </node> -->
     </group>
 
     <group ns="fmControllers">
@@ -221,7 +158,7 @@
             <param name="remote_control_sub" value="/fmHMI/remote_control"/>
             <param name="remote_control_feedback_pub" value="/fmHMI/remote_control_feedback" />
             <param name="automode_pub" value="/fmPlan/automode" />
-                <param name="deadman_pub" value="/fmSafe/deadman" />
+            <param name="deadman_pub" value="/fmSafe/deadman" />
             <param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
             <param name="max_linear_velocity" value="0.7"/>
             <param name="max_angular_velocity" value="0.6"/>
@@ -234,7 +171,7 @@
             <param name="remote_control_pub" value="/fmHMI/remote_control"/>
         </node>
 
-        <node pkg="keyboard_interface" type="keyboard_node" name="keyboard">
+        <node pkg="keyboard_interface" type="keyboard_node" name="keyboard" output="screen">
             <param name="keyboard_pub" value="/fmHMI/keyboard" />
         </node>
     </group>
