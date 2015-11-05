@@ -94,84 +94,18 @@
             <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 99999, 99999, 99999, 0.001]</rosparam>
         </node>
 
-        <!-- ODOM EKF -->
-        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_odom" clear_params="true">
-            <param name="frequency" value="30"/>
-            <param name="sensor_timeout" value="0.1"/>
-            <param name="two_d_mode" value="true"/>
-
-            <param name="map_frame" value="map"/>
-            <param name="odom_frame" value="odom"/>
-            <param name="base_link_frame" value="base_link"/>
-            <param name="world_frame" value="odom"/>
-
-            <param name="transform_time_offset" value="0.0"/>
-            <param name="odom0" value="/fmKnowledge/wheel_odom"/>
-            <param name="imu0" value="/fmInformation/imu"/>
-
-            <!-- See http://wiki.ros.org/robot_localization/Tutorials/Sensor%20Configuration -->
-            <rosparam param="odom0_config">[false, false, false,            <!-- x, y, z -->
-                                            false, false, false,            <!-- roll, pitch, yaw -->
-                                            true, true, false,              <!-- x velocity, y velocity, z velocity -->
-                                            false, false, true,             <!-- roll velocity, pitch velocity, yaw velocity -->
-                                            false, false, false]</rosparam> <!-- x accel., y accel., z accel. -->
-            <rosparam param="imu0_config">[false, false, false,
-                                           false, false, true,
-                                           true, false, false,
-                                           false, false, true,
-                                           false, false, false]</rosparam>
-
-            <param name="odom0_differential" value="false"/>
-            <param name="imu0_differential" value="false"/>
-            <param name="odom0_relative" value="false"/>
-            <param name="imu0_relative" value="true"/>
-
-            <param name="imu0_remove_gravitational_acceleration" value="true"/>
-            <param name="print_diagnostics" value="true"/>
+        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+            <remap from="/odom" to="/fmKnowledge/wheel_odom"/>
+            <remap from="/imu_data" to="/fmInformation/imu"/>
+            <param name="output_frame" value="odom"/>
+            <param name="freq" value="30.0"/>
+            <param name="sensor_timeout" value="1.0"/>
+            <param name="odom_used" value="true"/>
+            <param name="imu_used" value="true"/>
+            <param name="vo_used" value="false"/>
+            <param name="debug" value="false"/>
+            <param name="self_diagnose" value="true"/>
         </node>
-
-        <!-- MAP EKF -->
-        <!-- <node pkg="robot_localization" type="ekf_localization_node" name="ekf_map" clear_params="true">
-            <param name="frequency" value="30"/>
-            <param name="sensor_timeout" value="0.1"/>
-            <param name="two_d_mode" value="true"/>
-
-            <param name="map_frame" value="map"/>
-            <param name="odom_frame" value="odom"/>
-            <param name="base_link_frame" value="base_link"/>
-            <param name="world_frame" value="map"/>
-
-            <param name="transform_time_offset" value="0.0"/>
-            <param name="odom0" value="/fmKnowledge/wheel_odom"/>
-            <param name="odom1" value="/fmKnowledge/odom_marloc"/>
-            <param name="imu0" value="/fmInformation/imu"/>
-
-            <rosparam param="odom0_config">[false, false, false,
-                                            false, false, false,
-                                            true, true, false,
-                                            false, false, true,
-                                            false, false, false]</rosparam>
-            <rosparam param="odom1_config">[true, true, false,
-                                            false, false, true,
-                                            false, false, false,
-                                            false, false, false,
-                                            false, false, false]</rosparam>
-            <rosparam param="imu0_config">[false, false, false,
-                                           false, false, true,
-                                           false, false, false,
-                                           false, false, true,
-                                           true, false, false]</rosparam>
-
-            <param name="odom0_differential" value="true"/>
-            <param name="odom1_differential" value="false"/>
-            <param name="imu0_differential" value="false"/>
-            <param name="odom0_relative" value="false"/>
-            <param name="odom1_relative" value="true"/>
-            <param name="imu0_relative" value="true"/>
-
-            <param name="imu0_remove_gravitational_acceleration" value="false"/>
-            <param name="print_diagnostics" value="true"/>
-        </node> -->
     </group>
 
     <group ns="fmControllers">
