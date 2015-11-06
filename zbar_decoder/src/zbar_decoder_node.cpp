@@ -29,7 +29,8 @@ bool prev_tag_found;
 ros::Publisher pub;
 vector<string> knownCodes;//
 
-unsigned debounce_size = 3;
+int debounce_size;
+double scale_factor;
 class BoolDebouncer
 {
 public:
@@ -68,7 +69,7 @@ void camCallback(const sensor_msgs::Image::ConstPtr& img )
   }
   // extreact qr code
   cv::Mat down_scaled_im;
-  cv::resize(cv_ptr->image, down_scaled_im, Size(), 0.5, 0.5);
+  cv::resize(cv_ptr->image, down_scaled_im, Size(), scale_factor, scale_factor);
   uchar *raw = (uchar *)down_scaled_im.data;
   unsigned width = down_scaled_im.cols;
   unsigned height = down_scaled_im.rows;
@@ -85,9 +86,12 @@ void camCallback(const sensor_msgs::Image::ConstPtr& img )
   bool tag_found = debouncer.update(current_tag_found);
   if(tag_found) // qr found?
   {
-    ROS_DEBUG("Tag found");
-    // first found tag is used
-    tag_value = image.symbol_begin()->get_data();
+    if(current_tag_found)
+    {
+      ROS_DEBUG("Tag found");
+      // first found tag is used
+      tag_value = image.symbol_begin()->get_data();
+    }
   }
   else if(prev_tag_found) // else n==0 -> no code found
   {
@@ -112,6 +116,12 @@ int main(int argc, char **argv){
   ros::NodeHandle n("~");
   ros::Subscriber sub = n.subscribe("/usb_cam/image_raw",1, camCallback);
   pub = n.advertise<msgs::StringStamped>("/tag", 1);
+  n.param<double>("tag_scale_factor",scale_factor, 0.5);
+  n.param<int>("debounce_size", debounce_size, 3);
+  if(debounce_size < 1) {
+    debounce_size = 1;
+    ROS_WARN("Debounce size less than 1 so defaults to: %i", debounce_size);
+  }
   scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
   ros::spin();
 }
