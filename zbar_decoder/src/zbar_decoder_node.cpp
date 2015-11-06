@@ -10,6 +10,7 @@
 #include <msgs/StringStamped.h>
 #include <sensor_msgs/Image.h>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <zbar.h>
 
 using namespace std;
@@ -66,9 +67,11 @@ void camCallback(const sensor_msgs::Image::ConstPtr& img )
     return;
   }
   // extreact qr code
-  uchar *raw = (uchar *)cv_ptr->image.data;
-  unsigned width = cv_ptr->image.cols;
-  unsigned height = cv_ptr->image.rows;
+  cv::Mat down_scaled_im;
+  cv::resize(cv_ptr->image, down_scaled_im, Size(), 0.5, 0.5);
+  uchar *raw = (uchar *)down_scaled_im.data;
+  unsigned width = down_scaled_im.cols;
+  unsigned height = down_scaled_im.rows;
   // wrap image data
   Image image(width, height, "Y800", raw, width * height);
   // scan the image for barcodes
