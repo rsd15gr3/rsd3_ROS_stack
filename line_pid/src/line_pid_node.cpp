@@ -36,8 +36,10 @@ double bearingDist = 0;
 double maxI = 0;
 double feedFordSpeed = 0;
 bool lineFollowEnabled = false;
+bool turningRight = false;
 
 int moveForwardTicks = 0;
+int positionZeroTicks = 0;
 
 string lineTopicName = "";
 string actionTopicName = "";
@@ -104,7 +106,31 @@ void pidCb(const ros::TimerEvent &)
         pidDebugMsg.header.stamp = ros::Time::now();
         pidDebugMsg.data = heading_controller.getLatestUpdateValues();
         pidDebugPub.publish(pidDebugMsg);
-    } else {
+    }
+
+    else if (turningRight){
+
+        if (moveForwardTicks - positionZeroTicks < 340){
+            geometry_msgs::TwistStamped twistedStamped;
+            twistedStamped.twist.linear.x = feedFordSpeed * 0.5;
+            twistedStamped.header.stamp = ros::Time::now();
+            twistedStamped.twist.angular.z = 0;
+            commandPub.publish(twistedStamped);
+        }
+
+        if (moveForwardTicks - positionZeroTicks > 340 && moveForwardTicks - positionZeroTicks < 840){
+            geometry_msgs::TwistStamped twistedStamped;
+            twistedStamped.twist.linear.x = 0;
+            twistedStamped.header.stamp = ros::Time::now();
+            twistedStamped.twist.angular.z = - 0.4;
+            commandPub.publish(twistedStamped);
+        }   
+        else {
+            turningRight= false;
+            lineFollowEnabled= true;
+        }
+    }
+    else  {
         heading_controller.reset();
     }
 }
@@ -142,26 +168,7 @@ void encoder_left_callback(const msgs::IntStamped &ticks){
 void turningLeft(const msgs::StringStamped &qr_detected)
 {
     if (qr_detected.data == "wc_3_entrance")
-    lineFollowEnabled = 0;
-    int positionZeroTicks = moveForwardTicks;
-
-    while(moveForwardTicks - positionZeroTicks < 340){
-        geometry_msgs::TwistStamped twistedStamped;
-        twistedStamped.twist.linear.x = feedFordSpeed * 0.5;
-        twistedStamped.header.stamp = ros::Time::now();
-        twistedStamped.twist.angular.z = 0;
-        commandPub.publish(twistedStamped);
-    }
-
+    lineFollowEnabled = false;
+    turningRight = true;
     positionZeroTicks = moveForwardTicks;
-    while(moveForwardTicks - positionZeroTicks < 400){
-        geometry_msgs::TwistStamped twistedStamped;
-        twistedStamped.twist.linear.x = 0;
-        twistedStamped.header.stamp = ros::Time::now();
-        twistedStamped.twist.angular.z = - 0.2;
-        commandPub.publish(twistedStamped);
-    }   
-
-    lineFollowEnabled = 1;
-
 }

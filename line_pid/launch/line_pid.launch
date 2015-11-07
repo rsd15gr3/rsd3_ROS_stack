@@ -66,16 +66,8 @@
         <param name="use_nmea_checksum" value="true"/>
     </node>
 
-   <!-- <node pkg="keyboard_remote_control" name="kbd_remote" type="keyboard_remote_control_node.py" output="screen" >
-        <param name="keyboard_sub" value="/fmHMI/keyboard"/>
-        <param name="remote_control_pub" value="/fmHMI/remote_control"/>
-    </node>
-    
-    <node pkg="keyboard_interface" type="keyboard_node" name="keyboard">
-        <param name="keyboard_pub" value="/fmHMI/keyboard" />
-    </node>
-        serial communication with the IMU
-        node pkg="serial_string" name="imu_serial" type="serial_string_node" respawn="true" output="screen">
+    <!--serial communication with the IMU-->
+    <node pkg="serial_string" name="imu_serial" type="serial_string_node" respawn="true" output="screen">
         <param name="publisher_topic" value="/fmData/imu_rx" />
         <param name="subscriber_topic" value="/fmData/imu_tx" />
         <param name="device" value="/dev/imu" />
