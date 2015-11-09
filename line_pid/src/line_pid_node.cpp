@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
 void pidCb(const ros::TimerEvent &)
 {
-    if (lineFollowEnabled) {
+    if (lineFollowEnabled || true) {
         geometry_msgs::TwistStamped twistedStamped;
         twistedStamped.twist.linear.x = feedFordSpeed;
         twistedStamped.header.stamp = ros::Time::now();
