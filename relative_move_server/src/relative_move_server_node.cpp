@@ -21,11 +21,11 @@ public:
         odom_sub_ = nh_->subscribe(odom_topic, 1, &RelativeMoveAction::odomCB, this);
 
         nh_->param("pid_dist_offset", pid_dist_offset_, 0.85);
-        nh_->param("max_lin", max_lin_, 1.2);
-        nh_->param("max_rot", max_rot_, 0.9);
-        nh_->param("kp", Kp_, 10.0);
-        nh_->param("ki", Ki_, 0.0);
-        nh_->param("kd", Kd_, 0.0);
+        nh_->param("/fmExecutors/wptnav/max_linear_velocity", max_lin_, 1.2);
+        nh_->param("/fmExecutors/wptnav/max_angular_velocity", max_rot_, 0.9);
+        nh_->param("/fmExecutors/wptnav/drive_kp", Kp_, 10.0);
+        nh_->param("/fmExecutors/wptnav/drive_ki", Ki_, 0.0);
+        nh_->param("/fmExecutors/wptnav/drive_kd", Kd_, 0.0);
 
         as_.start();
     }
