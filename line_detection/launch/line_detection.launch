@@ -27,7 +27,7 @@
     </node>
     -->
     <node name="line_detector" pkg="line_detection" type="line_detection_node" output="screen" > 
-      <param name="threshold_gray" value="120" />
+      <param name="threshold_gray" value="110" />
       <param name="camera_frame_id" value="camera_link" />
       <param name="show_lines" value="true" />
     </node>

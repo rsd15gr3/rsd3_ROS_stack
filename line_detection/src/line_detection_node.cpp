@@ -1,16 +1,18 @@
 #include <stdio.h>
 #include <vector>
+#include <cmath>
+#include <random>
+#include <string>
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
-#include <cmath>
 #include <eigen3/Eigen/Dense>
-#include <string>
 #include <ros/ros.h>
+
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-
 #include <msgs/BoolStamped.h>
 #include <line_detection/line.h>
 #include <line_detection/cross.h>
@@ -44,6 +46,12 @@ cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/m
 
 ros::Publisher line_pub;
 ros::Publisher verify_pub;
+
+//random generator
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_int_distribution<> threshold_random(90, 140);
+
 
 bool verification = false; /* Verify is set true when is likley that a "preception" is valid, */
 int threshold_gray = 105;
@@ -86,6 +94,7 @@ int main(int argc, char** argv)
     image_pub = it.advertise("line_debug_image", 1);
     ros::ServiceServer service = n.advertiseService("getCross", findCross);
     ros::Timer timeVerify = n.createTimer(ros::Duration(1.0 / verify_pub_rate), verifyPubCb);
+
     ros::spin();
     return 0;
 }
@@ -199,9 +208,9 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     }
     else
     {
-        threshold_top = threshold_gray;
-        threshold_bot = threshold_gray;
-        ROS_WARN("No valid line found");
+        threshold_top = threshold_random(gen);//threshold_gray;
+        threshold_bot = threshold_random(gen);
+        ROS_WARN("No valid line found, T_top %f, T_bot %f", threshold_top, threshold_bot);
         angle=0;
         offset=0;
     }    
