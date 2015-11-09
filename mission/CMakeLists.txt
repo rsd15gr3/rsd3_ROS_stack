@@ -20,7 +20,7 @@ include_directories(
 )
 
 ## Declare a C++ executable
-add_executable(mission_node src/mission_node.cpp )
+add_executable(mission_node src/mission_node.cpp src/Node.cpp src/route.cpp )
 add_dependencies(mission_node ${catkin_EXPORTED_TARGETS})
 
 

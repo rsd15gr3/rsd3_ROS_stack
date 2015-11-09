@@ -1,173 +1,121 @@
+#include "iostream"
+#include "vector"
+
+#include "route.h"
+
 #include <ros/ros.h>
-#include <msgs/BoolStamped.h>
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/action_client.h>
+#include <actionlib/client/terminal_state.h>
+
 #include <msgs/IntStamped.h>
-#include <std_msgs/Int32.h>
 #include "mission/action_states.h"
-#include "deque"
 
-using namespace std;
-using namespace ros;
 
-void State_pick();
-
-int loopRate = 10;
-msgs::BoolStamped exampleMsg;
-
-//
-int currentAction = CTR_MANUAL;
-bool manualControlActive = true;
-bool verificationBox = false;
-bool verificationGPS = false;
-bool verificationLine = false;
-bool verificationTipper = false;
-deque<int> actionList;
-
-//Subscribers
-ros::Subscriber deque_subscriber;
-ros::Subscriber manualcontrol_subscriber;
-ros::Subscriber verificationBox_subscriber;
-ros::Subscriber verificationGPS_subscriber;
-ros::Subscriber verificationTipper_subscriber;
-ros::Subscriber verificationLine_subscriber;
+int loopRate;
 
 //Publishers
-ros::Publisher actionstate_publisher;
+ros::Publisher action_publisher;
 
-void dequeCallback(const msgs::IntStamped::ConstPtr& msg)
+//Subscribers
+ros::Subscriber state_subscriber;
+
+int currentState = CHARGE;
+int navigation_area = true;
+
+int main(int argc, char **argv)
 {
-    msgs::IntStamped _msg = *msg;
-    actionList.push_front(_msg.data);
-    State_pick();
-}
+    Route path;
+    //path.brickDelivery();
+    path.brickOrder(CELL_1);
+    path.infoRoute();
 
-void manualcontrolCallback(const msgs::BoolStamped::ConstPtr& msg)
-{
-    msgs::BoolStamped _msg = *msg;
-    manualControlActive = _msg.data;
-    State_pick();
-}
+    ros::init(argc, argv, "mission_node");
+	ros::NodeHandle nodeHandler;
+    nodeHandler.param<int>("loopRate", loopRate, 10);
 
-void verificationBoxCallback(const msgs::BoolStamped::ConstPtr& msg)
-{
-    msgs::BoolStamped _msg = *msg;
-    verificationBox = _msg.data;
-    State_pick();
-}
+	//init publishers
+    action_publisher = nodeHandler.advertise<msgs::IntStamped>("mission/next_mission",1);
+    ros::Rate rate(loopRate);
 
-void verificationGPSCallback(const msgs::BoolStamped::ConstPtr& msg)
-{
-    msgs::BoolStamped _msg = *msg;
-    verificationGPS = _msg.data;
-    State_pick();
-}
+    /*
+    actionlib::SimpleActionClient<learning_actionlib::FibonacciAction> action_navigation("fibonacci", true);
+    actionlib::SimpleActionClient<learning_actionlib::FibonacciAction> action_to_cell("fibonacci", true);
+    actionlib::SimpleActionClient<learning_actionlib::FibonacciAction> action_from_cell("fibonacci", true);
 
-void verificationLineCallback(const msgs::BoolStamped::ConstPtr& msg)
-{
-    msgs::BoolStamped _msg = *msg;
-    verificationLine = _msg.data;
-    State_pick();
-}
 
-void verificationTipperCallback(const msgs::BoolStamped::ConstPtr& msg)
-{
-    msgs::BoolStamped _msg = *msg;
-    verificationTipper = _msg.data;
-    State_pick();
-}
+    action_navigation.waitForServer();
+    action_to_cell.waitForServer();
+    action_from_cell.waitForServer();
 
-void exampleCallback(const msgs::BoolStamped::ConstPtr& msg)
-{
-	exampleMsg = *msg;
-    cout << "Callback: Recived message" << endl;
-}
+    learning_actionlib::FibonacciGoal goal;
+    goal.order = 20;
+    ac.sendGoal(goal);
+    */
 
-int main(int argc, char **argv){
+	while(ros::ok())
+	{
+        //check mes order
 
-	ros::init(argc, argv, "mission_node");
-	NodeHandle nodeHandler;
-    //nodeHandler.param<int>("loopRate", loopRate, 10);
-
-    //init subscribers
-    deque_subscriber = nodeHandler.subscribe("mission/deque", 20, dequeCallback);
-    manualcontrol_subscriber = nodeHandler.subscribe("perception/manualcontrol_verify", 1, manualcontrolCallback);
-    ros::Subscriber example_subscriber = nodeHandler.subscribe("perception/example_verify_pub", 1, exampleCallback);
-    verificationBox_subscriber = nodeHandler.subscribe("perception/box_verify", 1, verificationBoxCallback);
-    verificationGPS_subscriber = nodeHandler.subscribe("perception/gps_verify", 1, verificationGPSCallback);
-    verificationLine_subscriber = nodeHandler.subscribe("perception/line_verify", 1, verificationLineCallback);
-    verificationTipper_subscriber = nodeHandler.subscribe("perception/tipper_verify", 1, verificationTipperCallback);
-
-    //init publishers
-    actionstate_publisher = nodeHandler.advertise<msgs::IntStamped>("mission/action_state",1);
-
-    ros::spin();
-    
-	return 0;
-}
-
-void State_pick()
-{
-    if(manualControlActive)
-    {
-        currentAction = CTR_MANUAL;
-    }
-    else
-    {
-        if(actionList.empty())
+        /*if(mes=getBricks)
         {
-            currentAction = CTR_IDLE;
+            path.brickOrder(CELL);
         }
 
-        if(actionList.size() > 1)
+        if(mes=Delivery)
         {
-            switch(actionList[1])
+            path.brickDelivery();
+        }*/
+
+
+        if(path.empty() && path.getCurrentState() != CHARGE)
+        {
+            path.goCharge();
+        }
+
+        if(!path.empty() && path.next() != CTR_IDLE)
+        {
+            if(navigation_area)
             {
-                case BOX_BRICK: //these go to the same logic
-                case BOX_CHARGE:
-                case BOX_DOOR:
-                    if(verificationBox)
-                    {
-                        actionList.pop_front();
-                    }
-                break;
-
-                case GPS_DOOR: //these go to the same logic
-                case GPS_LINE:
-                    if(verificationGPS)
-                    {
-                        actionList.pop_front();
-                    }
-                break;
-
-                case LINE_GPS: //these go to the same logic
-                case LINE_TIPPER:
-                    if(verificationLine)
-                    {
-                        actionList.pop_front();
-                    }
-
-                case TIPPER_UP: //these go to the same logic
-                case TIPPER_DOWN:
-                    if(verificationTipper)
-                    {
-                        actionList.pop_front();
-                    }
-                break;
-
-                default:
-                throw("missing states");
-                break;
+                if(path.next() == TRANSITION)
+                {
+                    navigation_area = false;
+                }
+                //learning_actionlib::FibonacciGoal goal;
+                //goal.order = path.next();
+                //action_navigation.sendGoal(goal);
+                //action_navigation.waitForResult(); //default 0, which should mean blocking
+                path.pop();
+            }
+            else
+            {
+                if(path.next() == TRANSITION)
+                {
+                    navigation_area = true;
+                    //learning_actionlib::FibonacciGoal goal;
+                    //action_from_cell.sendGoal();
+                    //action_from_cell.waitForResult(); //default 0, which should mean blocking
+                    path.pop();
+                }
+                else
+                {
+                    //learning_actionlib::FibonacciGoal goal;
+                    //goal.order = path.next();
+                    //action_to_cell.sendGoal(goal);
+                    //action_to_cell.waitForResult(); //default 0, which should mean blocking
+                    path.pop();
+                }
             }
         }
 
-        currentAction = actionList.front();
+        msgs::IntStamped gui_message;
+        gui_message.header.stamp = ros::Time::now();
+        gui_message.data = path.next();
+        action_publisher.publish(gui_message);
 
-    }
+		ros::spinOnce();
+        rate.sleep();
+	}
 
-    msgs::IntStamped message;
-    message.header.stamp = ros::Time::now();
-    message.data = currentAction;
-    actionstate_publisher.publish(message);
-
+	return 0;
 }
-
-

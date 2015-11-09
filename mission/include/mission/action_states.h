@@ -18,3 +18,12 @@
 //Tipper area perception/tipper_verify
 #define TIPPER_UP      	11
 #define TIPPER_DOWN    	12
+
+#define CHARGE      	13
+#define BRICK    	14
+#define DELIVERY      	15
+#define TRANSITION    	16
+#define CELL_1      	17
+#define CELL_2    	18
+#define CELL_3      	19
+
