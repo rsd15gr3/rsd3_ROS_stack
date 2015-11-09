@@ -1,14 +1,17 @@
 #ifndef Navigation_H
 #define Navigation_H
-#include<string>
+#include <string>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
-#include<geometry_msgs/Pose.h>
+#include <geometry_msgs/Pose.h>
 #include <msgs/IntStamped.h>
+#include <line_pid/DockingAction.h>
 using std::string;
 using std::vector;
 using geometry_msgs::Pose;
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+typedef actionlib::SimpleActionClient<line_pid::DockingAction> ChargingClient;
+
 
 class Navigation
 {
@@ -24,6 +27,7 @@ public:
     string base_frame_id_;
 private:
     MoveBaseClient ac_;
+    ChargingClient char_client_;
     int prev_action_state_ = -1;
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);
     void activeCb();

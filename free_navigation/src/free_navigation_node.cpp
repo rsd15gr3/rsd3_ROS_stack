@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 #include <mission/action_states.h>
-#include<msgs/IntStamped.h>
+#include <msgs/IntStamped.h>
 #include <tf/tf.h>
 #include <free_navigation/free_navigation.h>
 using std::vector;
@@ -17,6 +17,7 @@ int main(int argc, char** argv){
     ros::NodeHandle n;
     Navigation navigation;
     string action_topic;
+    
     {
         string base_link_id;
         n.param<string>("base_link_id", base_link_id, "base_link");
@@ -38,3 +39,4 @@ int main(int argc, char** argv){
     ros::spin();
     return 0;
 }
+

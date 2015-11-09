@@ -8,15 +8,31 @@ find_package(catkin REQUIRED COMPONENTS
   roslaunch
   line_detection
   mission
+  actionlib
+  actionlib_msgs
 )
 
-catkin_package(CATKIN_DEPENDS)
+find_package(Boost REQUIRED COMPONENTS system)
+
+add_action_files(
+  DIRECTORY action
+  FILES Docking.action
+)
+
+generate_messages(
+   DEPENDENCIES
+   std_msgs  
+   actionlib_msgs
+)
+
+catkin_package(CATKIN_DEPENDS actionlib_msgs)
 
 # Check launch files in launch/ for errors
 # roslaunch_add_file_check(launch)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   ${mission_INCLUDE_DIRS}
 )
 

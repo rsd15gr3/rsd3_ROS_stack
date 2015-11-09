@@ -26,7 +26,8 @@ add_executable(free_navigation_node
 )
 
 add_dependencies(free_navigation_node
-    ${catkin_EXPORTED_TARGETS}    
+    ${catkin_EXPORTED_TARGETS}
+    ${line_pid_EXPORTED_TARGETS}    
     mission
 )
 
