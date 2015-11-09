@@ -1,0 +1,8 @@
+<!-- FroboScout launch file -->
+
+<launch>
+	<node pkg="hmi_support_workcell" name="hmi_support_workcell_node" type="hmi_support_workcell_node.py" output="screen">
+		<param name="ui_str_control_wc_sub" value="/ui_str_control_wc" />
+	</node>
+</launch>
+
