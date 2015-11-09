@@ -121,7 +121,10 @@
 
      <node name="line_turn_control" pkg="line_turn" type="line_turn_node" output="screen" > 
         <param name="turn_position" value="40"/>
-        <param name="shift_angle" value="1"/>
+        <param name="shift_angle" value="1.5"/>
+        <param name="line_topic" value="/line_detector/perception/line" />
+        <param name="odometry_topic" value="/odometry/filtered" />          
+        <param name="command_pub" value="/fmCommand/cmd_vel" />
      </node>
 
      <node name="line_detector" pkg="line_detection" type="line_detection_node" output="screen" > 
