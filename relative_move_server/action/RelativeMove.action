@@ -4,9 +4,12 @@ float64 target_yaw
 ---
 #result definition
 int16 ERROR = 0
-int16 GOAL_REACHED = 1
-int16 FAILED = 2
+int16 INVALID_GOAL = 1
+int16 GOAL_REACHED = 2
+int16 FAILED = 3
+int16 end_state
 geometry_msgs/PoseStamped end_pose
+
 ---
 #feedback
 geometry_msgs/PoseStamped current_goal
