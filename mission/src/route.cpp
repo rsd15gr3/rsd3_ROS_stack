@@ -48,7 +48,7 @@ void Route::brickOrder(int target)
      {
          route.push_back(temp[i]);
      }
-     route.push_back(CTR_IDLE);
+     //route.push_back(CTR_IDLE);
 }
 
 void Route::brickDelivery()
