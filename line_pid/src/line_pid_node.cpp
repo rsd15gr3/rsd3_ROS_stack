@@ -95,10 +95,10 @@ void pidCb(const ros::TimerEvent &)
 {
     if (lineFollowEnabled) {
         geometry_msgs::TwistStamped twistedStamped;
-        twistedStamped.twist.linear.x = 0; //feedFordSpeed;
+        twistedStamped.twist.linear.x = feedFordSpeed;
         twistedStamped.header.stamp = ros::Time::now();
         double movingGoalTargetAngle = getMovingGoalTargetAngle();
-        twistedStamped.twist.angular.z = 0;//heading_controller.update(movingGoalTargetAngle);
+        twistedStamped.twist.angular.z = heading_controller.update(movingGoalTargetAngle);
         commandPub.publish(twistedStamped);
 
         // publish PID debug msgs TODO: disable debug publish
@@ -109,6 +109,9 @@ void pidCb(const ros::TimerEvent &)
     }
 
     else if (turningRight){
+
+        if(positionZeroTicks==0){
+            positionZeroTicks = moveForwardTicks;}
 
         if (moveForwardTicks - positionZeroTicks < 340){
             geometry_msgs::TwistStamped twistedStamped;
@@ -128,6 +131,7 @@ void pidCb(const ros::TimerEvent &)
         else {
             turningRight= false;
             lineFollowEnabled= true;
+            positionZeroTicks = 0;
         }
     }
     else  {
@@ -170,5 +174,4 @@ void turningLeft(const msgs::StringStamped &qr_detected)
     if (qr_detected.data == "wc_3_entrance")
     lineFollowEnabled = false;
     turningRight = true;
-    positionZeroTicks = moveForwardTicks;
 }
