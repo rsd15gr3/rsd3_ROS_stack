@@ -7,8 +7,8 @@
 #include <vector>
 #include <mission/action_states.h>
 #include <line_detection/line.h>
-#include <actionlib/server/simple_action_server.h>
-#include <line_pid/DockingAction.h>
+/*#include <actionlib/server/simple_action_server.h>
+#include <line_pid/DockingAction.h>*/
 
 using namespace std;
 using namespace ros;
@@ -43,7 +43,7 @@ string commandPubName = "";
 
 Pid_controller heading_controller;
 
-typedef actionlib::SimpleActionServer<line_pid::DockingAction> Server;
+/*typedef actionlib::SimpleActionServer<line_pid::DockingAction> Server;
 
 void executeDocking(const line_pid::DockingGoalConstPtr &goal, Server* as_)
 {
@@ -54,16 +54,12 @@ void executeDocking(const line_pid::DockingGoalConstPtr &goal, Server* as_)
     line_pid::DockingResult result_;
 
     // push_back the seeds for the fibonacci sequence
-    feedback_.sequence.clear();
-    feedback_.sequence.push_back(0);
-    feedback_.sequence.push_back(1);
 
     // publish info to the console for the user
     ROS_INFO("Executing, creating fibonacci sequence of order %i with seeds %i, %i", goal->order, feedback_.sequence[0], feedback_.sequence[1]);
 
     // start executing the action
-    for(int i=1; i<=goal->order; i++)
-    {
+
       // check that preempt has not been requested by the client
       if (as_->isPreemptRequested() || !ros::ok())
       {
@@ -73,11 +69,10 @@ void executeDocking(const line_pid::DockingGoalConstPtr &goal, Server* as_)
         success = false;
         break;
       }
-      feedback_.sequence.push_back(feedback_.sequence[i] + feedback_.sequence[i-1]);
+
       // publish the feedback
       as_->publishFeedback(feedback_);
       r.sleep();
-    }
 
     if(success)
     {
@@ -85,7 +80,7 @@ void executeDocking(const line_pid::DockingGoalConstPtr &goal, Server* as_)
       as_->setSucceeded(result_);
     }
 }
-
+*/
 
 int main(int argc, char **argv)
 {
@@ -108,8 +103,8 @@ int main(int argc, char **argv)
     ros::Subscriber errorSub = n.subscribe(lineTopicName, 1, lineCb);
     ros::Subscriber enableSub = n.subscribe(actionTopicName, 1, lineEnableCb);
 
-    Server server(n, "charging_action_server", boost::bind(&executeDocking, _1, &server), false);
-    server.start();
+    /*Server server(n, "charging_action_server", boost::bind(&executeDocking, _1, &server), false);
+    server.start();*/
 
     commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName, 1);
     pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
