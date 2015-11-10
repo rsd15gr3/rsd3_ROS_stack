@@ -3,4 +3,5 @@
   <include file="$(find free_navigation)/launch/move_base_launch.xml" />  
   <rosparam file="$(find free_navigation)/config/navigation_node.yaml" command="load"/>
   <node name="free_navigator" pkg="free_navigation" type="free_navigation_node" output="screen"/>
+  <!--<node name="relative_move_server_node" pkg="relative_move_server" type="relative_move_server_node" output="screen"/>-->
 </launch>

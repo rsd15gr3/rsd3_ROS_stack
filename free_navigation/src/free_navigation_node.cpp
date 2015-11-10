@@ -31,8 +31,11 @@ int main(int argc, char** argv){
         navigation.line_from_manipulator_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
         n.param<vector<double>>("load_bricks", tmp_in_plane_pose, vector<double>{0,0,0});
         navigation.load_bricks_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
-        n.param<vector<double>>("charge", tmp_in_plane_pose, vector<double>{0,0,0});
-        navigation.charge_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
+        n.param<vector<double>>("charge_initial", tmp_in_plane_pose, vector<double>{0,0,0});
+        navigation.charge_initial_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
+        n.param<vector<double>>("charge_dock", tmp_in_plane_pose, vector<double>{0,0,0});
+        navigation.charge_dock_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
+        
     }    
     ros::Subscriber sub = n.subscribe(action_topic, 1, &Navigation::actionStateCb, &navigation);
     //ros::Subscriber sub = n.subscribe(action_topic, 1, &actionCb);

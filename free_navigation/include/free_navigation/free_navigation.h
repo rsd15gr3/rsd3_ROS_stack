@@ -5,12 +5,12 @@
 #include <actionlib/client/simple_action_client.h>
 #include <geometry_msgs/Pose.h>
 #include <msgs/IntStamped.h>
-#include <line_pid/DockingAction.h>
+#include <relative_move_server/RelativeMoveAction.h>
 using std::string;
 using std::vector;
 using geometry_msgs::Pose;
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
-typedef actionlib::SimpleActionClient<line_pid::DockingAction> ChargingClient;
+typedef actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> ChargingClient;
 
 
 class Navigation
@@ -22,8 +22,9 @@ public:
     static Pose convertVecToPose(const vector<double>& poses);
     Pose line_to_manipulator_pose_;
     Pose line_from_manipulator_pose_;
-    Pose charge_pose_;
     Pose load_bricks_pose_;
+    Pose charge_initial_pose_;
+    Pose charge_dock_pose_;
     string base_frame_id_;
 private:
     MoveBaseClient ac_;
@@ -33,6 +34,9 @@ private:
     void activeCb();
     void feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback);
 
+    void doneRelativeMovCb(const actionlib::SimpleClientGoalState& state, const relative_move_server::RelativeMoveResultConstPtr& result);
+    void activeRelativeMovCb();
+    void feedbackRelativeMovCb(const relative_move_server::RelativeMoveFeedbackConstPtr& feedback);
     void setBaseFrameId(string frame_id);
 };
 

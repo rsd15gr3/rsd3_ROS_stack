@@ -2,12 +2,17 @@
 #include <boost/bind.hpp>
 #include <tf/tf.h>
 #include <mission/action_states.h>
+
+
 Navigation::Navigation()
     : ac_("move_base", true), char_client_("charge_action", true)
 {
     //char_client_("charge battery", true);
     while(!ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
         ROS_INFO("Waiting for the move_base action server to come up");
+    }
+    while(!char_client_.waitForServer(ros::Duration(5.0)) && ros::ok()){
+        ROS_INFO("Waiting for the relative_move action server to come up");
     }
 }
 
@@ -28,6 +33,25 @@ void Navigation::feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feed
     // Possible to Monitor position on feedback->base_position
 }
 
+void Navigation::doneRelativeMovCb(const actionlib::SimpleClientGoalState& state,
+                                   const relative_move_server::RelativeMoveResultConstPtr& result)
+{
+  //ROS_INFO("Finished in state [%s]", end_state.toString().c_str());
+  //ROS_INFO("Answer: %i", result->end_pose);
+  //ros::shutdown();
+}
+
+void Navigation::activeRelativeMovCb()
+{
+  ROS_INFO("Goal just went active");
+}
+
+void Navigation::feedbackRelativeMovCb(const relative_move_server::RelativeMoveFeedbackConstPtr& feedback)
+{
+  ROS_INFO("Got Feedback ");//, feedback->current_goal);
+}
+
+
 void Navigation::actionStateCb(const msgs::IntStamped& action_state)
 {
     ROS_INFO("Action: %i recieved", action_state.data);
@@ -38,7 +62,7 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
         switch (action_state.data) {
         case BOX_CHARGE:
             ROS_INFO("GOING TO CHARGER: %i", BOX_CHARGE);
-            goal.target_pose.pose = charge_pose_;
+            goal.target_pose.pose = charge_initial_pose_;
             break;
         case BOX_BRICK:
             ROS_INFO("GOING TO collect bricks: %i", BOX_BRICK);
@@ -81,10 +105,18 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
 
         if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
             //call server for charging task
-            ROS_INFO("hello");
-            line_pid::DockingGoal goal; 
-            goal.order = 20;
-            char_client_.sendGoal(goal);
+            relative_move_server::RelativeMoveGoal goalPose;
+            goalPose.target_pose.pose = charge_dock_pose_;
+
+            ROS_INFO("(%f, %f)",goalPose.target_pose.pose.position.x, goalPose.target_pose.pose.position.y);
+            goalPose.target_pose.header.frame_id = base_frame_id_;
+            goalPose.target_pose.header.stamp = ros::Time::now();  
+            //goalPose.target_yaw.data = 1.57;
+
+            char_client_.sendGoal(goalPose, boost::bind(&Navigation::doneRelativeMovCb,this,_1, _2),
+                                boost::bind(&Navigation::activeRelativeMovCb, this),
+                                boost::bind(&Navigation::feedbackRelativeMovCb, this, _1) );
+
         }
     }
     prev_action_state_ = action_state.data;
