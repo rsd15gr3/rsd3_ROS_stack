@@ -110,7 +110,6 @@ bool get_qr_id_callback(zbar_decoder::decode_qr::Response &req, zbar_decoder::de
 {
   string qr_tag;
   bool tag_in_im = decode_qr_tag(cv_ptr, qr_tag);
-  //res.value = 8;
   res.value = qr_tag;
 }
 
@@ -180,13 +179,13 @@ void camCallback(const sensor_msgs::Image::ConstPtr& img )
   }
   bool current_tag_found = imHasQRTag(cv_ptr->image);
   bool tag_found = debouncer.update(current_tag_found);
-  if(tag_found)
-    ROS_INFO("Tag found");
-  else
-    ROS_INFO("no tag found");
+  //if(tag_found)
+    //ROS_INFO("Tag found");
+  //else
+    //ROS_INFO("no tag found");
   if(tag_found != prev_tag_found) // qr found?
   {
-    ROS_DEBUG("Tag found");
+    //ROS_DEBUG("Tag found");
     // first found tag is used
     //ROS_DEBUG_COND(qr_tag_found, "qr tag not found by zbar");
     msgs::BoolStamped msgs;

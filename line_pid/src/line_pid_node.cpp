@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
     ros::Subscriber errorSub = n.subscribe(lineTopicName, 1, lineCb);
     ros::Subscriber enableSub = n.subscribe(actionTopicName, 1, lineEnableCb);
-    ros::Subscriber qr_tag_detect_sub = n.subscribe("/qr_tag", 1, qrTagDetectCb);
+    ros::Subscriber qr_tag_detect_sub = n.subscribe("/tag_found", 1, qrTagDetectCb);
     commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName, 1);
     pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
     n.subscribe(actionTopicName, 1, &actionStateCb);
