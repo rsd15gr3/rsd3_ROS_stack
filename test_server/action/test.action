@@ -1,0 +1,12 @@
+#goal definition
+float64 goal
+---
+#result definition
+int16 ERROR = 0
+int16 INVALID_GOAL = 1
+int16 GOAL_REACHED = 2
+int16 FAILED = 3
+int16 end_state
+---
+#feedback
+float64 progress

@@ -1,0 +1,18 @@
+<!-- -->
+<launch> 
+    <node name="test_server" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="test_server" />
+    </node>
+
+    <node name="test_server2" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="action_navigation" />
+    </node>
+
+    <node name="test_server3" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="action_to_cell" />
+    </node>
+
+    <node name="test_server4" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="action_from_cell" />
+    </node>
+</launch>
