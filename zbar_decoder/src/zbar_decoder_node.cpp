@@ -22,8 +22,8 @@ using namespace cv;
 #define ROSCONSOLE_MIN_SEVERITY ROSCONSOLE_SEVERITY_DEBUG //ROSCONSOLE_SEVERITY_INFO, ROSCONSOLE_SEVERITY_DEBUG
 const string node_name("zbar_decoder_node");
 
-const double min_white_area = 100;
-const unsigned min_tag_area = 70;
+const double min_white_area = 60000;
+const unsigned min_tag_area = 30000;
 const int threshold_value = 210;
 ImageScanner scanner;
 bool prev_tag_found;
