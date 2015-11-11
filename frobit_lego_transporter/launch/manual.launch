@@ -94,12 +94,27 @@
             <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 99999, 99999, 99999, 0.001]</rosparam>
         </node>
 
-        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" output="screen">
+        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="ekf_local" output="screen">
+            <remap from="odom" to="/fmKnowledge/wheel_odom"/>
+            <remap from="imu_data" to="/fmInformation/imu"/>
+            <param name="output_frame" value="odom"/>
+            <param name="base_footprint_frame" value="base_link"/>
+            <param name="freq" value="30.0"/>
+            <param name="sensor_timeout" value="1.0"/>
+            <param name="odom_used" value="true"/>
+            <param name="imu_used" value="true"/>
+            <param name="vo_used" value="false"/>
+            <param name="gps_used" value="false"/>
+            <param name="debug" value="false"/>
+            <param name="self_diagnose" value="true"/>
+        </node>
+
+        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="ekf_global" output="screen">
             <remap from="odom" to="/fmKnowledge/wheel_odom"/>
             <remap from="imu_data" to="/fmInformation/imu"/>
             <remap from="gps" to="/fmKnowledge/odom_marloc"/>
-            <param name="output_frame" value="odom"/>
-            <param name="base_footprint_frame" value="base_link"/>
+            <param name="output_frame" value="map"/>
+            <param name="base_footprint_frame" value="odom"/>
             <param name="freq" value="30.0"/>
             <param name="sensor_timeout" value="1.0"/>
             <param name="odom_used" value="true"/>
@@ -177,4 +192,6 @@
             <param name="keyboard_pub" value="/fmHMI/keyboard" />
         </node>
     </group>
+
+    <node pkg="tf" type="static_transform_publisher" name="map_webcam_tf" args="0 0 0 0 0 0 map webcam 100" />
 </launch>
