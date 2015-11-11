@@ -94,7 +94,7 @@
             <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 99999, 99999, 99999, 0.001]</rosparam>
         </node>
 
-        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" output="screen">
             <remap from="odom" to="/fmKnowledge/wheel_odom"/>
             <remap from="imu_data" to="/fmInformation/imu"/>
             <remap from="gps" to="/fmKnowledge/odom_marloc"/>
