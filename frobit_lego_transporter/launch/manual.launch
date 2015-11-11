@@ -193,5 +193,5 @@
         </node>
     </group>
 
-    <node pkg="tf" type="static_transform_publisher" name="map_webcam_tf" args="0 0 0 0 0 0 map webcam 100" />
+    <node pkg="tf" type="static_transform_publisher" name="webcam_map_tf" args="0 0 0 0 0 0 webcam map 100" />
 </launch>
