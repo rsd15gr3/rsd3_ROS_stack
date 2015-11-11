@@ -20,7 +20,7 @@ class MarkerLocatorOdometryNode:
         self.odom_gps_pub = rospy.Publisher("odom_marloc", Odometry, queue_size=1)
 
         # Loop
-        self.rate = rospy.Rate(30)
+        self.rate = rospy.Rate(2)
         self.loop()
 
     def get_marker7_position(self):
