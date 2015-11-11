@@ -7,6 +7,9 @@
 #include <vector>
 #include <mission/action_states.h>
 #include <line_detection/line.h>
+#include <std_msgs/String.h>
+#include <msgs/BoolStamped.h>
+#include <zbar_decoder/decode_qr.h>
 
 using namespace std;
 using namespace ros;
@@ -16,23 +19,23 @@ void lineEnableCb(const msgs::IntStamped &enable);
 double getMovingGoalTargetAngle();
 void pidCb(const ros::TimerEvent &);
 void actionStateCb(const msgs::IntStamped& action_state);
-
+void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered);
 Publisher commandPub;
 Publisher pidDebugPub;
-
-int updateRate = 10;
+ros::ServiceClient get_qr_client;
+int update_rate = 10;
 double kp = 0;
 double ki = 0;
 double kd = 0;
-double feedForward = 0;
-double maxOutput = 0;
-double targetDist = 0;
-double angleError = 0;
-double distError = 0;
-double bearingDist = 0;
-double maxI = 0;
-double feedFordSpeed = 0;
-bool lineFollowEnabled = false;
+double feed_forward = 0;
+double max_output = 0;
+double target_dist = 0;
+double angle_error = 0;
+double dist_error = 0;
+double bearing_dist = 0;
+double max_i = 0;
+double forward_Speed = 0;
+bool line_follow_enabled = false;
 
 string lineTopicName = "";
 string actionTopicName = "";
@@ -45,15 +48,15 @@ int main(int argc, char **argv)
 {
     init(argc, argv, "line_pid_node");
     NodeHandle n("~");
-    n.param<int>("update_rate", updateRate, 20);
+    n.param<int>("update_rate", update_rate, 20);
     n.param<double>("drive_kp", kp, 10.0);
     n.param<double>("drive_ki", ki, 3.35); //3.35
     n.param<double>("drive_kd", kd, 10.0); //10.0
-    n.param<double>("drive_feed_forward", feedForward, 0.0);
-    n.param<double>("drive_max_output", maxOutput, 0.40);
-    n.param<double>("drive_max_i", maxI, 0.1);
-    n.param<double>("target_dist", targetDist, 0.6);
-    n.param<double>("forward_speed", feedFordSpeed, 0.4);
+    n.param<double>("drive_feed_forward", feed_forward, 0.0);
+    n.param<double>("drive_max_output", max_output, 0.40);
+    n.param<double>("drive_max_i", max_i, 0.1);
+    n.param<double>("target_dist", target_dist, 0.6);
+    n.param<double>("forward_speed", forward_Speed, 0.4);
     n.param<string>("line_sub", lineTopicName, "/line_detector/perception/line");
     n.param<string>("action_topic", actionTopicName, "/mission/action_state");   
     n.param<string>("pid_debug_pub", pidDebugPubName, "/debug/pid_pub");
@@ -61,62 +64,101 @@ int main(int argc, char **argv)
 
     ros::Subscriber errorSub = n.subscribe(lineTopicName, 1, lineCb);
     ros::Subscriber enableSub = n.subscribe(actionTopicName, 1, lineEnableCb);
-
+    ros::Subscriber qr_tag_detect_sub = n.subscribe("/qr_tag", 1, qrTagDetectCb);
     commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName, 1);
     pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
     n.subscribe(actionTopicName, 1, &actionStateCb);
-    double updateInterval = 1.0 / updateRate;
+    double updateInterval = 1.0 / update_rate;
     ros::Timer timerPid = n.createTimer(ros::Duration(updateInterval), pidCb);
-
-    ros::Rate r(updateRate);
-
-    heading_controller.set_parameters(kp, ki, kd, feedForward, maxOutput, maxI, updateInterval);
+    line_follow_enabled = true;
+    get_qr_client = n.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");
+    heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, updateInterval);
     spin();
     return 0;
 }
 
+void publishVelCommand(double forward_speed, double angular_speed)
+{
+  geometry_msgs::TwistStamped twistedStamped;
+  twistedStamped.twist.linear.x = forward_speed;
+  twistedStamped.header.stamp = ros::Time::now();
+  twistedStamped.twist.angular.z = angular_speed;
+  commandPub.publish(twistedStamped);
+}
+
 void pidCb(const ros::TimerEvent &)
 {
-    if (lineFollowEnabled || true) {
+    if (line_follow_enabled) {
+      /*
         geometry_msgs::TwistStamped twistedStamped;
-        twistedStamped.twist.linear.x = feedFordSpeed;
+        twistedStamped.twist.linear.x = forward_Speed;
         twistedStamped.header.stamp = ros::Time::now();
         double movingGoalTargetAngle = getMovingGoalTargetAngle();
         twistedStamped.twist.angular.z = heading_controller.update(movingGoalTargetAngle);
         commandPub.publish(twistedStamped);
-
+        */
+        double movingGoalTargetAngle = getMovingGoalTargetAngle();
+        publishVelCommand(forward_Speed, heading_controller.update(movingGoalTargetAngle));
         // publish PID debug msgs TODO: disable debug publish
         msgs::FloatArrayStamped pidDebugMsg;
         pidDebugMsg.header.stamp = ros::Time::now();
         pidDebugMsg.data = heading_controller.getLatestUpdateValues();
         pidDebugPub.publish(pidDebugMsg);
     } else {
-        heading_controller.reset();
+      publishVelCommand(0,0);
+      heading_controller.reset();
     }
 }
 
 void lineCb(const line_detection::line::ConstPtr &linePtr)
 {
-    angleError = linePtr->angle;
-    distError = linePtr->offset;
+    angle_error = linePtr->angle;
+    dist_error = linePtr->offset;
 }
 
 double getMovingGoalTargetAngle()
 {
-    double closetMovingGoalAngle = atan2(targetDist, distError);
-    double movingGoalTargetAngle = M_PI_2 - closetMovingGoalAngle - angleError;
+    double closetMovingGoalAngle = atan2(target_dist, dist_error);
+    double movingGoalTargetAngle = M_PI_2 - closetMovingGoalAngle - angle_error;
     return movingGoalTargetAngle;
 }
 
 void lineEnableCb(const msgs::IntStamped &enable)
 {
-    lineFollowEnabled = (enable.data == 1);
+    //line_follow_enabled = (enable.data == 1);
 }
 void actionStateCb(const msgs::IntStamped& action_state)
 {
     if(action_state.data == LINE_GPS || action_state.data == LINE_TIPPER)
     {
-        lineFollowEnabled = true;
+        line_follow_enabled = true;
         ROS_INFO("line activated");
     }
+}
+
+void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
+{
+  if(qr_tag_entered.data)
+  {
+    publishVelCommand(0,0);
+    ros::Duration(1.0).sleep();
+    zbar_decoder::decode_qr qr_request;
+    qr_request.request.trash = "";
+    string tag;
+    if(get_qr_client.call(qr_request))
+    {
+      tag = qr_request.response.value;
+    }
+    else
+    {
+      ROS_ERROR("qr decoder server returned false");
+    }
+    ROS_INFO("tag value: %s", tag.c_str());
+    // decode qr tag
+  }
+  else
+  {
+     publishVelCommand(0,0);
+     line_follow_enabled = false;
+  }
 }

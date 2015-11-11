@@ -22,9 +22,9 @@ using namespace cv;
 #define ROSCONSOLE_MIN_SEVERITY ROSCONSOLE_SEVERITY_DEBUG //ROSCONSOLE_SEVERITY_INFO, ROSCONSOLE_SEVERITY_DEBUG
 const string node_name("zbar_decoder_node");
 
-const double min_white_area = 70;
-const unsigned min_tag_area = 50;
-const int threshold_value = 200;
+const double min_white_area = 100;
+const unsigned min_tag_area = 70;
+const int threshold_value = 210;
 ImageScanner scanner;
 bool prev_tag_found;
 cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/msg/Image.html
@@ -34,7 +34,8 @@ double scale_factor;
 class BoolDebouncer
 {
 public:
-  BoolDebouncer(unsigned size) : size(size), equals_count(0) {}
+  BoolDebouncer(unsigned size) : size(size), equals_count(0),
+    prev_val(false), debuounced_val(false) {}
   bool update(bool val) {
     if(val == prev_val) {
       if(++equals_count > size) {
@@ -68,6 +69,7 @@ int main(int argc, char **argv){
 #endif
   ros::init(argc, argv, node_name);
   ros::NodeHandle n("~");  
+  prev_tag_found = false;
   pub = n.advertise<msgs::BoolStamped>("/tag_found", 1);
   n.param<double>("tag_scale_factor",scale_factor, 0.5);
   n.param<int>("debounce_size", debounce_size, 3);
@@ -75,9 +77,13 @@ int main(int argc, char **argv){
     debounce_size = 1;
     ROS_WARN("Debounce size less than 1 so defaults to: %i", debounce_size);
   }
+  else {
+    ROS_INFO("Debounce size %i", debounce_size);
+  }
   ros::Subscriber sub = n.subscribe("/usb_cam/image_raw",1, camCallback);
-  ros::ServiceServer service = n.advertiseService("get_qr_id", get_qr_id_callback);
+  ros::ServiceServer service = n.advertiseService("/get_qr_id", get_qr_id_callback);
   scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
+
   ros::spin();
 }
 
@@ -174,19 +180,20 @@ void camCallback(const sensor_msgs::Image::ConstPtr& img )
   }
   bool current_tag_found = imHasQRTag(cv_ptr->image);
   bool tag_found = debouncer.update(current_tag_found);
-  if(tag_found && !prev_tag_found) // qr found?
+  if(tag_found)
+    ROS_INFO("Tag found");
+  else
+    ROS_INFO("no tag found");
+  if(tag_found != prev_tag_found) // qr found?
   {
-    if(current_tag_found)
-    {
-      ROS_DEBUG("Tag found");
-      // first found tag is used
-      //ROS_DEBUG_COND(qr_tag_found, "qr tag not found by zbar");
-      msgs::BoolStamped msgs;
-      msgs.header.stamp = ros::Time::now();
-      msgs.header.frame_id = "camera_link";
-      msgs.data = tag_found;
-      pub.publish(msgs);
-    }
+    ROS_DEBUG("Tag found");
+    // first found tag is used
+    //ROS_DEBUG_COND(qr_tag_found, "qr tag not found by zbar");
+    msgs::BoolStamped msgs;
+    msgs.header.stamp = ros::Time::now();
+    msgs.header.frame_id = "camera_link";
+    msgs.data = tag_found;
+    pub.publish(msgs);
   }
   prev_tag_found = tag_found;
 }
