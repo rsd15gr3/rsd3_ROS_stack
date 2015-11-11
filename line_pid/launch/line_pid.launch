@@ -145,7 +145,8 @@
         <param name="camera_name" value="head_camera" />
         <param name="io_method" value="mmap"/>
       </node>
-
+      
+      <include file="$(find zbar_decoder)/launch/zbar_decoder_node.launch" /> 
      <!--<node name="line_detector" pkg="line_detection" type="line_detection_node" output="screen" > 
      </node>-->
 

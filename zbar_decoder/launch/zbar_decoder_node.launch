@@ -1,9 +1,7 @@
 <launch>
-  <group ns="perception">
     <node name="zbar_decoder_node" pkg="zbar_decoder" type="zbar_decoder_node" respawn="false" output="screen" >
       <remap from="/tag" to="qr_tag" />
       <param name="tag_scale_factor" value="0.5" />
       <param name="debounce_size" value="15" />
     </node>
-  </group>
 </launch>
