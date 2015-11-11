@@ -1,8 +1,8 @@
 <launch>
     <!-- Frobit parameters -->
     <param name="diff_steer_wheel_distance" value="0.375"/>
-    <param name="ticks_per_meter_left" value="677" />
-    <param name="ticks_per_meter_right" value="677" />
+    <param name="ticks_per_meter_left" value="700" />
+    <param name="ticks_per_meter_right" value="700" />
 
     <group ns="fmSafety">
         <node pkg="basic_incident_handler" name="incident_handler" type="basic_incident_handler_node.py" output="screen">
