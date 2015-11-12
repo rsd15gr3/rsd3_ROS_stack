@@ -12,8 +12,8 @@ class MarkerLocatorOdometryNode:
         # Params
         self.host = rospy.get_param("~host", '10.115.253.233')
         self.port = rospy.get_param("~port", 21212)
-        self.frame_id = rospy.get_param("~frame_id", "webcam")
-        self.cov_diag_list = rospy.get_param("~pose_covariance_diagonal", [0.001, 0.001, 99999, 99999, 99999, 0.001])
+        self.frame_id = rospy.get_param("~frame_id", "markerlocator")
+        self.cov_diag_list = rospy.get_param("~pose_covariance_diagonal", [0.0001, 0.0001, 99999, 99999, 99999, 0.0001])
         self.time_offset = rospy.get_param("~time_offset", 0.0)
 
         # Publishers
@@ -38,7 +38,6 @@ class MarkerLocatorOdometryNode:
             raise RuntimeError("Connection lost: Empty reply")
 
         sock.close()
-
         s = reply.strip().split(",")
         return {"order": s[0], "timestamp": float(s[1]), "x": float(s[2]), "y": float(s[3]), "angle": float(s[4])}
 
