@@ -255,7 +255,7 @@
         </node>
     </group>
 
-    <node pkg="tf" type="static_transform_publisher" name="webcam_map_tf" args="0 0 0 0 0 0 webcam map 100" />
+    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="0 0 0 0 0 0 markerlocator map 100" />
 
     <!-- Onboard webcam -->
     <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
