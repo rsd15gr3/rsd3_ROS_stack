@@ -93,7 +93,7 @@
             <param name="port" value="21212" />
             <param name="frame_id" value="markerlocator" />
             <param name="time_offset" type="double" value="0.0" />
-            <rosparam param="pose_covariance_diagonal">[0.0001, 0.0001, 99999, 99999, 99999, 0.0001]</rosparam>
+            <rosparam param="pose_covariance_diagonal">[0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]</rosparam>
         </node>
 
         <!-- EKFs -->
@@ -225,7 +225,7 @@
 
             <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-            <param name="print_diagnostics" value="true"/>
+            <param name="print_diagnostics" value="false"/>
 
             <!-- Reject MarkerLocator poses which are too far from current vehicle state -->
             <param name="odom1_pose_rejection_threshold" value="3"/>
