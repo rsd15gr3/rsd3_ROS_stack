@@ -93,7 +93,7 @@
             <param name="port" value="21212" />
             <param name="frame_id" value="markerlocator" />
             <param name="time_offset" type="double" value="0.0" />
-            <rosparam param="pose_covariance_diagonal">[0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]</rosparam>
+            <rosparam param="pose_covariance_diagonal">[0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001]</rosparam>
         </node>
 
         <!-- EKFs -->
@@ -175,6 +175,8 @@
             <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
             <param name="print_diagnostics" value="false"/>
+
+            <remap from="odometry/filtered" to="odometry/filtered/local"/>
         </node>
 
         <!-- EKF for also fusing absolute position data which is subject to discrete jumps -->
@@ -210,7 +212,7 @@
 
             <!-- IMU -->
             <rosparam param="imu0_config">[false, false, false,
-                                           false, false, true,
+                                           false, false, false,
                                            false, false, false,
                                            false, false, true,
                                            true,  false, false]</rosparam>
@@ -228,7 +230,9 @@
             <param name="print_diagnostics" value="false"/>
 
             <!-- Reject MarkerLocator poses which are too far from current vehicle state -->
-            <param name="odom1_pose_rejection_threshold" value="3"/>
+            <!-- <param name="odom1_pose_rejection_threshold" value="3"/> -->
+
+            <remap from="odometry/filtered" to="odometry/filtered/global"/>
         </node>
     </group>
 
