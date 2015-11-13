@@ -1,5 +1,5 @@
 #goal definition
-float64 goal
+int32 order
 ---
 #result definition
 int16 ERROR = 0

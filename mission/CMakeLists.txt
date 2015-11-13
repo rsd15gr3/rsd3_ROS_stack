@@ -3,10 +3,13 @@ project(mission)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package(catkin REQUIRED COMPONENTS
+  actionlib
+  actionlib_msgs
   roscpp
   std_msgs
   geometry_msgs
   msgs
+  test_server
 )
 
 catkin_package(
@@ -22,7 +25,6 @@ include_directories(
 ## Declare a C++ executable
 add_executable(mission_node src/mission_node.cpp src/Node.cpp src/route.cpp )
 add_dependencies(mission_node ${catkin_EXPORTED_TARGETS})
-
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above

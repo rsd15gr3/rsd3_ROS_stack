@@ -116,4 +116,5 @@ void Route::infoRoute()
             break;
         }
     }
+    std::cout << std::endl;
 }
