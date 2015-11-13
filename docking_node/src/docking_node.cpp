@@ -58,5 +58,8 @@ int main(int argc, char** argv){
     ros::Subscriber sub = nh.subscribe<sensor_msgs::LaserScan>(laser_topic, 1, laserCB);
     ros::spin();
 
+    delete listener_;
+    delete projector_;
+
     return 0;
 }
