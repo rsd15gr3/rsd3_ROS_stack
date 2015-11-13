@@ -13,7 +13,7 @@
 #include <zbar_decoder/decode_qr.h>
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
-#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 using namespace std;
 using namespace ros;
@@ -23,7 +23,7 @@ void lineCb(const line_detection::line::ConstPtr &wallPtr);
 double getMovingGoalTargetAngle();
 void pidCb(const ros::TimerEvent &);
 void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered);
-void odometryCb(const nav_msgs::Odometry &msg);
+void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg);
 Publisher commandPub;
 Publisher pidDebugPub;
 ros::ServiceClient get_qr_client;
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     n.param<string>("command_pub", commandPubName, "/fmCommand/cmd_vel");
     ros::Subscriber errorSub = n.subscribe(lineTopicName, 1, lineCb);
     ros::Subscriber qr_tag_detect_sub = n.subscribe("/tag_found", 1, qrTagDetectCb);
-    ros::Subscriber odometry_sub = n.subscribe("/fmProcessors/robot_pose_ekf/odom_combined", 1, odometryCb);
+    ros::Subscriber odometry_sub = n.subscribe("/fmKnowledge/wheel_odom", 1, odometryCb);
     // PID control setup
     commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName, 1);    
     pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
@@ -143,7 +143,7 @@ double getMovingGoalTargetAngle()
     return movingGoalTargetAngle;
 }
 
-void odometryCb(const nav_msgs::Odometry &msg)
+void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
   current_position = msg.pose.pose.position;
   if(aligning_with_crossing) {
