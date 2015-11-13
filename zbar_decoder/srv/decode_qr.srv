@@ -1,3 +1,5 @@
 string trash
+geometry_msgs/PoseStamped trash2
 ---
 string value
+geometry_msgs/PoseStamped qr_tag_pose
