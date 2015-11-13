@@ -141,7 +141,19 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
     double dy = fabs(current_position.y - initial_position.y);
     double traveled_dist = hypot(dx,dy);
     ROS_DEBUG("Distance left to cross %f", distance_to_tag - traveled_dist);
-    if(traveled_dist > distance_to_tag)
+    double dist_error = distance_to_tag - traveled_dist;
+    double ramp_speed;
+    if(fabs(dist_error) < forward_Speed/10)
+    {
+      const double ramp_p = forward_Speed*10;
+      ramp_speed = ramp_p * dist_error;
+    }
+    else
+    {
+      ramp_speed = forward_Speed;
+    }
+    const double goal_tolerance = 0.01;
+    if(fabs(dist_error) < goal_tolerance)
     {
       publishVelCommand(0,0);
       heading_controller.reset();
@@ -180,10 +192,11 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         }
         ROS_DEBUG("pos in camera: [%f, %f, %f]", pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
+        ROS_DEBUG("initial pose: [%f, %f, %f]", initial_position.x);
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
-        double dx = fabs(pose_in_base_link.pose.position.x - initial_position.x);
-        double dy = fabs(pose_in_base_link.pose.position.y - initial_position.y);
+        double dx = fabs(pose_in_base_link.pose.position.x);
+        double dy = fabs(pose_in_base_link.pose.position.y);
         distance_to_tag = hypot(dx,dy);
         aligning_with_crossing = true;
       }
