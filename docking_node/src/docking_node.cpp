@@ -39,9 +39,11 @@ void laserCB(const sensor_msgs::LaserScan::ConstPtr& msg){
     pcl::PointCloud<pcl::PointXYZ>::Ptr final(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::copyPointCloud<pcl::PointXYZ>(*cloud, inliers, *final);
 
-    Eigen::VectorXf model_coefficients;
-    ransac.getModelCoefficients(model_coefficients);
+    Eigen::VectorXf model_coefficients, first;
+    ransac.getModelCoefficients(first);
     //model_c->computeModelCoefficients(inliers, model_coefficients);
+
+    model_c->optimizeModelCoefficients(inliers, first, model_coefficients);
 
     ROS_INFO_STREAM(model_coefficients(0) << " " << model_coefficients(1) << " " << model_coefficients(2));
 }
