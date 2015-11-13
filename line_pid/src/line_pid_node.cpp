@@ -40,7 +40,7 @@ double bearing_dist = 0;
 double max_i = 0;
 double forward_Speed = 0;
 bool line_follow_enabled = false;
-
+double ramp_speed;
 string lineTopicName = "";
 string actionTopicName = "";
 string pidDebugPubName = "";
@@ -88,6 +88,7 @@ int main(int argc, char **argv)
     pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
     double updateInterval = 1.0 / update_rate;
     ros::Timer timerPid = n.createTimer(ros::Duration(updateInterval), pidCb);
+    ramp_speed = forward_Speed;
     line_follow_enabled = true;    
     heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, updateInterval);
     // Qr pose estimation setup
@@ -111,7 +112,7 @@ void pidCb(const ros::TimerEvent &)
 {
     if (line_follow_enabled) {
         double movingGoalTargetAngle = getMovingGoalTargetAngle();
-        publishVelCommand(forward_Speed, heading_controller.update(movingGoalTargetAngle));
+        publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
         // publish PID debug msgs TODO: disable debug publish
         msgs::FloatArrayStamped pidDebugMsg;
         pidDebugMsg.header.stamp = ros::Time::now();
@@ -142,7 +143,6 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
     double traveled_dist = hypot(dx,dy);
     ROS_DEBUG("Distance left to cross %f", distance_to_tag - traveled_dist);
     double dist_error = distance_to_tag - traveled_dist;
-    double ramp_speed;
     if(fabs(dist_error) < forward_Speed/10)
     {
       const double ramp_p = forward_Speed*10;
