@@ -143,16 +143,16 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
     double traveled_dist = hypot(dx,dy);
     ROS_DEBUG("Distance left to cross %f", distance_to_tag - traveled_dist);
     double dist_error = distance_to_tag - traveled_dist;
-    if(fabs(dist_error) < forward_Speed/10)
+    if(fabs(dist_error) < forward_Speed/5)
     {
-      const double ramp_p = forward_Speed*10;
+      const double ramp_p = forward_Speed*5;
       ramp_speed = ramp_p * dist_error;
     }
     else
     {
       ramp_speed = forward_Speed;
     }
-    ramp_speed = 0.1;
+    ramp_speed = 0.1; // ramp not slow enough
     const double goal_tolerance = 0.01;
     if(fabs(dist_error) < goal_tolerance)
     {
@@ -199,6 +199,7 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         double dx = fabs(pose_in_base_link.pose.position.x);
         double dy = fabs(pose_in_base_link.pose.position.y);
         distance_to_tag = hypot(dx,dy);
+        distance_to_tag -= 0.2; // hot fix to stop at cross
         aligning_with_crossing = true;
       }
       else
