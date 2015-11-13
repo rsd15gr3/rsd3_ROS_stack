@@ -180,7 +180,15 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         geometry_msgs::PoseStamped pose = qr_request.response.qr_tag_pose;
         geometry_msgs::PoseStamped pose_in_base_link;
         tf::TransformListener listener;
-        listener.transformPose(base_link_id.c_str(),ros::Time(0),pose,camera_frame_id.c_str(),pose_in_base_link);
+        try{
+          listener.waitForTransform(base_link_id.c_str(), camera_frame_id.c_str(), ros::Time(0), ros::Duration(5.0) );
+          listener.transformPose(base_link_id.c_str(),ros::Time(0),pose,camera_frame_id.c_str(),pose_in_base_link);
+        }
+        catch (tf::TransformException ex){
+          ROS_ERROR("%s",ex.what());
+          ros::Duration(1.0).sleep();
+        }
+
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
         double dx = fabs(pose_in_base_link.pose.position.x - initial_position.x);
