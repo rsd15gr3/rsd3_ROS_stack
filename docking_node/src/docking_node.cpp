@@ -54,7 +54,7 @@ int main(int argc, char** argv){
     projector_ = new laser_geometry::LaserProjection;
 
     std::string laser_topic;
-    nh.param("laser_topic", laser_topic, std::string("/laser_scan"));
+    nh.param("laser_topic", laser_topic, std::string("/fmSensors/scan"));
     ros::Subscriber sub = nh.subscribe<sensor_msgs::LaserScan>(laser_topic, 1, laserCB);
     ros::spin();
 
