@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(line_pid)
-
+set(CMAKE_BUILD_TYPE Debug)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   roslaunch
   line_detection
   mission
+  tf
+  nav_msgs
 )
 
 catkin_package(CATKIN_DEPENDS)
