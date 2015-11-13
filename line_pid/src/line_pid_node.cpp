@@ -47,7 +47,7 @@ string pidDebugPubName = "";
 string commandPubName = "";
 
 string camera_frame_id = "/camera_link";
-string base_link_id = "/base_link";
+string base_footprint_id = "/base_footprint";
 string stopping_qr_tag = "wc_3_conveyor";
 tf::StampedTransform camera_to_base_link_tf;
 
@@ -152,6 +152,7 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
     {
       ramp_speed = forward_Speed;
     }
+    ramp_speed = 0.1;
     const double goal_tolerance = 0.01;
     if(fabs(dist_error) < goal_tolerance)
     {
@@ -183,8 +184,8 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         geometry_msgs::PoseStamped pose_in_base_link;
         tf::TransformListener listener;
         try{
-          listener.waitForTransform(base_link_id, camera_frame_id, ros::Time(0), ros::Duration(5.0) );
-          listener.transformPose(base_link_id,ros::Time(0),pose,camera_frame_id,pose_in_base_link);
+          listener.waitForTransform(base_footprint_id, camera_frame_id, ros::Time(0), ros::Duration(5.0) );
+          listener.transformPose(base_footprint_id,ros::Time(0),pose,camera_frame_id,pose_in_base_link);
         }
         catch (tf::TransformException ex){
           ROS_ERROR("%s",ex.what());
