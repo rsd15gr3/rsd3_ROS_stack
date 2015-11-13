@@ -13,21 +13,16 @@
 #include <pcl/sample_consensus/sac_model_circle.h>
 #include <pcl/sample_consensus/ransac.h>
 
-laser_geometry::LaserProjection projector_;
-tf::TransformListener listener_;
+laser_geometry::LaserProjection* projector_;
+tf::TransformListener* listener_;
 
 void laserCB(const sensor_msgs::LaserScan::ConstPtr& msg){
-    if(!listener_.waitForTransform(msg->header.frame_id, "/base_link", msg->header.stamp + ros::Duration().fromSec(msg->ranges.size()*msg->time_increment), ros::Duration(1.0))){
+    if(!listener_->waitForTransform(msg->header.frame_id, "/base_link", msg->header.stamp + ros::Duration().fromSec(msg->ranges.size()*msg->time_increment), ros::Duration(1.0))){
         return;
     }
 
     sensor_msgs::PointCloud2 cloud_msg;
-    projector_.transformLaserScanToPointCloud("/base_link", *msg, cloud_msg, listener_);
-
-//    pcl::PCLPointCloud2* cloud = new pcl::PCLPointCloud2;
-//    pcl::PCLPointCloud2ConstPtr cloudPtr(cloud);
-
-//    pcl_conversions::toPCL(cloud_msg, *cloud);
+    projector_->transformLaserScanToPointCloud("/base_link", *msg, cloud_msg, *listener_);
 
     pcl::PCLPointCloud2 pcl_pc2;
     pcl_conversions::toPCL(cloud_msg, pcl_pc2);
@@ -54,7 +49,9 @@ int main(int argc, char** argv){
     ros::init(argc, argv, "docking_node");
     ros::NodeHandle nh;
 
-    laser_geometry::LaserProjection projector;
+    listener_ = new tf::TransformListener;
+
+    projector_ = new laser_geometry::LaserProjection;
 
     std::string laser_topic;
     nh.param("laser_topic", laser_topic, std::string("/laser_scan"));
