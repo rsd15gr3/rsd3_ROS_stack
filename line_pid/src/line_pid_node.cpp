@@ -188,7 +188,6 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
           ROS_ERROR("%s",ex.what());
           ros::Duration(1.0).sleep();
         }
-
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
         double dx = fabs(pose_in_base_link.pose.position.x - initial_position.x);

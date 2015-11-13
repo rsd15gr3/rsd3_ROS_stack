@@ -127,6 +127,49 @@
     </node>
  </group>
 
+    <group ns="fmProcessors">
+        <!-- Calculate odometry based on wheel encoders and IMU yaw axis orientation -->
+        <node pkg="differential_odometry" name="differential_odometry" type="differential_odometry_node" output="screen">
+            <param name="enc_left_sub" value="/fmInformation/encoder_left" />
+            <param name="enc_right_sub" value="/fmInformation/encoder_right" />
+            <param name="imu_sub" value="/fmInformation/imu" />
+            <param name="odom_reset_sub" value="/fmInformation/odom_reset" />
+            <param name="odom_pub" value="/fmKnowledge/wheel_odom" />
+            <param name="encoder_output" value="absolute" />
+            <param name="max_ticks_per_update" value="200" />
+            <param name="yaw_angle_source" value="odometry" /> <!-- Do not use IMU as yaw source; EKF fuses the measurements -->
+            <param name="publish_transform" value="false" />
+            <param name="odom_estimate_frame" value="wheel_odom" />
+            <param name="vehicle_frame" value="base_link" />
+            <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
+            <rosparam param="twist_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
+        </node>
+
+        <!-- MarkerLocator "GPS" -->
+        <node pkg="markerlocator_odometry" name="markerlocator_odometry" type="markerlocator_odometry_node.py" output="screen">
+            <remap from="odom_marloc" to="/fmKnowledge/odom_marloc"/>
+            <param name="host" value="10.115.253.233" />
+            <param name="port" value="21212" />
+            <param name="frame_id" value="marker_link" />
+            <param name="time_offset" type="double" value="-0.001" />
+            <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 99999, 99999, 99999, 0.001]</rosparam>
+        </node>
+
+        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+            <remap from="odom" to="/fmKnowledge/wheel_odom"/>
+            <remap from="imu_data" to="/fmInformation/imu"/>
+            <param name="output_frame" value="odom"/>
+            <param name="base_footprint_frame" value="base_link"/>
+            <param name="freq" value="30.0"/>
+            <param name="sensor_timeout" value="1.0"/>
+            <param name="odom_used" value="true"/>
+            <param name="imu_used" value="true"/>
+            <param name="vo_used" value="false"/>
+            <param name="debug" value="false"/>
+            <param name="self_diagnose" value="true"/>
+        </node>
+    </group>
+
 
      <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
         <param name="video_device" value="/dev/video0" />   
