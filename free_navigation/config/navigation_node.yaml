@@ -9,6 +9,6 @@ line_from_manipulator:
 load_bricks:
   [5, 2.3, 0.0]
 charge_initial:
-  [4.1, 2.4, 3.1416]
+  [5, 1.9, 3.1416]
 charge_dock:
   [1, 2, 1.57]

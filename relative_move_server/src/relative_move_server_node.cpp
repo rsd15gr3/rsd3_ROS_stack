@@ -345,8 +345,9 @@ private:
 
 int main(int argc, char **argv){
     ros::init(argc, argv, "relative_move_node");
-    ros::NodeHandle n;
+    ros::NodeHandle n("~");
     RelativeMoveAction RelativeMoveActionNode(n);
     ros::spin();
+
     return 0;
 }

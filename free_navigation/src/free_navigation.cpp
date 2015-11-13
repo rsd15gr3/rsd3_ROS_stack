@@ -5,7 +5,7 @@
 
 
 Navigation::Navigation()
-    : ac_("move_base", true), char_client_("charge_action", true)
+    : ac_("move_base", true), char_client_("relative_move_action", true)
 {
     //char_client_("charge battery", true);
     while(!ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
