@@ -51,7 +51,7 @@ string base_link_id = "/base_link";
 string stopping_qr_tag = "wc_3_conveyor";
 tf::StampedTransform camera_to_base_link_tf;
 
-geometry_msgs::Point initial_position;
+geometry_msgs::Point goal_position;
 geometry_msgs::Point current_position;
 bool aligning_with_crossing;
 double distance_to_tag;
@@ -93,17 +93,6 @@ int main(int argc, char **argv)
     // Qr pose estimation setup
     aligning_with_crossing = false;
     get_qr_client = n.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");
-    // get camera to base_link transform
-    tf::TransformListener listener;
-    try{
-      listener.waitForTransform(base_link_id.c_str(), camera_frame_id.c_str(), ros::Time(0), ros::Duration(5.0) );
-      listener.lookupTransform(base_link_id.c_str(), camera_frame_id.c_str(),
-                               ros::Time(0), camera_to_base_link_tf);
-    }
-    catch (tf::TransformException ex){
-      ROS_ERROR("%s",ex.what());
-      ros::Duration(1.0).sleep();
-    }
     spin();
     return 0;
 }
@@ -145,13 +134,14 @@ double getMovingGoalTargetAngle()
 
 void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
+  const double goal_tolerance = 0.01;
   current_position = msg.pose.pose.position;
   if(aligning_with_crossing) {
-    double dx = fabs(current_position.x - initial_position.x);
-    double dy = fabs(current_position.y - initial_position.y);
-    double traveled_dist = hypot(dx,dy);
-    ROS_DEBUG("Distance left to cross %f", distance_to_tag - traveled_dist);
-    if(traveled_dist > distance_to_tag)
+    double dx = fabs(current_position.x - goal_position.x);
+    double dy = fabs(current_position.y - goal_position.y);
+    double error = hypot(dx,dy);
+    ROS_DEBUG("Distance left to cross %f", error);
+    if(error < goal_tolerance)
     {
       publishVelCommand(0,0);
       heading_controller.reset();
@@ -181,18 +171,18 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         geometry_msgs::PoseStamped pose_in_base_link;
         tf::TransformListener listener;
         try{
-          listener.waitForTransform(base_link_id.c_str(), camera_frame_id.c_str(), ros::Time(0), ros::Duration(5.0) );
-          listener.transformPose(base_link_id.c_str(),ros::Time(0),pose,camera_frame_id.c_str(),pose_in_base_link);
+          listener.waitForTransform("odom", camera_frame_id.c_str(), ros::Time(0), ros::Duration(5.0) );
+          listener.transformPose("odom",ros::Time(0),pose,camera_frame_id.c_str(),pose_in_base_link);
         }
         catch (tf::TransformException ex){
           ROS_ERROR("%s",ex.what());
           ros::Duration(1.0).sleep();
         }
         // Maybe TODO: reset odometry to avoid overflow?
-        initial_position = current_position;
-        double dx = fabs(pose_in_base_link.pose.position.x - initial_position.x);
-        double dy = fabs(pose_in_base_link.pose.position.y - initial_position.y);
-        distance_to_tag = hypot(dx,dy);
+        goal_position = pose_in_base_link.pose.position;
+        //double dx = fabs(pose_in_base_link.pose.position.x - initial_position.x);
+        //double dy = fabs(pose_in_base_link.pose.position.y - initial_position.y);
+        //distance_to_tag = hypot(dx,dy);
         aligning_with_crossing = true;
       }
       else
