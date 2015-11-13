@@ -40,7 +40,8 @@ void laserCB(const sensor_msgs::LaserScan::ConstPtr& msg){
     pcl::copyPointCloud<pcl::PointXYZ>(*cloud, inliers, *final);
 
     Eigen::VectorXf model_coefficients;
-    model_c->computeModelCoefficients(inliers, model_coefficients);
+    ransac.getModelCoefficients(model_coefficients);
+    //model_c->computeModelCoefficients(inliers, model_coefficients);
 
     ROS_INFO_STREAM(model_coefficients(0) << " " << model_coefficients(1) << " " << model_coefficients(2));
 }
