@@ -1,5 +1,5 @@
 <launch>
-<!--
+
    <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
       <param name="video_device" value="/dev/video1" />   
       <param name="image_width" value="1280" />
@@ -16,14 +16,14 @@
       <param name="camera_name" value="head_camera" />
       <param name="io_method" value="mmap"/>
     </node>
--->
+<!--
   <node name="bag_player" pkg="rosbag" type="play" args="-r 0.5 --clock $(find zbar_decoder)/slow_line_follow_with_qr.bag"/> 
   <rosparam param="use_sim_time" > true </rosparam>
-
+-->
   <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
     <remap from="image" to="/usb_cam/image_raw"/>
     <param name="autosize" value="true" />
   </node>
   
-  <include file="$(find zbar_decoder)/launch/zbar_decoder_node.launch" /> 
+  <!-- <include file="$(find zbar_decoder)/launch/zbar_decoder_node.launch" />  -->
 </launch>

@@ -13,15 +13,17 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <zbar.h>
-#include "zbar_decoder/decode_qr.h"
-
+#include <zbar_decoder/decode_qr.h>
+#include "qr_tag_pose_estimator.h"
+#include <geometry_msgs/PoseStamped.h>
+#include <tf/tf.h>
 using namespace std;
 using namespace zbar;
 using namespace cv;
 
 #define ROSCONSOLE_MIN_SEVERITY ROSCONSOLE_SEVERITY_DEBUG //ROSCONSOLE_SEVERITY_INFO, ROSCONSOLE_SEVERITY_DEBUG
 const string node_name("zbar_decoder_node");
-
+string frame_id("camera_link");
 const double min_white_area = 60000;
 const unsigned min_tag_area = 30000;
 const int threshold_value = 210;
@@ -31,6 +33,7 @@ cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/m
 ros::Publisher pub;
 int debounce_size;
 double scale_factor;
+QrTagPoseEstimator tag_pose_estimator;
 class BoolDebouncer
 {
 public:
@@ -54,9 +57,9 @@ private:
   bool prev_val, debuounced_val;
 };
 BoolDebouncer debouncer(debounce_size);
-bool decode_qr_tag(const cv_bridge::CvImageConstPtr &cv_ptr, string & value);
+bool decodePrTag(const cv_bridge::CvImageConstPtr &cv_ptr, string & value);
 void camCallback(const sensor_msgs::Image::ConstPtr& img );
-bool get_qr_id_callback(zbar_decoder::decode_qr::Response &req, zbar_decoder::decode_qr::Response &res);
+bool getQrIdCallback(zbar_decoder::decode_qr::Response &req, zbar_decoder::decode_qr::Response &res);
 unsigned getLargestContourROI(const Mat &im, Mat &mask, double min_area);
 bool imHasQRTag(const Mat &im);
 
@@ -81,9 +84,22 @@ int main(int argc, char **argv){
     ROS_INFO("Debounce size %i", debounce_size);
   }
   ros::Subscriber sub = n.subscribe("/usb_cam/image_raw",1, camCallback);
-  ros::ServiceServer service = n.advertiseService("/get_qr_id", get_qr_id_callback);
+  ros::ServiceServer service = n.advertiseService("/get_qr_id", getQrIdCallback);
   scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
-
+  // setup qr pose estimator
+  cv::Mat camera_matrix(3,3,cv::DataType<double>::type);
+  camera_matrix.at<double>(0,0) = 1232.80104*scale_factor; // fx/2 due to downscaling of image
+  camera_matrix.at<double>(0,2) = 643.489543;
+  camera_matrix.at<double>(1,1) = 1240.089791*scale_factor;
+  camera_matrix.at<double>(1,2) = 375.302479;
+  camera_matrix.at<double>(2,2) = 1;
+  cv::Mat dist_doeffs(4,1,cv::DataType<double>::type);
+  dist_doeffs.at<double>(0) = -0.066398;
+  dist_doeffs.at<double>(1) = 0.131048;
+  dist_doeffs.at<double>(2) = 0.000995;
+  dist_doeffs.at<double>(3) = 0.001181;
+  const double tag_width = 67e-3f; // in meters
+  tag_pose_estimator.init(camera_matrix, dist_doeffs, tag_width);
   ros::spin();
 }
 
@@ -106,14 +122,61 @@ bool imHasQRTag(const Mat &im)
   return false;
 }
 
-bool get_qr_id_callback(zbar_decoder::decode_qr::Response &req, zbar_decoder::decode_qr::Response &res)
+bool getQrIdCallback(zbar_decoder::decode_qr::Response &req, zbar_decoder::decode_qr::Response &res)
 {
-  string qr_tag;
-  bool tag_in_im = decode_qr_tag(cv_ptr, qr_tag);
-  res.value = qr_tag;
+  // extreact qr code
+  cv::Mat down_scaled_im;
+  cv::resize(cv_ptr->image, down_scaled_im, Size(), scale_factor, scale_factor);
+  uchar *raw = (uchar *)down_scaled_im.data;
+  unsigned width = down_scaled_im.cols;
+  unsigned height = down_scaled_im.rows;
+  // wrap image data
+  Image image(width, height, "Y800", raw, width * height);
+  // scan the image for barcodes
+  int n = scanner.scan(image);
+  ROS_DEBUG("n=%i",n);
+  if(n != 1)
+  {
+    ROS_ERROR_NAMED(node_name,"Error decoding image with Image scan");
+    return false;
+  }
+  res.value = image.symbol_begin()->get_data();
+  cv::Mat R, position;
+  //tag_pose_estimator.showPoseEst(*image.symbol_begin(), R, position, cv_ptr->image);
+  tag_pose_estimator.getPose(*image.symbol_begin(), R, position);
+  geometry_msgs::PoseStamped qr_tag_pose_msg;
+  qr_tag_pose_msg.pose.position.x = position.at<double>(0);
+  qr_tag_pose_msg.pose.position.y = position.at<double>(1);
+  qr_tag_pose_msg.pose.position.z = position.at<double>(2);
+  tf::Matrix3x3 rotation(
+    R.at<double>(0,0),
+    R.at<double>(0,1),
+    R.at<double>(0,2),
+    R.at<double>(1,0),
+    R.at<double>(1,1),
+    R.at<double>(1,2),
+    R.at<double>(2,0),
+    R.at<double>(2,1),
+    R.at<double>(2,2)
+  );
+  double roll, pitch, yaw;
+  rotation.getRPY(roll, pitch, yaw);
+  ROS_DEBUG("rpy=(%f,%f,%f)",roll, pitch, yaw );
+  tf::Quaternion rot;
+  rotation.getRotation(rot);
+  geometry_msgs::Quaternion quart;
+  quart.x = rot.getX();
+  quart.y = rot.getY();
+  quart.z = rot.getZ();
+  quart.w = rot.getW();
+  qr_tag_pose_msg.pose.orientation = quart;
+  qr_tag_pose_msg.header.stamp = ros::Time::now();
+  qr_tag_pose_msg.header.frame_id = frame_id;
+  res.qr_tag_pose = qr_tag_pose_msg;
+  return true;
 }
 
-bool decode_qr_tag(const cv_bridge::CvImageConstPtr &cv_ptr, string & value)
+bool decodePrTag(const cv_bridge::CvImageConstPtr &cv_ptr, string & value)
 {
   // extreact qr code
   cv::Mat down_scaled_im;
@@ -132,6 +195,9 @@ bool decode_qr_tag(const cv_bridge::CvImageConstPtr &cv_ptr, string & value)
   else
   {
     value = image.symbol_begin()->get_data();
+    cv::Mat R, position;
+    tag_pose_estimator.getPose(*image.symbol_begin(), R, position);
+    tag_pose_estimator.showPoseEst(*image.symbol_begin(), R, position, cv_ptr->image);
   }
   return n > 0;
 }
@@ -190,7 +256,7 @@ void camCallback(const sensor_msgs::Image::ConstPtr& img )
     //ROS_DEBUG_COND(qr_tag_found, "qr tag not found by zbar");
     msgs::BoolStamped msgs;
     msgs.header.stamp = ros::Time::now();
-    msgs.header.frame_id = "camera_link";
+    msgs.header.frame_id = frame_id.c_str();
     msgs.data = tag_found;
     pub.publish(msgs);
   }
