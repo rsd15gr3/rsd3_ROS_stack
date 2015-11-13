@@ -119,6 +119,6 @@
   <joint name="joint_camera" type="fixed">
     <parent link="lower_chassis" />
     <child link="camera_link" />
-    <origin xyz="0.21 0.022 0.13" rpy="0 1.15 0" />
+    <origin xyz="0.21 0.022 0.13" rpy="0 2.7053 0" />
   </joint>
 </robot>
