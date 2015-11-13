@@ -48,7 +48,7 @@ string commandPubName = "";
 
 string camera_frame_id = "/camera_link";
 string base_link_id = "/base_link";
-string stopping_qr_tag = "http://www.qrstuff.com";
+string stopping_qr_tag = "wc_3_conveyor";
 tf::StampedTransform camera_to_base_link_tf;
 
 geometry_msgs::Point initial_position;
