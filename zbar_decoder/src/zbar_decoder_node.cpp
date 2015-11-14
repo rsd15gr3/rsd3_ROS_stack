@@ -89,9 +89,9 @@ int main(int argc, char **argv){
   // setup qr pose estimator
   cv::Mat camera_matrix(3,3,cv::DataType<double>::type);
   camera_matrix.at<double>(0,0) = 1232.80104*scale_factor; // fx/2 due to downscaling of image
-  camera_matrix.at<double>(0,2) = 643.489543;
+  camera_matrix.at<double>(0,2) = 643.489543*scale_factor; // same reason
   camera_matrix.at<double>(1,1) = 1240.089791*scale_factor;
-  camera_matrix.at<double>(1,2) = 375.302479;
+  camera_matrix.at<double>(1,2) = 375.302479*scale_factor;
   camera_matrix.at<double>(2,2) = 1;
   cv::Mat dist_doeffs(4,1,cv::DataType<double>::type);
   dist_doeffs.at<double>(0) = -0.066398;
