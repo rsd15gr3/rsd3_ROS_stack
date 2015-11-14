@@ -199,7 +199,7 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         double dx = fabs(pose_in_base_link.pose.position.x);
         double dy = fabs(pose_in_base_link.pose.position.y);
         distance_to_tag = hypot(dx,dy);
-        distance_to_tag -= 0.2; // hot fix to stop at cross
+        // distance_to_tag -= 0.2; // hot fix to stop at cross
         aligning_with_crossing = true;
       }
       else
