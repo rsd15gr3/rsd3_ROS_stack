@@ -44,9 +44,9 @@ class AMCLResetterNode:
             return
 
         # HACK
-        t = rospy.Time(0)
-        self.odom_filtered.header.stamp = t
-        self.odom_markerlocator.header.stamp = t
+        t0 = rospy.Time(0)
+        self.odom_filtered.header.stamp = t0
+        self.odom_markerlocator.header.stamp = t0
 
         try:
             pose_filtered = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_filtered))
@@ -60,7 +60,7 @@ class AMCLResetterNode:
 
         if dist < self.dist_limit:
             initialpose_msg = PoseWithCovarianceStamped()
-            initialpose_msg.header.stamp = rospy.Time.now() + rospy.Duration(0.2)
+            initialpose_msg.header.stamp = t0
             initialpose_msg.header.frame_id = "map"
             initialpose_msg.pose.pose = pose_markerlocator.pose
             self.init_pose_pub.publish(initialpose_msg)
