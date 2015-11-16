@@ -28,7 +28,7 @@ public:
     string base_frame_id_;
 private:
     MoveBaseClient ac_;
-    ChargingClient char_client_;
+    //ChargingClient char_client_;
     int prev_action_state_ = -1;
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);
     void activeCb();
