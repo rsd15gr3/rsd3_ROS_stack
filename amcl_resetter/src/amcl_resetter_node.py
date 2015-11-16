@@ -52,8 +52,7 @@ class AMCLResetterNode:
             pose_filtered = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_filtered))
             pose_markerlocator = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_markerlocator))
         except (tf.LookupException, tf.ConnectivityException):
-            print "fuck"
-            pass
+            return
 
         p1 = np.array((pose_filtered.pose.position.x, pose_filtered.pose.position.y))
         p2 = np.array((pose_markerlocator.pose.position.x, pose_markerlocator.pose.position.y))
