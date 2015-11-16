@@ -10,13 +10,15 @@ find_package(catkin REQUIRED COMPONENTS
   mission
   tf
   nav_msgs
+  actionlib_msgs
+  actionlib
 )
-
+add_action_files(DIRECTORY action FILES Follow_line.action)
+generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
 catkin_package(CATKIN_DEPENDS)
 
 # Check launch files in launch/ for errors
 # roslaunch_add_file_check(launch)
-
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${mission_INCLUDE_DIRS}
