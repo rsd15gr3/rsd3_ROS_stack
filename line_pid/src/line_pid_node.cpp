@@ -135,6 +135,10 @@ double getMovingGoalTargetAngle()
     return movingGoalTargetAngle;
 }
 
+template <typename T> int sign(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
   current_position = msg.pose.pose.position;
@@ -146,21 +150,18 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
     ROS_DEBUG("Distance left to cross %f", distance_to_tag - traveled_dist);
     double dist_error = distance_to_tag - traveled_dist;
     */
-    double dx = fabs(tag_position.x - current_position.x);
-    double dy = fabs(tag_position.y - current_position.y);
-    double dist_error = hypot(dx,dy);
-    if(fabs(dist_error) < forward_Speed/5)
+    double dx = tag_position.x - current_position.x;
+    double dy = tag_position.y - current_position.y;
+    double dist_to_tag = hypot(dx,dy);
+    float ramp_p = 10.0f*forward_Speed;
+    ramp_speed = ramp_p * dist_to_tag;
+    if(fabs(ramp_speed) > forward_Speed)
     {
-      const double ramp_p = forward_Speed*5;
-      ramp_speed = ramp_p * dist_error;
-    }
-    else
-    {
-      ramp_speed = forward_Speed;
+      ramp_speed = sign(ramp_speed)*forward_Speed;
     }
     // ramp_speed = 0.1; // ramp not slow enough
-    const double goal_tolerance = 0.01;
-    if(fabs(dist_error) < goal_tolerance)
+    const double goal_tolerance = 0.05;
+    if(fabs(dist_to_tag) < goal_tolerance)
     {
       publishVelCommand(0,0);
       heading_controller.reset();
