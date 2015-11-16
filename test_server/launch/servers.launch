@@ -15,4 +15,13 @@
     <node name="test_server4" pkg="test_server" type="test_server_node" output="screen" > 
       <param name="node_name" value="action_from_cell" />
     </node>
+
+    <node name="mission" pkg="mission" type="mission_node" output="screen" > 
+      <param name="loopRate" value="10" />
+    </node>
+
+    <node pkg="hmi_support_workcell" name="hmi_support_workcell_node" type="hmi_support_workcell_node.py" output="screen">
+      <param name="ui_str_control_wc_sub" value="/ui_str_control_wc" />
+    </node>
+
 </launch>

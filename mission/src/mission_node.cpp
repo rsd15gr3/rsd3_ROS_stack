@@ -26,6 +26,7 @@ std::queue<int> mission_queue;
 
 bool navigation_area = true;
 bool active_behavior = false;
+bool automode = true;
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
             const test_server::testResultConstPtr& result)
@@ -40,12 +41,15 @@ void missionCallback(const msgs::IntStamped::ConstPtr& msg)
     mission_queue.push(msg->data);
 }
 
+void automodeCallback(const msgs::IntStamped::ConstPtr& msg)
+{
+    automode = msg->data;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "mission_node");
 	ros::NodeHandle nodeHandler;
-
-    //path.brickOrder(CELL_1);
 
     int loopRate;
     nodeHandler.param<int>("loopRate", loopRate, 10);
@@ -54,7 +58,7 @@ int main(int argc, char **argv)
 	//init publishers
     action_publisher = nodeHandler.advertise<msgs::IntStamped>("mission/next_mission",1);
 
-    ros::Subscriber sub = nodeHandler.subscribe("UI/mes", 3, missionCallback);
+    ros::Subscriber sub = nodeHandler.subscribe("ui/mes", 5, missionCallback);
 
     actionlib::SimpleActionClient<test_server::testAction> action_test("test_server", true);
     actionlib::SimpleActionClient<test_server::testAction> action_navigation("action_navigation", true);
@@ -108,94 +112,105 @@ int main(int argc, char **argv)
 
         //fill up the next order if current is done--------
         //mission must never fill with more than 1 in this system
-        if( path.empty() )
+        if(automode)
         {
-            if(mission_queue.empty())
+
+            if( path.empty() )
             {
-                if(path.getCurrentState() != CHARGE || path.getCurrentState() != CELL_1 || path.getCurrentState() != CELL_2 || path.getCurrentState() != CELL_3)
+                if(mission_queue.empty())
                 {
-                    path.goCharge();
+                    //std::cout << "Current state: " << path.getCurrentState() << std::endl;
+                    if(path.getCurrentState() != CHARGE && path.getCurrentState() != CELL_1 && path.getCurrentState() != CELL_2 && path.getCurrentState() != CELL_3)
+                    {
+                        path.goCharge();
+                    }
+                }
+                else
+                {
+                    switch(mission_queue.front())
+                    {
+                        case BRICK_ORDER_1:
+                        path.brickOrder(CELL_1);
+                        break;
+
+                        case BRICK_ORDER_2:
+                        path.brickOrder(CELL_2);
+                        break;
+
+                        case BRICK_ORDER_3:
+                        path.brickOrder(CELL_3);
+                        break;
+
+                        case BRICK_DELIVERY:
+                        path.brickDelivery();
+                        break;
+
+                        default:
+                        break;
+                    }
+                    mission_queue.pop();
                 }
             }
-            else
+            //--------------------------------------------------
+
+            //order next behavior if none is active
+            if(!path.empty() && active_behavior == false)
             {
-                switch(mission_queue.front())
+                if(navigation_area)
                 {
-                    case BRICK_ORDER_1:
-                    path.brickOrder(CELL_1);
-                    break;
+                    if(path.next() == TRANSITION)
+                    {
+                        navigation_area = false;
+                    }
 
-                    case BRICK_ORDER_2:
-                    path.brickOrder(CELL_2);
-                    break;
-
-                    case BRICK_ORDER_3:
-                    path.brickOrder(CELL_3);
-                    break;
-
-                    case BRICK_DELIVERY:
-                    path.brickDelivery();
-                    break;
-
-                    default:
-                    break;
-                }
-                mission_queue.pop();
-            }
-        }
-        //--------------------------------------------------
-
-
-        //order next behavior if none is active
-        if(!path.empty() && active_behavior == false)
-        {
-            if(navigation_area)
-            {
-                if(path.next() == TRANSITION)
-                {
-                    navigation_area = false;
-                }
-
-                test_server::testGoal goal;
-                goal.order = path.next();
-                action_navigation.sendGoal(goal, &doneCb);
-                active_behavior = true;
-            }
-            else
-            {
-                if(path.next() == TRANSITION)
-                {
-                    navigation_area = true;
                     test_server::testGoal goal;
                     goal.order = path.next();
-                    action_from_cell.sendGoal(goal, &doneCb);
+                    action_navigation.sendGoal(goal, &doneCb);
                     active_behavior = true;
                 }
                 else
                 {
-                    test_server::testGoal goal;
-                    goal.order = path.next();
-                    action_to_cell.sendGoal(goal, &doneCb);
-                    active_behavior = true;
+                    if(path.next() == TRANSITION)
+                    {
+                        navigation_area = true;
+                        test_server::testGoal goal;
+                        goal.order = path.next();
+                        action_from_cell.sendGoal(goal, &doneCb);
+                        active_behavior = true;
+                    }
+                    else
+                    {
+                        test_server::testGoal goal;
+                        goal.order = path.next();
+                        action_to_cell.sendGoal(goal, &doneCb);
+                        active_behavior = true;
+                    }
                 }
             }
-        }
-        //--------------------------------------------------------
+            //--------------------------------------------------------
 
 
-        path.infoRoute();
-        //send message for gui
-        msgs::IntStamped gui_message;
-        gui_message.header.stamp = ros::Time::now();
-        if(!path.empty())
-        {
-            gui_message.data = path.next();
+            path.infoRoute();
+            //send message for gui
+            msgs::IntStamped gui_message;
+            gui_message.header.stamp = ros::Time::now();
+            if(!path.empty())
+            {
+                gui_message.data = path.next();
+            }
+            else
+            {
+                gui_message.data = CTR_IDLE;
+            }
+            action_publisher.publish(gui_message);
         }
         else
         {
-            gui_message.data = CTR_IDLE;
+            action_navigation.cancelAllGoals();
+            action_from_cell.cancelAllGoals();
+            action_to_cell.cancelAllGoals();
+            active_behavior = false;
         }
-        action_publisher.publish(gui_message);
 
 		ros::spinOnce();
         rate.sleep();
