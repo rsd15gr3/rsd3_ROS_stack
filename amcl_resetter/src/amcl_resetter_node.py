@@ -18,7 +18,7 @@ class AMCLResetterNode:
         self.tf_listener = tf.TransformListener()
         self.tf_listener.waitForTransform("map", "markerlocator", rospy.Time(0), rospy.Duration(5))
 
-        rospy.Subscriber("odometry/filtered", Odometry, self.odom_filtered_cb)
+        rospy.Subscriber("odometry/filtered/local", Odometry, self.odom_filtered_cb)
         rospy.Subscriber("odometry/markerlocator", Odometry, self.odom_markerlocator_cb)
 
         self.init_pose_pub = rospy.Publisher("initialpose", PoseWithCovarianceStamped, queue_size=1)
