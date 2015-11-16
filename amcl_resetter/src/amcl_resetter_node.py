@@ -57,13 +57,12 @@ class AMCLResetterNode:
         p1 = np.array((pose_filtered.pose.position.x, pose_filtered.pose.position.y))
         p2 = np.array((pose_markerlocator.pose.position.x, pose_markerlocator.pose.position.y))
         dist = np.linalg.norm(p2 - p1)
-        print dist
 
         if dist < self.dist_limit:
             initialpose_msg = PoseWithCovarianceStamped()
             initialpose_msg.header.stamp = rospy.Time.now()
             initialpose_msg.header.frame_id = "map"
-            initialpose_msg.pose = pose_markerlocator.pose
+            initialpose_msg.pose.pose = pose_markerlocator.pose
             self.init_pose_pub.publish(initialpose_msg)
 
     def loop(self):
