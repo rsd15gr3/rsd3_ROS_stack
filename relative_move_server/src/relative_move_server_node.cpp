@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <tf/tf.h>
 #include <tf/transform_listener.h>
-
+#include "tf/transform_broadcaster.h"
 #include <nav_msgs/Odometry.h>
 
 #include <actionlib/server/simple_action_server.h>
@@ -11,7 +11,7 @@
 
 class RelativeMoveAction{
 public:
-    RelativeMoveAction(ros::NodeHandle& nh): nh_(&nh), as_(nh, "/relative_move_action", boost::bind(&RelativeMoveAction::executeCB, this, _1), false){
+    RelativeMoveAction(ros::NodeHandle& nh): nh_(&nh), as_(nh, "relative_move_action", boost::bind(&RelativeMoveAction::executeCB, this, _1), false){
         std::string cmd_vel_topic;
         nh_->param("cmd_vel_topic", cmd_vel_topic, std::string("/cmd_vel"));
         cmd_vel_pub_ = nh_->advertise<geometry_msgs::Twist>(cmd_vel_topic, 1);
@@ -26,6 +26,10 @@ public:
         nh_->param("/fmExecutors/wptnav/drive_kp", Kp_, 10.0);
         nh_->param("/fmExecutors/wptnav/drive_ki", Ki_, 0.0);
         nh_->param("/fmExecutors/wptnav/drive_kd", Kd_, 0.0);
+
+        done_=false;
+        failed_=false;
+        tf_listener_= new tf::TransformListener();
 
         as_.start();
     }

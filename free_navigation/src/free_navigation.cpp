@@ -103,21 +103,23 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
                      boost::bind(&Navigation::activeCb, this),
                      boost::bind(&Navigation::feedbackCb, this, _1) );
 
-        if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-            //call server for charging task
-            relative_move_server::RelativeMoveGoal goalPose;
-            goalPose.target_pose.pose = charge_dock_pose_;
+    }
+    ROS_INFO("goal reached, entering condition");
+    if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+        //call server for charging task
+        ROS_INFO("Entering condition");
+        relative_move_server::RelativeMoveGoal goalPose;
+        goalPose.target_pose.pose = charge_dock_pose_;
 
-            ROS_INFO("(%f, %f)",goalPose.target_pose.pose.position.x, goalPose.target_pose.pose.position.y);
-            goalPose.target_pose.header.frame_id = base_frame_id_;
-            goalPose.target_pose.header.stamp = ros::Time::now();  
-            //goalPose.target_yaw.data = 1.57;
+        ROS_INFO("On it's way to charge: (%f, %f)",goalPose.target_pose.pose.position.x, goalPose.target_pose.pose.position.y);
+        goalPose.target_pose.header.frame_id = base_frame_id_;
+        goalPose.target_pose.header.stamp = ros::Time::now();  
+        //goalPose.target_yaw.data = 1.57;
 
-            char_client_.sendGoal(goalPose, boost::bind(&Navigation::doneRelativeMovCb,this,_1, _2),
-                                boost::bind(&Navigation::activeRelativeMovCb, this),
-                                boost::bind(&Navigation::feedbackRelativeMovCb, this, _1) );
+        char_client_.sendGoal(goalPose, boost::bind(&Navigation::doneRelativeMovCb,this,_1, _2),
+                            boost::bind(&Navigation::activeRelativeMovCb, this),
+                            boost::bind(&Navigation::feedbackRelativeMovCb, this, _1) );
 
-        }
     }
     prev_action_state_ = action_state.data;
 }
