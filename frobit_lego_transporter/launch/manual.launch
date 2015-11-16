@@ -95,38 +95,6 @@
             <rosparam param="pose_covariance_diagonal">[0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001]</rosparam>
         </node>
 
-        <!-- EKFs -->
-        <!-- <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="ekf_local" output="screen">
-            <remap from="odom" to="/fmKnowledge/wheel_odom"/>
-            <remap from="imu_data" to="/fmInformation/imu"/>
-            <param name="output_frame" value="odom"/>
-            <param name="base_footprint_frame" value="base_link"/>
-            <param name="freq" value="30.0"/>
-            <param name="sensor_timeout" value="1.0"/>
-            <param name="odom_used" value="true"/>
-            <param name="imu_used" value="true"/>
-            <param name="vo_used" value="false"/>
-            <param name="gps_used" value="false"/>
-            <param name="debug" value="false"/>
-            <param name="self_diagnose" value="true"/>
-        </node>
-
-        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="ekf_global" output="screen">
-            <remap from="odom" to="/fmKnowledge/wheel_odom"/>
-            <remap from="imu_data" to="/fmInformation/imu"/>
-            <remap from="gps" to="/fmKnowledge/odom_marloc"/>
-            <param name="output_frame" value="map"/>
-            <param name="base_footprint_frame" value="odom"/>
-            <param name="freq" value="30.0"/>
-            <param name="sensor_timeout" value="1.0"/>
-            <param name="odom_used" value="true"/>
-            <param name="imu_used" value="true"/>
-            <param name="vo_used" value="false"/>
-            <param name="gps_used" value="true"/>
-            <param name="debug" value="false"/>
-            <param name="self_diagnose" value="true"/>
-        </node> -->
-
         <!-- EKF for fusing continous position data from wheel odometry and IMU -->
         <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_local" clear_params="true">
             <param name="frequency" value="30"/>
@@ -179,10 +147,50 @@
         </node>
 
         <!-- AMCL resetter -->
-        <node pkg="amcl_resetter" name="amcl_resetter" type="amcl_resetter_node.py" output="screen">
-        </node>          
+        <node pkg="amcl_resetter" name="amcl_resetter" type="amcl_resetter_node.py" output="screen" />
+    </group>
+
+    <group ns="fmControllers">
+        <!-- Frobit interface -->
+        <node pkg="sdu_frobit_v2" name="frobit" type="frobit_interface_node.py" output="screen">
+            <param name="actuation_enable_sub" value="/fmSafe/actuation_enable" />
+            <param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
+            <param name="enc_left_pub" value="/fmInformation/encoder_left" />
+            <param name="enc_right_pub" value="/fmInformation/encoder_right" />
+            <param name="wheel_status_left_pub" value="/fmInformation/wheel_status_left" />
+            <param name="wheel_status_right_pub" value="/fmInformation/wheel_status_right" />
+            <param name="wheel_feedback_left_pub" value="/fmInformation/wheel_feedback_left" />
+            <param name="wheel_feedback_right_pub" value="/fmInformation/wheel_feedback_right" />
+            <param name="wheel_pid_left_pub" value="/fmInformation/wheel_pid_left" />
+            <param name="wheel_pid_right_pub" value="/fmInformation/wheel_pid_right" />
+            <param name="nmea_from_frobit_sub" value="/fmSignal/nmea_from_frobit" />
+            <param name="nmea_to_frobit_pub" value="/fmSignal/nmea_to_frobit" />
+            <param name="publish_wheel_status_rate" value="10" />
+            <param name="publish_wheel_feedback_rate" value="10" />
+            <param name="publish_wheel_pid_rate" value="10" />
+            <param name="castor_front" value="true" />
+            <param name="max_linear_acceleration" value="16.2" />
+            <param name="max_angular_acceleration" value="16.0" />
+            <param name="wheel_drive_feed_forward" value="85" />
+            <param name="wheel_drive_kp" value="5" />
+            <param name="wheel_drive_ki" value="10" />
+            <param name="wheel_drive_kd" value="5" />
+            <param name="wheel_drive_max_integral_output" value="300" />
+            <param name="wheel_turn_feed_forward" value="110" />
+            <param name="wheel_turn_kp" value="10" />
+            <param name="wheel_turn_ki" value="20" />
+            <param name="wheel_turn_kd" value="3" />
+            <param name="wheel_turn_max_integral_output" value="300" />
+            <param name="supply_voltage_scale_factor" value="0.03747" />
+            <param name="min_supply_voltage" value="12.1" />
+            <param name="show_voltage_interval" value="300" />
+        </node>
+    </group>
+
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
         <remap from="scan" to="/fmSensors/scan" />
+        <remap from="initialpose" to="/fmProcessors/initialpose" />
+
         <!-- Particle filter -->
         <param name="min_particles" value="500" />
         <param name="max_particles" value="5000" />
@@ -235,45 +243,6 @@
         <param name="tf_broadcast" value="true" />
     </node>
 
-    </group>
-
-    <group ns="fmControllers">
-        <!-- Frobit interface -->
-        <node pkg="sdu_frobit_v2" name="frobit" type="frobit_interface_node.py" output="screen">
-            <param name="actuation_enable_sub" value="/fmSafe/actuation_enable" />
-            <param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
-            <param name="enc_left_pub" value="/fmInformation/encoder_left" />
-            <param name="enc_right_pub" value="/fmInformation/encoder_right" />
-            <param name="wheel_status_left_pub" value="/fmInformation/wheel_status_left" />
-            <param name="wheel_status_right_pub" value="/fmInformation/wheel_status_right" />
-            <param name="wheel_feedback_left_pub" value="/fmInformation/wheel_feedback_left" />
-            <param name="wheel_feedback_right_pub" value="/fmInformation/wheel_feedback_right" />
-            <param name="wheel_pid_left_pub" value="/fmInformation/wheel_pid_left" />
-            <param name="wheel_pid_right_pub" value="/fmInformation/wheel_pid_right" />
-            <param name="nmea_from_frobit_sub" value="/fmSignal/nmea_from_frobit" />
-            <param name="nmea_to_frobit_pub" value="/fmSignal/nmea_to_frobit" />
-            <param name="publish_wheel_status_rate" value="10" />
-            <param name="publish_wheel_feedback_rate" value="10" />
-            <param name="publish_wheel_pid_rate" value="10" />
-            <param name="castor_front" value="true" />
-            <param name="max_linear_acceleration" value="16.2" />
-            <param name="max_angular_acceleration" value="16.0" />
-            <param name="wheel_drive_feed_forward" value="85" />
-            <param name="wheel_drive_kp" value="5" />
-            <param name="wheel_drive_ki" value="10" />
-            <param name="wheel_drive_kd" value="5" />
-            <param name="wheel_drive_max_integral_output" value="300" />
-            <param name="wheel_turn_feed_forward" value="110" />
-            <param name="wheel_turn_kp" value="10" />
-            <param name="wheel_turn_ki" value="20" />
-            <param name="wheel_turn_kd" value="3" />
-            <param name="wheel_turn_max_integral_output" value="300" />
-            <param name="supply_voltage_scale_factor" value="0.03747" />
-            <param name="min_supply_voltage" value="12.1" />
-            <param name="show_voltage_interval" value="300" />
-        </node>
-    </group>
-
     <!-- Frobit state publisher -->
     <param name="robot_description" textfile="$(find frobit_description)/urdf/frobit.urdf" />
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" output="screen" />
@@ -304,6 +273,7 @@
             <param name="keyboard_pub" value="/fmHMI/keyboard" />
         </node>
     </group>
+
     <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="4.11610784307 3.52470963489 0.0 0.0 0.0 -0.747971112175 0.663731282487 markerlocator map 100" />
 
     <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
