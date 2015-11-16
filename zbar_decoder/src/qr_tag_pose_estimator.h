@@ -7,7 +7,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
-
+#include <ros/ros.h>
 using namespace std;
 using namespace cv;
 using namespace zbar;
@@ -15,7 +15,7 @@ using namespace zbar;
 class QrTagPoseEstimator
 {
 public:
-  QrTagPoseEstimator() : tag_points_(4) {}
+  QrTagPoseEstimator() : tag_points_(4), cross_point_offset(32.5e-3) {}
   void init(cv::Mat camera_matrix, cv::Mat dist_coeffs, double tag_width)
   {
     camera_matrix_ = camera_matrix;
@@ -34,8 +34,23 @@ public:
     cv::Mat rvec(3,1,cv::DataType<double>::type);
     cv::Mat tvec(3,1,cv::DataType<double>::type);
     cv::solvePnP(tag_points_, image_points, camera_matrix_, dist_coeffs_, rvec, tvec, CV_ITERATIVE);
+    cv::Point3f cross_point(-cross_point_offset, -cross_point_offset,0);
+
+    Mat_<double> cam_to_marker_tf(4,4,0.0);
     Rodrigues(rvec, R);
-    position = tvec;
+    cam_to_marker_tf(cv::Range(0,2),cv::Range(0,2)) = R;
+    cam_to_marker_tf(cv::Range(0,2),cv::Range(3,3)) = tvec;
+    cam_to_marker_tf(3,3) = 1;
+    cv::Mat_<double> marker_to_cross_tf(4,4);
+    marker_to_cross_tf <<1, 0, 0, -cross_point_offset,
+                      0, 1, 0, -cross_point_offset,
+                      0, 0, 1, 0,
+                      0, 0, 0, 1;
+    Mat_<double> cam_to_cross = cam_to_marker_tf * marker_to_cross_tf;
+    position = cam_to_cross(cv::Range(0,2),cv::Range(3,3));
+    //cout << "position diff" << (position - tvec) << endl;
+    ROS_INFO_STREAM("position diff" << (position - tvec));
+    //position = tvec;
   }
 #if CMAKE_BUILD_TYPE == Debug
   void showPoseEst(const zbar::Symbol &tag_sym, Mat &R, Mat &position, const Mat &qr_tag_im)
@@ -85,6 +100,7 @@ private:
   cv::Mat camera_matrix_;
   cv::Mat dist_coeffs_;
   vector<cv::Point3f> tag_points_;
+  double cross_point_offset;
 };
 
 #endif // QRTAGPOSEESTIMATOR
