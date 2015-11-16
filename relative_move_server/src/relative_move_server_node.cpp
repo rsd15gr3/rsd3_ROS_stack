@@ -27,6 +27,9 @@ public:
         nh_->param("/fmExecutors/wptnav/drive_ki", Ki_, 0.0);
         nh_->param("/fmExecutors/wptnav/drive_kd", Kd_, 0.0);
 
+        moving_ = false;
+        pure_rotation_ = false;
+        forward_ = true;
         done_ = false;
         failed_ = false;
 
@@ -281,9 +284,13 @@ private:
         if(!checkGoal(currentGoal)){
             relative_move_server::RelativeMoveResult relative_move_result;
             relative_move_result.end_state = relative_move_server::RelativeMoveResult::INVALID_GOAL;
+            as_.setAborted(relative_move_result);
+            publishCmdVel(0.0, 0.0);
+            return;
         }
 
         while(nh_->ok()){
+            ROS_INFO_STREAM("Preempt: " << as_.isPreemptRequested() << " New goal: " << as_.isNewGoalAvailable());
             if(as_.isPreemptRequested()){
                 if(as_.isNewGoalAvailable()){
                     currentGoal = *as_.acceptNewGoal();
@@ -298,6 +305,7 @@ private:
                 }
             }
             else{
+                ROS_INFO("Preempting the current goal");
                 as_.setPreempted();
                 moving_ = false;
                 publishCmdVel(0, 0);
