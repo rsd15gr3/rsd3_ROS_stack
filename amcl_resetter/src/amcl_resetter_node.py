@@ -60,7 +60,7 @@ class AMCLResetterNode:
 
         if dist < self.dist_limit:
             initialpose_msg = PoseWithCovarianceStamped()
-            initialpose_msg.header.stamp = t0
+            initialpose_msg.header.stamp = rospy.Time.now() + rospy.Duration(-0.1)
             initialpose_msg.header.frame_id = "map"
             initialpose_msg.pose.pose = pose_markerlocator.pose
             self.init_pose_pub.publish(initialpose_msg)
