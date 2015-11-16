@@ -53,6 +53,7 @@ tf::StampedTransform camera_to_base_link_tf;
 
 geometry_msgs::Point initial_position;
 geometry_msgs::Point current_position;
+geometry_msgs::Point tag_position;
 bool aligning_with_crossing;
 double distance_to_tag;
 
@@ -138,11 +139,16 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
   current_position = msg.pose.pose.position;
   if(aligning_with_crossing) {
+    /*
     double dx = fabs(current_position.x - initial_position.x);
     double dy = fabs(current_position.y - initial_position.y);
     double traveled_dist = hypot(dx,dy);
     ROS_DEBUG("Distance left to cross %f", distance_to_tag - traveled_dist);
     double dist_error = distance_to_tag - traveled_dist;
+    */
+    double dx = fabs(tag_position.x - current_position.x);
+    double dy = fabs(tag_position.y - current_position.y);
+    double dist_error = hypot(dx,dy);
     if(fabs(dist_error) < forward_Speed/5)
     {
       const double ramp_p = forward_Speed*5;
@@ -152,7 +158,7 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
     {
       ramp_speed = forward_Speed;
     }
-    ramp_speed = 0.1; // ramp not slow enough
+    // ramp_speed = 0.1; // ramp not slow enough
     const double goal_tolerance = 0.01;
     if(fabs(dist_error) < goal_tolerance)
     {
@@ -196,9 +202,11 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         ROS_DEBUG("initial pose: [%f, %f, %f]", initial_position.x);
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
-        double dx = fabs(pose_in_base_link.pose.position.x);
-        double dy = fabs(pose_in_base_link.pose.position.y);
-        distance_to_tag = hypot(dx,dy);
+        //double dx = fabs(pose_in_base_link.pose.position.x);
+        //double dy = fabs(pose_in_base_link.pose.position.y);
+        //distance_to_tag = hypot(dx,dy);
+        tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
+        tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
         // distance_to_tag -= 0.2; // hot fix to stop at cross
         aligning_with_crossing = true;
       }
