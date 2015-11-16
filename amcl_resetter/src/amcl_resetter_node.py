@@ -29,8 +29,9 @@ class AMCLResetterNode:
 
     def odom_markerlocator_cb(self, odom_msg):
         self.odom_markerlocator = odom_msg
+        self.calc_dist_and_publish()
 
-    def odom_to_posestamped(odom_msg):
+    def odom_to_posestamped(self, odom_msg):
         pose_msg = PoseStamped()
         pose_msg.header.stamp = odom_msg.header.stamp
         pose_msg.header.frame_id = odom_msg.header.frame_id
@@ -42,8 +43,8 @@ class AMCLResetterNode:
             return
 
         try:
-            pose_filtered = tf.transformPose("map", self.odom_to_posestamped(self.odom_filtered))
-            pose_markerlocator = tf.transformPose("map", self.odom_to_posestamped(self.odom_markerlocator))
+            pose_filtered = self.tf.transformPose("map", self.odom_to_posestamped(self.odom_filtered))
+            pose_markerlocator = self.tf.transformPose("map", self.odom_to_posestamped(self.odom_markerlocator))
         except (tf.LookupException, tf.ConnectivityException):
             print "fuck"
             pass
