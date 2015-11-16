@@ -95,6 +95,10 @@
             <rosparam param="pose_covariance_diagonal">[0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001]</rosparam>
         </node>
 
+        <!-- AMCL resetter -->
+        <node pkg="amcl_resetter" name="amcl_resetter" type="amcl_resetter_node.py" output="screen">
+        </node>
+
         <!-- EKFs -->
         <!-- <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="ekf_local" output="screen">
             <remap from="odom" to="/fmKnowledge/wheel_odom"/>
