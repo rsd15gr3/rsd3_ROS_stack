@@ -1,8 +1,8 @@
 <launch>
     <!-- Frobit parameters -->
     <param name="diff_steer_wheel_distance" value="0.375"/>
-    <param name="ticks_per_meter_left" value="677" />
-    <param name="ticks_per_meter_right" value="677" />
+    <param name="ticks_per_meter_left" value="700" />
+    <param name="ticks_per_meter_right" value="700" />
 
     <group ns="fmSafety">
         <node pkg="basic_incident_handler" name="incident_handler" type="basic_incident_handler_node.py" output="screen">
@@ -49,9 +49,9 @@
             <param name="imu_pub" value="/fmInformation/imu" />
             <param name="frame_id" value="imu_link" />
             <param name="use_enu" value="true" />
-            <param name="covariance_x" value="0.01" />
-            <param name="covariance_y" value="0.01" />
-            <param name="covariance_z" value="0.01" />
+            <param name="covariance_x" value="0.001" />
+            <param name="covariance_y" value="0.001" />
+            <param name="covariance_z" value="0.001" />
         </node>
 
         <!-- SICK laser scanner -->
@@ -73,29 +73,60 @@
             <param name="enc_right_sub" value="/fmInformation/encoder_right" />
             <param name="imu_sub" value="/fmInformation/imu" />
             <param name="odom_reset_sub" value="/fmInformation/odom_reset" />
-            <param name="odom_pub" value="/fmKnowledge/wheel_odom" />
+            <param name="odom_pub" value="odometry/wheels" />
             <param name="encoder_output" value="absolute" />
             <param name="max_ticks_per_update" value="200" />
             <param name="yaw_angle_source" value="odometry" /> <!-- Do not use IMU as yaw source; EKF fuses the measurements -->
             <param name="publish_transform" value="false" />
-            <param name="odom_estimate_frame" value="wheel_odom" />
+            <param name="odom_estimate_frame" value="odom" />
             <param name="vehicle_frame" value="base_link" />
-            <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
-            <rosparam param="twist_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
+            <rosparam param="pose_covariance_diagonal">[0.3, 0.3, 0.3, 0.5, 0.5, 0.5]</rosparam>
+            <rosparam param="twist_covariance_diagonal">[0.1, 0.1, 0.1, 0.2, 0.2, 0.2]</rosparam>
         </node>
 
         <!-- MarkerLocator "GPS" -->
         <node pkg="markerlocator_odometry" name="markerlocator_odometry" type="markerlocator_odometry_node.py" output="screen">
-            <remap from="odom_marloc" to="/fmKnowledge/odom_marloc"/>
             <param name="host" value="10.115.253.233" />
             <param name="port" value="21212" />
-            <param name="frame_id" value="marker_link" />
-            <param name="time_offset" type="double" value="-0.001" />
-            <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 99999, 99999, 99999, 0.001]</rosparam>
+            <param name="frame_id" value="markerlocator" />
+            <param name="time_offset" type="double" value="0.0" />
+            <rosparam param="pose_covariance_diagonal">[0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001]</rosparam>
         </node>
 
-        <!-- ODOM EKF -->
-        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_odom" clear_params="true">
+        <!-- EKFs -->
+        <!-- <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="ekf_local" output="screen">
+            <remap from="odom" to="/fmKnowledge/wheel_odom"/>
+            <remap from="imu_data" to="/fmInformation/imu"/>
+            <param name="output_frame" value="odom"/>
+            <param name="base_footprint_frame" value="base_link"/>
+            <param name="freq" value="30.0"/>
+            <param name="sensor_timeout" value="1.0"/>
+            <param name="odom_used" value="true"/>
+            <param name="imu_used" value="true"/>
+            <param name="vo_used" value="false"/>
+            <param name="gps_used" value="false"/>
+            <param name="debug" value="false"/>
+            <param name="self_diagnose" value="true"/>
+        </node>
+
+        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="ekf_global" output="screen">
+            <remap from="odom" to="/fmKnowledge/wheel_odom"/>
+            <remap from="imu_data" to="/fmInformation/imu"/>
+            <remap from="gps" to="/fmKnowledge/odom_marloc"/>
+            <param name="output_frame" value="map"/>
+            <param name="base_footprint_frame" value="odom"/>
+            <param name="freq" value="30.0"/>
+            <param name="sensor_timeout" value="1.0"/>
+            <param name="odom_used" value="true"/>
+            <param name="imu_used" value="true"/>
+            <param name="vo_used" value="false"/>
+            <param name="gps_used" value="true"/>
+            <param name="debug" value="false"/>
+            <param name="self_diagnose" value="true"/>
+        </node> -->
+
+        <!-- EKF for fusing continous position data from wheel odometry and IMU -->
+        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_local" clear_params="true">
             <param name="frequency" value="30"/>
             <param name="sensor_timeout" value="0.1"/>
             <param name="two_d_mode" value="true"/>
@@ -106,72 +137,45 @@
             <param name="world_frame" value="odom"/>
 
             <param name="transform_time_offset" value="0.0"/>
-            <param name="odom0" value="/fmKnowledge/wheel_odom"/>
+
+            <param name="odom0" value="odometry/wheels"/>
             <param name="imu0" value="/fmInformation/imu"/>
 
-            <!-- See http://wiki.ros.org/robot_localization/Tutorials/Sensor%20Configuration -->
-            <rosparam param="odom0_config">[false, false, false,            <!-- x, y, z -->
-                                            false, false, false,            <!-- roll, pitch, yaw -->
-                                            true, true, false,              <!-- x velocity, y velocity, z velocity -->
-                                            false, false, true,             <!-- roll velocity, pitch velocity, yaw velocity -->
-                                            false, false, false]</rosparam> <!-- x accel., y accel., z accel. -->
-            <rosparam param="imu0_config">[false, false, false,
-                                           false, false, true,
-                                           true, false, false,
-                                           false, false, true,
-                                           false, false, false]</rosparam>
+            <!--
+            x,     y,      z,
+            roll,  pitch,  yaw,
+            vx,    vy,     vz,
+            vroll, vpitch, vyaw,
+            ax,    ay,     az
+             -->
 
-            <param name="odom0_differential" value="false"/>
-            <param name="imu0_differential" value="false"/>
-            <param name="odom0_relative" value="false"/>
-            <param name="imu0_relative" value="true"/>
-
-            <param name="imu0_remove_gravitational_acceleration" value="true"/>
-            <param name="print_diagnostics" value="true"/>
-        </node>
-
-        <!-- MAP EKF -->
-        <!-- <node pkg="robot_localization" type="ekf_localization_node" name="ekf_map" clear_params="true">
-            <param name="frequency" value="30"/>
-            <param name="sensor_timeout" value="0.1"/>
-            <param name="two_d_mode" value="true"/>
-
-            <param name="map_frame" value="map"/>
-            <param name="odom_frame" value="odom"/>
-            <param name="base_link_frame" value="base_link"/>
-            <param name="world_frame" value="map"/>
-
-            <param name="transform_time_offset" value="0.0"/>
-            <param name="odom0" value="/fmKnowledge/wheel_odom"/>
-            <param name="odom1" value="/fmKnowledge/odom_marloc"/>
-            <param name="imu0" value="/fmInformation/imu"/>
-
+            <!-- Wheel odometry -->
             <rosparam param="odom0_config">[false, false, false,
                                             false, false, false,
                                             true, true, false,
                                             false, false, true,
                                             false, false, false]</rosparam>
-            <rosparam param="odom1_config">[true, true, false,
-                                            false, false, true,
-                                            false, false, false,
-                                            false, false, false,
-                                            false, false, false]</rosparam>
+
+            <!-- IMU -->
             <rosparam param="imu0_config">[false, false, false,
                                            false, false, true,
                                            false, false, false,
                                            false, false, true,
-                                           true, false, false]</rosparam>
+                                           true,  false, false]</rosparam>
 
-            <param name="odom0_differential" value="true"/>
-            <param name="odom1_differential" value="false"/>
+            <param name="odom0_differential" value="false"/>
             <param name="imu0_differential" value="false"/>
-            <param name="odom0_relative" value="false"/>
-            <param name="odom1_relative" value="true"/>
+
+            <param name="odom0_relative" value="true"/>
             <param name="imu0_relative" value="true"/>
 
-            <param name="imu0_remove_gravitational_acceleration" value="false"/>
-            <param name="print_diagnostics" value="true"/>
-        </node> -->
+            <param name="imu0_remove_gravitational_acceleration" value="true"/>
+
+            <param name="print_diagnostics" value="false"/>
+
+            <remap from="odometry/filtered" to="odometry/filtered/local"/>
+        </node>
+
     </group>
 
     <group ns="fmControllers">
@@ -210,6 +214,67 @@
             <param name="show_voltage_interval" value="300" />
         </node>
     </group>
+    <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <remap from="scan" to="/fmSensors/scan" />
+        <!-- Particle filter -->
+        <param name="min_particles" value="500" />
+        <param name="max_particles" value="5000" />
+        <param name="kld_err" value="0.01" />
+        <param name="kld_z" value="0.99" />
+        <param name="update_min_d" value="0.1" />
+        <param name="update_min_a" value="0.2618" />
+        <param name="resample_interval" value="2" />
+        <param name="transform_tolerance" value="0.2" />
+
+        <param name="recovery_alpha_slow" value="0.0" />
+        <param name="recovery_alpha_fast" value="0.0" />
+
+        <!-- Inital pose -->
+        <param name="initial_pose_x" value="0.0" />
+        <param name="initial_pose_y" value="0.0" />
+        <param name="initial_pose_a" value="0.0" />
+        <param name="initial_pose_xx" value="0.0" />
+        <param name="initial_pose_yy" value="0.0" />
+        <param name="initial_pose_aa" value="0.0" />
+
+        <param name="gui_publish_rate" value="10.0" />
+        <param name="save_pose_rate" value="0.5" />
+
+        <param name="use_map_topic" value="true" />
+        <param name="first_map_only" value="true" />
+        <!-- Laser model parameters -->
+        <param name="laser_min_range" value="0.05" /> <!-- -1 to use lasers reported range -->
+        <param name="laser_max_range" value="4.0" />
+        <param name="laser_max_beams" value="270" />
+        <param name="laser_z_hit" value="0.95" />
+        <param name="laser_z_short" value="0.1" />
+        <param name="laser_z_max" value="0.05" />
+        <param name="laser_z_rand" value="0.05" />
+        <param name="laser_sigma_hit" value="0.2" />
+        <param name="laser_lambda_short" value="0.1" />
+        <param name="laser_likelihood_max_dist" value="2.0" />
+        <param name="laser_model_type" value="likelihood_field"/>   <!-- <param name="laser_model_type" value="beam"/> -->
+
+        <!-- Odometery model parameters -->
+        <param name="odom_model_type" value="diff" />
+        <param name="odom_alpha1" value="0.1" />
+        <param name="odom_alpha2" value="0.1" />
+        <param name="odom_alpha3" value="0.1" />
+        <param name="odom_alpha4" value="0.1" />
+        <param name="odom_alpha5" value="0.0" />
+<!--
+        <param name="odom_alpha1" value="0." />
+        <param name="odom_alpha2" value="0." />
+        <param name="odom_alpha3" value="0." />
+        <param name="odom_alpha4" value="0." />
+        <param name="odom_alpha5" value="0." />
+-->
+        <param name="odom_frame_id" value="odom" />
+        <param name="base_frame_id" value="base_link" />
+        <param name="global_frame_id" value="map" />
+        <param name="tf_broadcast" value="true" />
+    </node>
 
     <!-- Frobit state publisher -->
     <param name="robot_description" textfile="$(find frobit_description)/urdf/frobit.urdf" />
@@ -219,6 +284,7 @@
     </node>
 
     <group ns="fmDecisionMakers">
+        <!-- Keyboard control -->
         <node pkg="frobit_wptnav_mission" name="wptnav_mission" type="wptnav_mission_node.py" output="screen">
             <param name="remote_control_sub" value="/fmHMI/remote_control"/>
             <param name="remote_control_feedback_pub" value="/fmHMI/remote_control_feedback" />
@@ -241,67 +307,24 @@
         </node>
     </group>
 
-    <!-- Map -->
-    <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_launch_sim)/world/box_and_surroundings.yaml" output="screen"/>
+    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="4.11610784307 3.52470963489 0.0 0.0 0.0 -0.747971112175 0.663731282487 markerlocator map 100" />
 
-    <node pkg="amcl" type="amcl" name="amcl" output="screen">
-        <remap from="scan" to="/fmSensors/scan" />
-        <!-- Particle filter -->
-        <param name="min_particles" value="500" />
-        <param name="max_particles" value="5000" />
-        <param name="kld_err" value="0.01" />
-        <param name="kld_z" value="0.99" />
-        <param name="update_min_d" value="0.2" />
-        <param name="update_min_a" value="0.523" />
-        <param name="resample_interval" value="2" />
-        <param name="transform_tolerance" value="0.2" />
-
-        <param name="recovery_alpha_slow" value="0.0" />
-        <param name="recovery_alpha_fast" value="0.0" />
-
-        <!-- Inital pose -->
-        <param name="initial_pose_x" value="4.5" />
-        <param name="initial_pose_y" value="2.3" />
-        <param name="initial_pose_a" value="0.7" />
-        <param name="initial_pose_xx" value="0.25" />
-        <param name="initial_pose_yy" value="0.25" />
-        <param name="initial_pose_aa" value="0.0685" />
-
-        <param name="gui_publish_rate" value="10.0" />
-        <param name="save_pose_rate" value="0.5" />
-
-        <param name="use_map_topic" value="true" />
-        <param name="first_map_only" value="true" />
-        <!-- Laser model parameters -->
-        <param name="laser_min_range" value="0.05" /> <!-- -1 to use lasers reported range -->
-        <param name="laser_max_range" value="4.0" />
-        <param name="laser_max_beams" value="270" />
-        <param name="laser_z_hit" value="0.95" />
-        <param name="laser_z_short" value="0.1" />
-        <param name="laser_z_max" value="0.05" />
-        <param name="laser_z_rand" value="0.05" />
-        <param name="laser_sigma_hit" value="0.2" />
-        <param name="laser_lambda_short" value="0.1" />
-        <param name="laser_likelihood_max_dist" value="2.0" />
-        <param name="laser_model_type" value="likelihood_field"/>   <!-- <param name="laser_model_type" value="beam"/> -->
-
-        <!-- Odometery model parameters -->
-        <param name="odom_model_type" value="diff" />
-        <param name="odom_alpha1" value="0.2" />
-        <param name="odom_alpha2" value="0.2" />
-        <param name="odom_alpha3" value="0.8" />
-        <param name="odom_alpha4" value="0.2" />
-        <param name="odom_alpha5" value="0.2" />
-<!--
-        <param name="odom_alpha1" value="0." />
-        <param name="odom_alpha2" value="0." />
-        <param name="odom_alpha3" value="0." />
-        <param name="odom_alpha4" value="0." />
-        <param name="odom_alpha5" value="0." />
--->
-        <param name="odom_frame_id" value="odom" />
-        <param name="base_frame_id" value="base_link" />
-        <param name="global_frame_id" value="map" />
-        <param name="tf_broadcast" value="true" />
+    <!-- Onboard webcam -->
+    <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+        <param name="video_device" value="/dev/video0" />
+        <param name="image_width" value="1280" />
+        <param name="image_height" value="720" />
+        <param name="pixel_format" value="mjpeg" />
+        <param name="camera_frame_id" value="/camera_link" />
+        <param name="framerate" value="30" />
+        <param name="contrast" value="32" />
+        <param name="brightness" value="32" />
+        <param name="saturation" value="32" />
+        <param name="sharpness" value="72" />
+        <param name="autofocus" value="false" />
+        <param name="focus" value="-1" />
+        <param name="camera_info_url" value="package://line_detection/config/head_camera.yaml" />
+        <param name="camera_name" value="head_camera" />
+        <param name="io_method" value="mmap"/>
     </node>
 </launch>
