@@ -7,6 +7,8 @@
 Navigation::Navigation()
     : ac_("move_base", true), char_client_("relative_move_action", true)
 {
+    moving_ = false;
+    rel_move_done_ = false;
     //char_client_("charge battery", true);
     while(!ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
         ROS_INFO("Waiting for the move_base action server to come up");
@@ -39,6 +41,8 @@ void Navigation::doneRelativeMovCb(const actionlib::SimpleClientGoalState& state
   //ROS_INFO("Finished in state [%s]", end_state.toString().c_str());
   //ROS_INFO("Answer: %i", result->end_pose);
   //ros::shutdown();
+  rel_move_done_ = true;
+  moving_ = false;
 }
 
 void Navigation::activeRelativeMovCb()
@@ -103,22 +107,19 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
                      boost::bind(&Navigation::activeCb, this),
                      boost::bind(&Navigation::feedbackCb, this, _1) );
 
-        if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-            //call server for charging task
-            relative_move_server::RelativeMoveGoal goalPose;
-            goalPose.target_pose.pose = charge_dock_pose_;
-
-            ROS_INFO("(%f, %f)",goalPose.target_pose.pose.position.x, goalPose.target_pose.pose.position.y);
-            goalPose.target_pose.header.frame_id = base_frame_id_;
-            goalPose.target_pose.header.stamp = ros::Time::now();  
-            //goalPose.target_yaw.data = 1.57;
-
-            char_client_.sendGoal(goalPose, boost::bind(&Navigation::doneRelativeMovCb,this,_1, _2),
-                                boost::bind(&Navigation::activeRelativeMovCb, this),
-                                boost::bind(&Navigation::feedbackRelativeMovCb, this, _1) );
-
-        }
     }
+
+    if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+        //call server for charging task
+
+        double dx, dy, dTh;
+        dx = charge_dock_pose_.position.x;
+        dy = charge_dock_pose_.position.y;
+        dTh = tf::getYaw(charge_dock_pose_.orientation);
+
+        setRelativeMove(dx, dy, dTh);
+    }
+
     prev_action_state_ = action_state.data;
 }
 
@@ -134,4 +135,34 @@ Pose Navigation::convertVecToPose(const vector<double>& poses)
     pose.position.z = 0;
     pose.orientation = tf::createQuaternionMsgFromYaw(poses[2]);
     return pose;
+}
+
+bool Navigation::setRelativeMove(double dx, double dy, double dth){
+    relative_move_server::RelativeMoveGoal goal;
+    goal.target_pose.header.frame_id = base_frame_id_;
+    goal.target_pose.header.stamp = ros::Time::now();
+    goal.target_pose.pose.position.x = dx;
+    goal.target_pose.pose.position.y = dy;
+    goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(dth);
+
+    ROS_INFO("(%f, %f)",goal.target_pose.pose.position.x, goal.target_pose.pose.position.y);
+
+    if (!sendGoal(goal))
+        return false;
+
+    if (!moving_)
+        moving_ = true;
+
+    return true;
+}
+
+bool Navigation::sendGoal(relative_move_server::RelativeMoveGoal& goal){
+    goal.target_pose.header.stamp = ros::Time::now();
+    rel_move_done_ = false;
+    char_client_.sendGoal(goal,
+                           boost::bind(&Navigation::doneRelativeMovCb, this, _1, _2),
+                           boost::bind(&Navigation::activeRelativeMovCb, this),
+                           boost::bind(&Navigation::feedbackRelativeMovCb, this, _1));
+
+    return true;
 }
