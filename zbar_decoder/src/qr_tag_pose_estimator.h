@@ -36,20 +36,24 @@ public:
     cv::solvePnP(tag_points_, image_points, camera_matrix_, dist_coeffs_, rvec, tvec, CV_ITERATIVE);
     cv::Point3f cross_point(-cross_point_offset, -cross_point_offset,0);
 
-    Mat_<double> cam_to_marker_tf(4,4,0.0);
+
     Rodrigues(rvec, R);
+
+    Mat_<double> cam_to_marker_tf = cv::Mat::zeros(4,4,CV_64F);
     cam_to_marker_tf(cv::Range(0,2),cv::Range(0,2)) = R;
     cam_to_marker_tf(cv::Range(0,2),cv::Range(3,3)) = tvec;
     cam_to_marker_tf(3,3) = 1;
-    cv::Mat_<double> marker_to_cross_tf(4,4);
+    cv::Mat_<double> marker_to_cross_tf(4,4,CV_64F);
     marker_to_cross_tf <<1, 0, 0, -cross_point_offset,
                       0, 1, 0, -cross_point_offset,
                       0, 0, 1, 0,
                       0, 0, 0, 1;
-    Mat_<double> cam_to_cross = cam_to_marker_tf * marker_to_cross_tf;
+    Mat_<double> cam_to_cross(4,4,0.0);
+    cam_to_cross = cam_to_marker_tf * marker_to_cross_tf;
     position = cam_to_cross(cv::Range(0,2),cv::Range(3,3));
     //cout << "position diff" << (position - tvec) << endl;
-    ROS_INFO_STREAM("position diff" << (position - tvec));
+    //ROS_INFO_STREAM("position diff" << (position - tvec));
+
     //position = tvec;
   }
 #if CMAKE_BUILD_TYPE == Debug
