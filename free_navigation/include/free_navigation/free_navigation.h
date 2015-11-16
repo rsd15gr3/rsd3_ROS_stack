@@ -28,8 +28,12 @@ public:
     string base_frame_id_;
 private:
     MoveBaseClient ac_;
-    //ChargingClient char_client_;
+    ChargingClient char_client_;
     int prev_action_state_ = -1;
+
+    bool moving_;
+    bool rel_move_done_;
+
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);
     void activeCb();
     void feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback);
@@ -38,6 +42,9 @@ private:
     void activeRelativeMovCb();
     void feedbackRelativeMovCb(const relative_move_server::RelativeMoveFeedbackConstPtr& feedback);
     void setBaseFrameId(string frame_id);
+
+    bool setRelativeMove(double dx, double dy, double dth);
+    bool sendGoal(relative_move_server::RelativeMoveGoal& goal);
 };
 
 #endif // Navigation_H

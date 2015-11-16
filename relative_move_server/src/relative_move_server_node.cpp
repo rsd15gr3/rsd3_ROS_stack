@@ -87,12 +87,16 @@ private:
     }
 
     bool checkGoal(relative_move_server::RelativeMoveGoal& goal){
-        if(fabs(goal.target_pose.pose.position.x)>1e-4 || fabs(goal.target_pose.pose.position.y)>1e-4 || fabs(tf::getYaw(goal.target_pose.pose.orientation))>1e-4){
+        if(fabs(goal.target_pose.pose.position.x)>1e-4 || fabs(goal.target_pose.pose.position.y)>1e-4 || fabs(tf::getYaw(goal.target_pose.pose.orientation))>1e-4 || fabs(goal.target_yaw)>1e-4){
             if(fabs(goal.target_yaw)>1e-4){
                 goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(goal.target_yaw);
             }
 
-            if(testQuaternion(goal.target_pose.pose.orientation)){
+            if (fabs(	goal.target_pose.pose.orientation.x*goal.target_pose.pose.orientation.x +
+                        goal.target_pose.pose.orientation.y*goal.target_pose.pose.orientation.y +
+                        goal.target_pose.pose.orientation.z*goal.target_pose.pose.orientation.z +
+                        goal.target_pose.pose.orientation.w*goal.target_pose.pose.orientation.w - 1) > 0.01)
+            {
                 ROS_WARN_STREAM("Wrong quaternion in the goal. Rotation set to 0.");
                 goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(0);
             }
@@ -291,7 +295,6 @@ private:
         }
 
         while(nh_->ok()){
-            ROS_INFO_STREAM("Preempt: " << as_.isPreemptRequested() << " New goal: " << as_.isNewGoalAvailable());
             if(as_.isPreemptRequested()){
                 if(as_.isNewGoalAvailable()){
                     currentGoal = *as_.acceptNewGoal();
@@ -303,14 +306,14 @@ private:
                         publishCmdVel(0, 0);
                         return ;
                     }
+                    else{
+                        ROS_INFO("Preempting the current goal");
+                        as_.setPreempted();
+                        moving_ = false;
+                        publishCmdVel(0, 0);
+                        return ;
+                    }
                 }
-            }
-            else{
-                ROS_INFO("Preempting the current goal");
-                as_.setPreempted();
-                moving_ = false;
-                publishCmdVel(0, 0);
-                return ;
             }
 
             if(!moving_){
@@ -360,8 +363,6 @@ private:
 int main(int argc, char **argv){
     ros::init(argc, argv, "relative_move_server_node");
     ros::NodeHandle nh("~");
-
-   ROS_INFO("I'm in main"); 
 
     RelativeMoveAction* rma = new RelativeMoveAction(nh);
     ros::spin();
