@@ -294,7 +294,6 @@ private:
         }
 
         while(nh_->ok()){
-            ROS_INFO_STREAM("Preempt: " << as_.isPreemptRequested() << " New goal: " << as_.isNewGoalAvailable());
             if(as_.isPreemptRequested()){
                 if(as_.isNewGoalAvailable()){
                     currentGoal = *as_.acceptNewGoal();
@@ -363,8 +362,6 @@ private:
 int main(int argc, char **argv){
     ros::init(argc, argv, "relative_move_server_node");
     ros::NodeHandle nh("~");
-
-   ROS_INFO("I'm in main"); 
 
     RelativeMoveAction* rma = new RelativeMoveAction(nh);
     ros::spin();

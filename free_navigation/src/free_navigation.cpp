@@ -5,15 +5,15 @@
 
 
 Navigation::Navigation()
-    : ac_("move_base", true)/*, char_client_("relative_move_action", true)*/
+    : ac_("move_base", true), char_client_("relative_move_action", true)
 {
     //char_client_("charge battery", true);
     while(!ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
         ROS_INFO("Waiting for the move_base action server to come up");
     }
-    /*while(!char_client_.waitForServer(ros::Duration(5.0)) && ros::ok()){
+    while(!char_client_.waitForServer(ros::Duration(5.0)) && ros::ok()){
         ROS_INFO("Waiting for the relative_move action server to come up");
-    }*/
+    }
 }
 
 
@@ -103,21 +103,21 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
                      boost::bind(&Navigation::activeCb, this),
                      boost::bind(&Navigation::feedbackCb, this, _1) );
 
-        // if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-        //     //call server for charging task
-        //     relative_move_server::RelativeMoveGoal goalPose;
-        //     goalPose.target_pose.pose = charge_dock_pose_;
+        if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+            //call server for charging task
+            relative_move_server::RelativeMoveGoal goalPose;
+            goalPose.target_pose.pose = charge_dock_pose_;
 
-        //     ROS_INFO("(%f, %f)",goalPose.target_pose.pose.position.x, goalPose.target_pose.pose.position.y);
-        //     goalPose.target_pose.header.frame_id = base_frame_id_;
-        //     goalPose.target_pose.header.stamp = ros::Time::now();  
-        //     //goalPose.target_yaw.data = 1.57;
+            ROS_INFO("(%f, %f)",goalPose.target_pose.pose.position.x, goalPose.target_pose.pose.position.y);
+            goalPose.target_pose.header.frame_id = base_frame_id_;
+            goalPose.target_pose.header.stamp = ros::Time::now();  
+            //goalPose.target_yaw.data = 1.57;
 
-        //     char_client_.sendGoal(goalPose, boost::bind(&Navigation::doneRelativeMovCb,this,_1, _2),
-        //                         boost::bind(&Navigation::activeRelativeMovCb, this),
-        //                         boost::bind(&Navigation::feedbackRelativeMovCb, this, _1) );
+            char_client_.sendGoal(goalPose, boost::bind(&Navigation::doneRelativeMovCb,this,_1, _2),
+                                boost::bind(&Navigation::activeRelativeMovCb, this),
+                                boost::bind(&Navigation::feedbackRelativeMovCb, this, _1) );
 
-        // }
+        }
     }
     prev_action_state_ = action_state.data;
 }
