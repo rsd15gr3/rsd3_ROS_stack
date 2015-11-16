@@ -80,7 +80,7 @@
             <param name="max_ticks_per_update" value="200" />
             <param name="yaw_angle_source" value="odometry" /> <!-- Do not use IMU as yaw source; EKF fuses the measurements -->
             <param name="publish_transform" value="false" />
-            <param name="odom_estimate_frame" value="wheel_odom" />
+            <param name="odom_estimate_frame" value="odom" />
             <param name="vehicle_frame" value="base_link" />
             <rosparam param="pose_covariance_diagonal">[0.3, 0.3, 0.3, 0.5, 0.5, 0.5]</rosparam>
             <rosparam param="twist_covariance_diagonal">[0.1, 0.1, 0.1, 0.2, 0.2, 0.2]</rosparam>
@@ -93,10 +93,6 @@
             <param name="frame_id" value="markerlocator" />
             <param name="time_offset" type="double" value="0.0" />
             <rosparam param="pose_covariance_diagonal">[0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001]</rosparam>
-        </node>
-
-        <!-- AMCL resetter -->
-        <node pkg="amcl_resetter" name="amcl_resetter" type="amcl_resetter_node.py" output="screen">
         </node>
 
         <!-- EKFs -->
@@ -144,7 +140,7 @@
 
             <param name="transform_time_offset" value="0.0"/>
 
-            <param name="odom0" value="/odometry/wheels"/>
+            <param name="odom0" value="odometry/wheels"/>
             <param name="imu0" value="/fmInformation/imu"/>
 
             <!--
@@ -193,8 +189,8 @@
 
             <param name="transform_time_offset" value="0.0"/>
 
-            <param name="odom0" value="/odometry/wheels"/>
-            <param name="odom1" value="/odometry/markerlocator"/>
+            <param name="odom0" value="odometry/wheels"/>
+            <param name="odom1" value="odometry/markerlocator"/>
             <param name="imu0" value="/fmInformation/imu"/>
 
             <!-- Wheel odometry -->
@@ -232,6 +228,10 @@
 
             <!-- Reject MarkerLocator poses which are too far from current vehicle state -->
             <!-- <param name="odom1_pose_rejection_threshold" value="3"/> -->
+        </node>
+
+        <!-- AMCL resetter -->
+        <node pkg="amcl_resetter" name="amcl_resetter" type="amcl_resetter_node.py" output="screen">
         </node>
     </group>
 

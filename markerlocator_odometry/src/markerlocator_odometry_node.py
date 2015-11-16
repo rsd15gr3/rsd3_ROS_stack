@@ -17,7 +17,7 @@ class MarkerLocatorOdometryNode:
         self.time_offset = rospy.get_param("~time_offset", 0.0)
 
         # Publishers
-        self.odom_gps_pub = rospy.Publisher("/odometry/markerlocator", Odometry, queue_size=1)
+        self.odom_gps_pub = rospy.Publisher("odometry/markerlocator", Odometry, queue_size=1)
 
         # Loop
         self.rate = rospy.Rate(2)
