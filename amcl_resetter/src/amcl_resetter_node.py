@@ -44,6 +44,8 @@ class AMCLResetterNode:
             return
 
         try:
+            self.tf_listener.waitForTransform("map", "markerlocator", rospy.Time(0), rospy.Duration(1))
+            self.tf_listener.waitForTransform("map", "odom", rospy.Time(0), rospy.Duration(1))
             pose_filtered = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_filtered))
             pose_markerlocator = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_markerlocator))
         except (tf.LookupException, tf.ConnectivityException):
