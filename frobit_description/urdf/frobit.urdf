@@ -66,12 +66,18 @@
 
   <!-- Marker mount -->
   <link name="marker_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.2 0.2 0.01"/>
+      </geometry>
+    </visual>
   </link>
 
   <joint name="joint_marker_link" type="fixed">
     <parent link="lower_chassis" />
     <child link="marker_link" />
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="-0.205 0 0.7" rpy="0 0 0" />
   </joint>
 
   <!-- SICK TiM310 laser scanner -->
