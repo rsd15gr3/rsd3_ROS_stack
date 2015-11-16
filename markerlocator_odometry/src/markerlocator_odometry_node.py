@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import numpy as np
 import rospy
 import socket
 import tf
@@ -15,6 +16,8 @@ class MarkerLocatorOdometryNode:
         self.frame_id = rospy.get_param("~frame_id", "markerlocator")
         self.cov_diag_list = rospy.get_param("~pose_covariance_diagonal", [0.0001, 0.0001, 99999, 99999, 99999, 0.0001])
         self.time_offset = rospy.get_param("~time_offset", 0.0)
+
+        self.tf_listener = tf.TransformListener()
 
         # Publishers
         self.odom_gps_pub = rospy.Publisher("odometry/markerlocator", Odometry, queue_size=1)
@@ -42,11 +45,17 @@ class MarkerLocatorOdometryNode:
         return {"order": s[0], "timestamp": float(s[1]), "x": float(s[2]), "y": float(s[3]), "angle": float(s[4])}
 
     def publish_odom_gps_message(self, marloc):
+        (t, r) = self.tf_listener.lookupTransform("marker_link", "base_link", rospy.Time(0));
+        R = tf.transformations.rotation_matrix(marloc["angle"], (0, 0, 1))
+        t = np.hstack((t, 1))
+        P = np.dot(R, t)
+        P += (marloc["x"], marloc["y"], 0, 0)
+
         msg = Odometry()
         msg.header.stamp = rospy.Time.now() + rospy.Duration(self.time_offset)
         msg.header.frame_id = self.frame_id
-        msg.pose.pose.position.x = marloc["x"]
-        msg.pose.pose.position.y = marloc["y"]
+        msg.pose.pose.position.x = P[0]
+        msg.pose.pose.position.y = P[1]
         q = tf.transformations.quaternion_from_euler(0, 0, marloc["angle"])
         msg.pose.pose.orientation = Quaternion(*q)
         msg.pose.covariance = [self.cov_diag_list[0], 0, 0, 0, 0, 0,  # x
