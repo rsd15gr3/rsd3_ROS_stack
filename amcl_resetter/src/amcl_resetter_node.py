@@ -43,6 +43,11 @@ class AMCLResetterNode:
         if self.odom_filtered is None or self.odom_markerlocator is None:
             return
 
+        # HACK
+        t = rospy.Time(0)
+        self.odom_filtered.header.stamp = t
+        self.odom_markerlocator.header.stamp = t
+
         try:
             pose_filtered = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_filtered))
             pose_markerlocator = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_markerlocator))
