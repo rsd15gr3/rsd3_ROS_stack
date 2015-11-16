@@ -1,37 +1,50 @@
 #!/usr/bin/env python
 
+"""
+This node enables the HMI to control Mobile Robot (Frobit) and its Tipper
+
+subscribing:
+- ui/str_control_frobit
+
+publishing:
+- /fmPlan/automode      (on change, Frobit's automode state, IntStamped)
+- /fmCommand/cmd_vel    (20Hz if automode=0, Frobit's manual control, TwistStamped)
+- /ui/tipper_automode   (on change, Tipper's automode state, BoolStamped)
+- /ui/tipper_position   (on change, Tipper's manul control, FloatStamped : 0.0 .. bottom, 1.0 .. top)
+"""
+
 import rospy
 from std_msgs.msg import String
 from geometry_msgs.msg import TwistStamped
-from msgs.msg import BoolStamped, IntStamped
+from msgs.msg import BoolStamped, IntStamped, FloatStamped
 
 
-class Node():
+class Frobit():
 
-    def __init__(self):
+    def __init__(self, node):
+        """ Frobit Instance Initialization """
 
-        # Parameters
-        self.vel_lin_max = rospy.get_param("~max_linear_velocity", 5)   # [m/s]
-        self.vel_ang_max = rospy.get_param("~max_angular_velocity", 3)  # [rad/s]
-        self.update_rate = rospy.Rate(20)                               # Hz
+        ''' Register self '''
+        self.node = node
 
-        # Topic names
-        automode_topic = rospy.get_param("-automode_pub", "/fmPlan/automode")
-        deadman_topic = rospy.get_param("~deadman_pub", "/fmSafe/deadman")
-        cmd_vel_topic = rospy.get_param("~cmd_vel_pub", "/fmCommand/cmd_vel")
-        ui_str_control_topic = rospy.get_param("~ui_str_control_sub", "/ui_str_control")
+        ''' Read parameters from launchfile '''
+        self.tp_automode = rospy.get_param('~mr_tp_automode', '/fmPlan/automode')
+        self.tp_cmd_vel = rospy.get_param('~mr_tp_cmd_vel', '/fmCommand/cmd_vel')
+        self.tp_cmd_vel_rate = rospy.Rate(rospy.get_param('~mr_tp_cmd_vel_rate', 20))          # [Hz]
+        self.vel_lin_max = rospy.get_param('~mr_max_linear_velocity', 1)                    # [m/s]     TODO: tune max velocities
+        self.vel_ang_max = rospy.get_param('~mr_max_angular_velocity', 1)                   # [rad/s]
 
-        # Setup automode publish topic
-        self.automode_msg = IntStamped()
-        self.automode_msg.data = 0
-        self.automode_pub = rospy.Publisher(automode_topic, IntStamped, queue_size=1)
+        ''' Setup topics '''
+        # Setup Mobile Robot automode publish topic
+        self.tp_automode_message = IntStamped()
+        self.tp_automode_message.data = 0
+        self.tp_automode_publisher = rospy.Publisher(self.tp_automode, IntStamped, queue_size=1)
 
-        # setup deadman publish topic
-        self.deadman_msg = BoolStamped()
-        self.deadman_msg.data = True
-        self.deadman_pub = rospy.Publisher(deadman_topic, BoolStamped, queue_size=1)
+        # Setup Mobile Robot manual velocity topic
+        self.tp_cmd_vel_message = TwistStamped()
+        self.tp_cmd_vel_publisher = rospy.Publisher(self.tp_cmd_vel, TwistStamped, queue_size=1)
 
-        # setup manual velocity topic
+        ''' Variables '''
         self.vel_lin = 0.0
         self.vel_ang = 0.0
         self.js_x = None
@@ -40,22 +53,14 @@ class Node():
         self.js_y0 = None
         self.x_diff_max = 100
         self.y_diff_max = 100
-        self.cmd_vel_msg = TwistStamped()
-        self.cmd_vel_pub = rospy.Publisher(cmd_vel_topic, TwistStamped, queue_size=1)
 
-        # setup subscription topic callbacks
-        rospy.Subscriber(ui_str_control_topic, String, self.on_ui_str_control_topic)
-
-        # Updater function
-        self.updater()
-
-    def on_ui_str_control_topic(self, msg):
-        if msg.data.startswith('mr_joystick'):
-            data = msg.data.split(';')
-            self.js_x0 = float(data[1])
-            self.js_y0 = float(data[2])
-            self.js_x = float(data[3])
-            self.js_y = float(data[4])
+    def decode_control(self, data):
+        if data[1] == 'joystick':
+            positions = data[2].split(';')
+            self.js_x0 = float(positions[0])
+            self.js_y0 = float(positions[1])
+            self.js_x = float(positions[2])
+            self.js_y = float(positions[3])
 
             x_diff = abs(self.js_x-self.js_x0)
             y_diff = abs(self.js_y-self.js_y0)
@@ -69,46 +74,120 @@ class Node():
             if self.js_y > self.js_y0:
                 self.vel_lin *= -1
 
-        elif msg.data == 'mr_stop':
-            self.vel_ang = 0.0
-            self.vel_lin = 0.0
-        elif msg.data == 'mr_mode_auto':
-            self.automode_msg.data = 1
-        elif msg.data == 'mr_mode_manual':
-            self.automode_msg.data = 0
+            # Velocity limits
+            self.vel_lin = min(self.vel_lin_max, max(self.vel_lin, -self.vel_lin_max))
+            self.vel_ang = min(self.vel_ang_max, max(self.vel_ang, -self.vel_ang_max))
+        elif data[1] == 'stop':
+            self.stop_frobit()
+        elif data[1] == 'mode':
+            if data[2] == 'auto':
+                self.tp_automode_message.data = 1
+            elif data[2] == 'manual':
+                self.stop_frobit()
+                self.tp_automode_message.data = 0
+            self.publish_tp_automode_message()
 
-        # Limits
-        self.vel_lin = min(self.vel_lin_max, max(self.vel_lin, -self.vel_lin_max))
-        self.vel_ang = min(self.vel_ang_max, max(self.vel_ang, -self.vel_ang_max))
+    def publish_tp_automode_message(self):
+        self.tp_automode_message.header.stamp = rospy.get_rostime()
+        self.tp_automode_publisher.publish (self.tp_automode_message)
 
-    def publish_automode_message(self):
-        self.automode_msg.header.stamp = rospy.get_rostime()
-        self.automode_pub.publish (self.automode_msg)
+    def publish_tp_cmd_vel_message(self):
+        self.tp_cmd_vel_message.header.stamp = rospy.Time.now()
+        self.tp_cmd_vel_message.twist.linear.x = self.vel_lin
+        self.tp_cmd_vel_message.twist.angular.z = self.vel_ang
+        self.tp_cmd_vel_publisher.publish(self.tp_cmd_vel_message)
 
-    def publish_deadman_message(self):
-        self.deadman_msg.header.stamp = rospy.get_rostime()
-        self.deadman_pub.publish (self.deadman_msg)
+    def stop_frobit(self):
+        self.vel_ang = 0.0
+        self.vel_lin = 0.0
 
-    def publish_cmd_vel_message(self):
-        self.cmd_vel_msg.header.stamp = rospy.Time.now()
-        self.cmd_vel_msg.twist.linear.x = self.vel_lin
-        self.cmd_vel_msg.twist.angular.z = self.vel_ang
-        self.cmd_vel_pub.publish(self.cmd_vel_msg)
-
-    def updater(self):
+    def keep_publishing_tp_cmd_vel(self):
         while not rospy.is_shutdown():
-            self.publish_automode_message()
-            self.publish_deadman_message()
-            self.publish_cmd_vel_message()
-            self.update_rate.sleep()
+            if self.tp_automode_message.data == 0:
+                self.publish_tp_cmd_vel_message()
+            self.tp_cmd_vel_rate.sleep()
 
-# main function.    
+
+class Tipper():
+
+    def __init__(self, node):
+        """ Tipper Instance Initialization """
+
+        ''' Register self '''
+        self.node = node
+
+        ''' Read parameters from launchfile '''
+        self.tp_automode = rospy.get_param('~tipper_tp_automode', '/ui/tipper_automode')
+        self.tp_position = rospy.get_param('~tipper_tp_position', '/ui/tipper_position')
+        self.position_top = rospy.get_param('~tipper_position_top', 1.0)
+        self.position_bottom = rospy.get_param('~tipper_position_bottom', 0.0)
+        self.position_step = rospy.get_param('~tipper_position_step', 0.2)
+
+        ''' Setup topics '''
+        # Setup Tipper automode publish topic
+        self.tp_automode_message = BoolStamped()
+        self.tp_automode_message.data = False
+        self.tp_automode_publisher = rospy.Publisher(self.tp_automode, BoolStamped, queue_size=1)
+
+        # Setup Tipper position publish topic
+        self.tp_position_message = FloatStamped()
+        self.tp_position_message.data = self.position_bottom
+        self.tp_position_publisher = rospy.Publisher(self.tp_position, FloatStamped, queue_size=1)
+
+    def decode_control(self, data):
+        if data[1] == 'move':
+            if data[2] == 'up':
+                self.tp_position_message.data = min(self.tp_position_message.data+self.position_step, self.position_top)
+            elif data[2] == 'down':
+                self.tp_position_message.data = max(self.tp_position_message.data-self.position_step, self.position_bottom)
+            self.publish_tp_position_message()
+        elif data[1] == 'mode':
+            if data[2] == 'auto':
+                self.tp_automode_message.data = True
+            elif data[2] == 'manual':
+                self.tp_position_message.data = 0.0
+                self.tp_automode_message.data = False
+            self.publish_tp_automode_message()
+
+    def publish_tp_automode_message(self):
+        self.tp_automode_message.header.stamp = rospy.get_rostime()
+        self.tp_automode_publisher.publish (self.tp_automode_message)
+
+    def publish_tp_position_message(self):
+        self.tp_position_message.header.stamp = rospy.get_rostime()
+        self.tp_position_publisher.publish (self.tp_position_message)
+
+
+class Node():
+
+    def __init__(self):
+        """ Node Instance Initialization """
+
+        ''' Init Frobit's functionalities '''
+        self.frobit = Frobit(node=self)
+
+        ''' Init Tipper's functionalities '''
+        self.tipper = Tipper(node=self)
+
+        ''' Init /ui/str_control_frobit topic '''
+        self.tp_ui_str_control = rospy.get_param('~tp_ui_str_control', '/ui/str_control_frobit')
+        rospy.Subscriber(self.tp_ui_str_control, String, self.on_topic_ui_str_control)
+
+        # Loop function
+        self.frobit.keep_publishing_tp_cmd_vel()
+
+    def on_topic_ui_str_control(self, msg):
+        data = msg.data.split('_')
+        if data[0] == 'mr':
+            self.frobit.decode_control(data=data)
+        elif data[0] == 'tipper':
+            self.tipper.decode_control(data=data)
+
 if __name__ == '__main__':
-    # initialize the node and name it.
+    """ The program starts here by naming the node and initializing it. """
+
     rospy.init_node('hmi_support_frobit_node')
     try:
         Node()
     except rospy.ROSInterruptException:
         pass
-
-

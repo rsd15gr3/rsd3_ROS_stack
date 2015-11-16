@@ -1,15 +1,23 @@
-<!-- FroboScout launch file -->
+<!-- Launch file for hmi_support_frobit node -->
 
 <launch>
 	<node pkg="hmi_support_frobit" name="hmi_support_frobit_node" type="hmi_support_frobit_node.py" output="screen">
-		<param name="automode_pub" value="/fmPlan/automode" />
-		<param name="deadman_pub" value="/fmSafe/deadman" />
-		<param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
-		<param name="ui_str_control_sub" value="/ui_str_control" />
-		<!--<param name="max_linear_velocity" value="50.7"/>
-        <param name="max_angular_velocity" value="50.5"/>-->
-        <param name="max_linear_velocity" value="1.0"/>
-        <param name="max_angular_velocity" value="0.8"/>
+		<!-- Frobit's params -->
+		<param name="mr_tp_automode" value="/fmPlan/automode" />
+		<param name="mr_tp_cmd_vel" value="/fmCommand/cmd_vel" />
+		<param name="mr_tp_cmd_vel_rate" value="20"/>
+        <param name="mr_max_linear_velocity" value="1.0"/>
+        <param name="mr_max_angular_velocity" value="0.8"/>
+        
+        <!-- Tipper's params -->
+        <param name="tipper_tp_automode" value="/ui/tipper_automode" />
+		<param name="tipper_tp_position" value="/ui/tipper_position" />
+		<param name="tipper_position_top" value="1.0" />
+		<param name="tipper_position_bottom" value="0.0" />
+		<param name="tipper_position_step" value="0.2" />
+        
+        <!-- HMI control topic for Frobit -->
+        <param name="tp_ui_str_control" value="/ui/str_control_frobit" />
 	</node>
 </launch>
 
