@@ -15,7 +15,7 @@ using namespace zbar;
 class QrTagPoseEstimator
 {
 public:
-  QrTagPoseEstimator() : tag_points_(4), cross_point_offset(32.5e-3) {}
+  QrTagPoseEstimator() : tag_points_(4), cross_point_offset(32.5e-3f) {}
   void init(cv::Mat camera_matrix, cv::Mat dist_coeffs, double tag_width)
   {
     camera_matrix_ = camera_matrix;
@@ -34,8 +34,6 @@ public:
     cv::Mat rvec(3,1,cv::DataType<double>::type);
     cv::Mat tvec(3,1,cv::DataType<double>::type);
     cv::solvePnP(tag_points_, image_points, camera_matrix_, dist_coeffs_, rvec, tvec, CV_ITERATIVE);
-    cv::Point3f cross_point(-cross_point_offset, -cross_point_offset,0);
-
 
     Rodrigues(rvec, R);
 
@@ -52,8 +50,8 @@ public:
     cam_to_cross = cam_to_marker_tf * marker_to_cross_tf;
     position = cam_to_cross(cv::Range(0,2),cv::Range(3,3));
     //cout << "position diff" << (position - tvec) << endl;
-    //ROS_INFO_STREAM("position diff" << (position - tvec));
-
+    ROS_INFO_STREAM("cam_to_cross" << cam_to_cross);
+    ROS_INFO_STREAM("position diff" << (position - tvec));
     //position = tvec;
   }
 #if CMAKE_BUILD_TYPE == Debug
