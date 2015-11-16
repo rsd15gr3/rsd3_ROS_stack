@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>amcl_resetter</name>
+  <version>0.0.0</version>
+  <description>The amcl_resetter package</description>
+  <maintainer email="kschw10@student.sdu.dk">Kim Lindberg Schwaner</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>nav_msgs</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>nav_msgs</run_depend>
+</package>
