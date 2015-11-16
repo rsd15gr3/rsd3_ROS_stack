@@ -20,7 +20,7 @@ class AMCLResetterNode:
 
         self.init_pose_pub = rospy.Publisher("initialpose", PoseWithCovarianceStamped, queue_size=1)
 
-        self.tf = tf.TransformListener()
+        self.tf_listener = tf.TransformListener()
 
         self.loop()
 
@@ -43,8 +43,8 @@ class AMCLResetterNode:
             return
 
         try:
-            pose_filtered = self.tf.transformPose("map", self.odom_to_posestamped(self.odom_filtered))
-            pose_markerlocator = self.tf.transformPose("map", self.odom_to_posestamped(self.odom_markerlocator))
+            pose_filtered = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_filtered))
+            pose_markerlocator = self.tf_listener.transformPose("map", self.odom_to_posestamped(self.odom_markerlocator))
         except (tf.LookupException, tf.ConnectivityException):
             print "fuck"
             pass
@@ -62,6 +62,7 @@ class AMCLResetterNode:
             self.init_pose_pub.publish(initialpose_msg)
 
     def loop(self):
+        self.tf_listener.waitForTransform("markerlocator", "map", rospy.Time.now(), rospy.Duration(2))
         rospy.spin()
 
 
