@@ -13,7 +13,7 @@ class Node():
         # Parameters
         self.vel_lin_max = rospy.get_param("~max_linear_velocity", 5)   # [m/s]
         self.vel_ang_max = rospy.get_param("~max_angular_velocity", 3)  # [rad/s]
-        self.update_rate = rospy.Rate(20)								# Hz
+        self.update_rate = rospy.Rate(20)                               # Hz
 
         # Topic names
         automode_topic = rospy.get_param("-automode_pub", "/fmPlan/automode")
