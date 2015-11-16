@@ -27,6 +27,11 @@ public:
         nh_->param("/fmExecutors/wptnav/drive_ki", Ki_, 0.0);
         nh_->param("/fmExecutors/wptnav/drive_kd", Kd_, 0.0);
 
+        done_ = false;
+        failed_ = false;
+
+        tf_listener_ = new tf::TransformListener();
+
         as_.start();
     }
 
@@ -54,10 +59,10 @@ private:
         double total;
         total = quaternion.x + quaternion.y + quaternion.z + quaternion.w;
         if(fabs(total-1) > 0.01){
-            return false;
+            return true;
         }
         else{
-            return true;
+            return false;
         }
     }
 
@@ -344,10 +349,17 @@ private:
 };
 
 int main(int argc, char **argv){
-    ros::init(argc, argv, "relative_move_node");
-    ros::NodeHandle n("~");
-    RelativeMoveAction RelativeMoveActionNode(n);
+    ros::init(argc, argv, "relative_move_server_node");
+    ros::NodeHandle nh("~");
+
+   ROS_INFO("I'm in main"); 
+
+    RelativeMoveAction* rma = new RelativeMoveAction(nh);
     ros::spin();
+
+    if(rma){
+        delete rma;
+    }
 
     return 0;
 }
