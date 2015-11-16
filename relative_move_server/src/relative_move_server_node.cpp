@@ -86,12 +86,16 @@ private:
     }
 
     bool checkGoal(relative_move_server::RelativeMoveGoal& goal){
-        if(fabs(goal.target_pose.pose.position.x)>1e-4 || fabs(goal.target_pose.pose.position.y)>1e-4 || fabs(tf::getYaw(goal.target_pose.pose.orientation))>1e-4){
+        if(fabs(goal.target_pose.pose.position.x)>1e-4 || fabs(goal.target_pose.pose.position.y)>1e-4 || fabs(tf::getYaw(goal.target_pose.pose.orientation))>1e-4 || fabs(goal.target_yaw)>1e-4){
             if(fabs(goal.target_yaw)>1e-4){
                 goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(goal.target_yaw);
             }
 
-            if(testQuaternion(goal.target_pose.pose.orientation)){
+            if (fabs(	goal.target_pose.pose.orientation.x*goal.target_pose.pose.orientation.x +
+                        goal.target_pose.pose.orientation.y*goal.target_pose.pose.orientation.y +
+                        goal.target_pose.pose.orientation.z*goal.target_pose.pose.orientation.z +
+                        goal.target_pose.pose.orientation.w*goal.target_pose.pose.orientation.w - 1) > 0.01)
+            {
                 ROS_WARN_STREAM("Wrong quaternion in the goal. Rotation set to 0.");
                 goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(0);
             }
@@ -302,14 +306,14 @@ private:
                         publishCmdVel(0, 0);
                         return ;
                     }
+                    else{
+                        ROS_INFO("Preempting the current goal");
+                        as_.setPreempted();
+                        moving_ = false;
+                        publishCmdVel(0, 0);
+                        return ;
+                    }
                 }
-            }
-            else{
-                ROS_INFO("Preempting the current goal");
-                as_.setPreempted();
-                moving_ = false;
-                publishCmdVel(0, 0);
-                return ;
             }
 
             if(!moving_){
