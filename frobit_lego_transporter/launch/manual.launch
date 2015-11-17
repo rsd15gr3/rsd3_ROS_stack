@@ -92,7 +92,7 @@
             <param name="port" value="21212" />
             <param name="frame_id" value="markerlocator" />
             <param name="time_offset" type="double" value="0.0" />
-            <rosparam param="pose_covariance_diagonal">[0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]</rosparam>
+            <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 0.001, 0.001, 0.001, 0.001]</rosparam>
         </node>
 
         <!-- EKF for fusing continous position data from wheel odometry and IMU -->
