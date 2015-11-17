@@ -284,7 +284,7 @@
         </node>
     </group>
 
-    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="4.11610784307 -3.52470963489 0 1.5708 0 0 map markerlocator 100" />
+    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="3.23 -3.06 0 1.5708 0 0 map markerlocator 100" />
 
     <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
 
