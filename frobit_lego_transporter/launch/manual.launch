@@ -92,7 +92,7 @@
             <param name="port" value="21212" />
             <param name="frame_id" value="markerlocator" />
             <param name="time_offset" type="double" value="0.0" />
-            <rosparam param="pose_covariance_diagonal">[0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001]</rosparam>
+            <rosparam param="pose_covariance_diagonal">[0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]</rosparam>
         </node>
 
         <!-- EKF for fusing continous position data from wheel odometry and IMU -->
@@ -144,6 +144,7 @@
             <param name="print_diagnostics" value="false"/>
 
             <remap from="odometry/filtered" to="odometry/filtered/local"/>
+            <remap from="set_pose" to="/initialpose"/>
         </node>
 
         <!-- EKF for also fusing global absolute position data which is subject to discrete jumps -->
@@ -194,15 +195,13 @@
 
             <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-            <param name="print_diagnostics" value="true"/>
+            <param name="print_diagnostics" value="false"/>
 
             <!-- Reject MarkerLocator poses which are too far from current vehicle state -->
             <param name="odom1_pose_rejection_threshold" value="2"/>
 
-            <param name="debug" value="true"/>
-            <param name="debug_out_file"  value="debug_ekf_localization.txt"/>
-
             <remap from="odometry/filtered" to="odometry/filtered/global"/>
+            <remap from="set_pose" to="/initialpose"/>
         </node>
 
         <!-- AMCL resetter -->
@@ -277,7 +276,7 @@
         </node>
     </group>
 
-    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="4.11610784307 3.52470963489 0.0 0.0 0.0 -0.747971112175 0.663731282487 markerlocator map 100" />
+    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="4.11610784307 -3.52470963489 0 1.5708 0 0 map markerlocator 100" />
 
     <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
 
