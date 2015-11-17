@@ -1,0 +1,8 @@
+# Goal
+uint8 behavior_type
+---
+# Result
+uint8 state
+---
+# Feedback
+# float32 distance_to_goal

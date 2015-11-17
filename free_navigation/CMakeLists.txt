@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(free_navigation)
+set(CMAKE_BUILD_TYPE Debug)
 
 find_package(catkin REQUIRED COMPONENTS
   mission
@@ -8,11 +9,16 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   roslaunch
   tf
+  actionlib_msgs
+  actionlib
 )
 
+add_action_files(DIRECTORY action FILES NavigateFreely.action)
+generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
 catkin_python_setup()
 
 catkin_package(
+  INCLUDE_DIRS include
   CATKIN_DEPENDS mission msgs roscpp roslaunch tf
 )
 
@@ -25,7 +31,9 @@ include_directories(
 )
 
 add_executable(free_navigation_node
-    src/free_navigation_node.cpp src/free_navigation.cpp
+    src/free_navigation.h
+    src/free_navigation_node.cpp
+    src/free_navigation.cpp
 )
 
 add_dependencies(free_navigation_node
@@ -47,6 +55,7 @@ add_dependencies(test_mission
 target_link_libraries(test_mission
   ${catkin_LIBRARIES}
 )
+
 # Compiler flags
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11 -Wall -Wextra" HAS_FLAGS)
