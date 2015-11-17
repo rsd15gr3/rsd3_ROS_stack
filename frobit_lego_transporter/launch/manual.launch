@@ -163,6 +163,7 @@
             <param name="odom0" value="odometry/wheels"/>
             <param name="odom1" value="odometry/markerlocator"/>
             <param name="imu0" value="/fmInformation/imu"/>
+            <param name="pose0" value="/amcl_pose"/>
 
             <!-- Wheel odometry -->
             <rosparam param="odom0_config">[false, false, false,
@@ -185,27 +186,34 @@
                                            false, false, true,
                                            true,  false, false]</rosparam>
 
+            <!-- AMCL -->
+            <rosparam param="pose0_config">[true, true, false,
+                                            false, false, true,
+                                            false, false, false,
+                                            false, false, false,
+                                            false, false, false]</rosparam>
+
             <param name="odom0_differential" value="false"/>
             <param name="odom1_differential" value="false"/>
             <param name="imu0_differential" value="false"/>
+            <param name="pose0_differential" value="false"/>
 
             <param name="odom0_relative" value="true"/>
             <param name="odom1_relative" value="false"/>
             <param name="imu0_relative" value="true"/>
+            <param name="pose0_relative" value="false"/>
 
             <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-            <param name="print_diagnostics" value="false"/>
+            <param name="print_diagnostics" value="true"/>
 
-            <!-- Reject MarkerLocator poses which are too far from current vehicle state -->
+            <!-- Reject measurements which are too far from current vehicle state -->
             <param name="odom1_pose_rejection_threshold" value="2"/>
+            <param name="pose0_rejection_threshold" value="2"/>
 
             <remap from="odometry/filtered" to="odometry/filtered/global"/>
             <remap from="set_pose" to="/initialpose"/>
         </node>
-
-        <!-- AMCL resetter -->
-        <!-- <node pkg="amcl_resetter" name="amcl_resetter" type="amcl_resetter_node.py" output="screen" /> -->
     </group>
 
     <group ns="fmControllers">
@@ -279,6 +287,62 @@
     <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="4.11610784307 -3.52470963489 0 1.5708 0 0 map markerlocator 100" />
 
     <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
+
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <remap from="scan" to="/fmSensors/scan" />
+
+        <!-- Particle filter -->
+        <param name="min_particles" value="500" />
+        <param name="max_particles" value="5000" />
+        <param name="kld_err" value="0.01" />
+        <param name="kld_z" value="0.99" />
+        <param name="update_min_d" value="0.1" />
+        <param name="update_min_a" value="0.2618" />
+        <param name="resample_interval" value="2" />
+        <param name="transform_tolerance" value="0.2" />
+
+        <param name="recovery_alpha_slow" value="0.0" />
+        <param name="recovery_alpha_fast" value="0.0" />
+
+        <!-- Inital pose -->
+        <param name="initial_pose_x" value="0.0" />
+        <param name="initial_pose_y" value="0.0" />
+        <param name="initial_pose_a" value="0.0" />
+        <param name="initial_pose_xx" value="0.0" />
+        <param name="initial_pose_yy" value="0.0" />
+        <param name="initial_pose_aa" value="0.0" />
+
+        <param name="gui_publish_rate" value="10.0" />
+        <param name="save_pose_rate" value="0.5" />
+
+        <param name="use_map_topic" value="true" />
+        <param name="first_map_only" value="true" />
+
+        <!-- Laser model parameters -->
+        <param name="laser_min_range" value="0.05" /> <!-- -1 to use lasers reported range -->
+        <param name="laser_max_range" value="4.0" />
+        <param name="laser_max_beams" value="270" />
+        <param name="laser_z_hit" value="0.95" />
+        <param name="laser_z_short" value="0.1" />
+        <param name="laser_z_max" value="0.05" />
+        <param name="laser_z_rand" value="0.05" />
+        <param name="laser_sigma_hit" value="0.2" />
+        <param name="laser_lambda_short" value="0.1" />
+        <param name="laser_likelihood_max_dist" value="2.0" />
+        <param name="laser_model_type" value="likelihood_field"/>   <!-- <param name="laser_model_type" value="beam"/> -->
+
+        <!-- Odometery model parameters -->
+        <param name="odom_model_type" value="diff" />
+        <param name="odom_alpha1" value="0.1" />
+        <param name="odom_alpha2" value="0.1" />
+        <param name="odom_alpha3" value="0.1" />
+        <param name="odom_alpha4" value="0.1" />
+        <param name="odom_alpha5" value="0.0" />
+        <param name="odom_frame_id" value="odom" />
+        <param name="base_frame_id" value="base_link" />
+        <param name="global_frame_id" value="map" />
+        <param name="tf_broadcast" value="false" />
+    </node>
 
     <!-- Onboard webcam -->
     <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
