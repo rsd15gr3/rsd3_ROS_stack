@@ -38,21 +38,17 @@ public:
     Rodrigues(rvec, R);
 
     Mat_<double> cam_to_marker_tf = cv::Mat::zeros(4,4,CV_64F);
-    cam_to_marker_tf(cv::Range(0,2),cv::Range(0,2)) = R;
-    cam_to_marker_tf(cv::Range(0,2),cv::Range(3,3)) = tvec;
+    cam_to_marker_tf <<
+      R.at<double>(0,0), R.at<double>(0,1), R.at<double>(0,2), tvec.at<double>(0),
+      R.at<double>(1,0), R.at<double>(1,1), R.at<double>(1,2),tvec.at<double>(1),
+      R.at<double>(2,0), R.at<double>(2,1), R.at<double>(2,2), tvec.at<double>(2);
     cam_to_marker_tf(3,3) = 1;
-    cv::Mat_<double> marker_to_cross_tf(4,4,CV_64F);
-    marker_to_cross_tf <<1, 0, 0, -cross_point_offset,
-                      0, 1, 0, -cross_point_offset,
-                      0, 0, 1, 0,
-                      0, 0, 0, 1;
-    Mat_<double> cam_to_cross(4,4,0.0);
-    cam_to_cross = cam_to_marker_tf * marker_to_cross_tf;
-    position = cam_to_cross(cv::Range(0,2),cv::Range(3,3));
-    //cout << "position diff" << (position - tvec) << endl;
-    ROS_INFO_STREAM("cam_to_cross" << cam_to_cross);
-    ROS_INFO_STREAM("position diff" << (position - tvec));
-    //position = tvec;
+    double cross_point_offset(32.5e-3f);
+    cv::Mat_<double> marker_to_cross_tf = cv::Mat::eye(4,4,CV_64F);
+    marker_to_cross_tf(0,3) = -cross_point_offset;
+    marker_to_cross_tf(1,3) = -cross_point_offset;
+    Mat_<double> cam_to_cross = cam_to_marker_tf * marker_to_cross_tf;
+    position = cam_to_cross(cv::Range(0,3),cv::Range(3,4));
   }
 #if CMAKE_BUILD_TYPE == Debug
   void showPoseEst(const zbar::Symbol &tag_sym, Mat &R, Mat &position, const Mat &qr_tag_im)
