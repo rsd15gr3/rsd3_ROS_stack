@@ -146,7 +146,7 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
   current_position = msg.pose.pose.position;
   if(aligning_with_crossing) {
-
+/*
     tf::Vector3 robot_pose(current_position.x, current_position.y, current_position.z);
     tf::Vector3 robot_relative_to_tag = odom_to_tag_transform * robot_pose;
     ROS_DEBUG("robot x in tag frame = %f",robot_relative_to_tag.x());
@@ -156,33 +156,25 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
       heading_controller.reset();
       line_follow_enabled = false;
     }
-
-    /*
-    double dx = fabs(current_position.x - initial_position.x);
-    double dy = fabs(current_position.y - initial_position.y);
-    double traveled_dist = hypot(dx,dy);
-    ROS_DEBUG("Distance left to cross %f", distance_to_tag - traveled_dist);
-    double dist_error = distance_to_tag - traveled_dist;
-    */
-    /*
+*/
     double dx = tag_position.x - current_position.x;
     double dy = tag_position.y - current_position.y;
     double dist_to_tag = hypot(dx,dy);
     float ramp_p = 10.0f*forward_Speed;
     ramp_speed = ramp_p * dist_to_tag;
+    ROS_DEBUG("Distance to goal: %f", dist_to_tag);
     if(fabs(ramp_speed) > forward_Speed)
     {
       ramp_speed = sign(ramp_speed)*forward_Speed;
     }
-    // ramp_speed = 0.1; // ramp not slow enough
-    const double goal_tolerance = 0.05;
-    if(fabs(dist_to_tag) < goal_tolerance)
+    ROS_DEBUG("dx = %f",dx);
+    if(dx < 0)
     {
       publishVelCommand(0,0);
       heading_controller.reset();
       line_follow_enabled = false;
     }
-    */
+
   }
 }
 
@@ -207,8 +199,8 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         geometry_msgs::PoseStamped pose_in_base_link;        
         tf::TransformListener listener;
         try{
-          listener.waitForTransform("odom", camera_frame_id, ros::Time(0), ros::Duration(5.0) );
-          listener.transformPose("odom",ros::Time(0),pose,camera_frame_id,pose_in_base_link);
+          listener.waitForTransform(base_footprint_id, camera_frame_id, ros::Time(0), ros::Duration(5.0) );
+          listener.transformPose(base_footprint_id,ros::Time(0),pose,camera_frame_id,pose_in_base_link);
         }
         catch (tf::TransformException ex){
           ROS_ERROR("%s",ex.what());
@@ -218,16 +210,9 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
-        //stamped_tf.setOrigin();
-        tf::poseStampedMsgToTF(pose_in_base_link, odom_to_tag_transform);
-        tf::Vector3 robot_pose(current_position.x, current_position.y, current_position.z);
-        tf::Vector3 robot_relative_to_tag = odom_to_tag_transform * robot_pose;
-        ROS_DEBUG("robot x in tag frame = %f",robot_relative_to_tag.x());
-        //double dx = fabs(pose_in_base_link.pose.position.x);
-        //double dy = fabs(pose_in_base_link.pose.position.y);
-        //distance_to_tag = hypot(dx,dy);
-        //tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
-        //tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
+        //tf::poseStampedMsgToTF(pose_in_base_link, odom_to_tag_transform);
+        tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
+        tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
         // distance_to_tag -= 0.2; // hot fix to stop at cross
         aligning_with_crossing = true;
       }
