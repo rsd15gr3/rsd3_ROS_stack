@@ -14,7 +14,7 @@ class MarkerLocatorOdometryNode:
         self.host = rospy.get_param("~host", '10.115.253.233')
         self.port = rospy.get_param("~port", 21212)
         self.frame_id = rospy.get_param("~frame_id", "markerlocator")
-        self.cov_diag_list = rospy.get_param("~pose_covariance_diagonal", [0.001, 0.001, 99999, 99999, 99999, 0.001])
+        self.cov_diag_list = rospy.get_param("~pose_covariance_diagonal", [0.01, 0.01, 99999, 99999, 99999, 0.01])
         self.time_offset = rospy.get_param("~time_offset", 0.0)
 
         self.tf_listener = tf.TransformListener()

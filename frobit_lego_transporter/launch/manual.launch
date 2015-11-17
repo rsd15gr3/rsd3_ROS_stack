@@ -51,9 +51,9 @@
             <param name="imu_pub" value="/fmInformation/imu" />
             <param name="frame_id" value="imu_link" />
             <param name="use_enu" value="true" />
-            <param name="covariance_x" value="0.001" />
-            <param name="covariance_y" value="0.001" />
-            <param name="covariance_z" value="0.001" />
+            <param name="covariance_x" value="0.01" />
+            <param name="covariance_y" value="0.01" />
+            <param name="covariance_z" value="0.01" />
         </node>
 
         <!-- SICK laser scanner -->
@@ -92,7 +92,7 @@
             <param name="port" value="21212" />
             <param name="frame_id" value="markerlocator" />
             <param name="time_offset" type="double" value="0.0" />
-            <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 0.001, 0.001, 0.001, 0.001]</rosparam>
+            <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
         </node>
 
         <!-- EKF for fusing continous position data from wheel odometry and IMU -->
