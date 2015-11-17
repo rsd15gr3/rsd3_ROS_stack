@@ -197,7 +197,7 @@ bool decodePrTag(const cv_bridge::CvImageConstPtr &cv_ptr, string & value)
     value = image.symbol_begin()->get_data();
     cv::Mat R, position;
     tag_pose_estimator.getPose(*image.symbol_begin(), R, position);
-    tag_pose_estimator.showPoseEst(*image.symbol_begin(), R, position, cv_ptr->image);
+    //tag_pose_estimator.showPoseEst(*image.symbol_begin(), R, position, cv_ptr->image);
   }
   return n > 0;
 }
