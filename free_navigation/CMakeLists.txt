@@ -18,14 +18,12 @@ generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
 catkin_python_setup()
 
 catkin_package(
-  INCLUDE_DIRS include
   CATKIN_DEPENDS mission msgs roscpp roslaunch tf
 )
 
 roslaunch_add_file_check(launch)
 
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
   ${mission_INCLUDE_DIRS}
 )
