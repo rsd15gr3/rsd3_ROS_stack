@@ -14,6 +14,7 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tf/LinearMath/Transform.h>
 
 using namespace std;
 using namespace ros;
@@ -54,6 +55,8 @@ tf::StampedTransform camera_to_base_link_tf;
 geometry_msgs::Point initial_position;
 geometry_msgs::Point current_position;
 geometry_msgs::Point tag_position;
+tf::Stamped<tf::Pose> odom_to_tag_transform;
+
 bool aligning_with_crossing;
 double distance_to_tag;
 
@@ -143,6 +146,17 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
 {
   current_position = msg.pose.pose.position;
   if(aligning_with_crossing) {
+
+    tf::Vector3 robot_pose(current_position.x, current_position.y, current_position.z);
+    tf::Vector3 robot_relative_to_tag = odom_to_tag_transform * robot_pose;
+    ROS_DEBUG("robot x in tag frame = %f",robot_relative_to_tag.x());
+    if(robot_relative_to_tag.x() > 0)
+    {
+      publishVelCommand(0,0);
+      heading_controller.reset();
+      line_follow_enabled = false;
+    }
+
     /*
     double dx = fabs(current_position.x - initial_position.x);
     double dy = fabs(current_position.y - initial_position.y);
@@ -150,6 +164,7 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
     ROS_DEBUG("Distance left to cross %f", distance_to_tag - traveled_dist);
     double dist_error = distance_to_tag - traveled_dist;
     */
+    /*
     double dx = tag_position.x - current_position.x;
     double dy = tag_position.y - current_position.y;
     double dist_to_tag = hypot(dx,dy);
@@ -167,6 +182,7 @@ void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
       heading_controller.reset();
       line_follow_enabled = false;
     }
+    */
   }
 }
 
@@ -188,11 +204,11 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
       {
         ROS_DEBUG("Going to stop at tag: %s", tag.c_str());
         geometry_msgs::PoseStamped pose = qr_request.response.qr_tag_pose;
-        geometry_msgs::PoseStamped pose_in_base_link;
+        geometry_msgs::PoseStamped pose_in_base_link;        
         tf::TransformListener listener;
         try{
-          listener.waitForTransform(base_footprint_id, camera_frame_id, ros::Time(0), ros::Duration(5.0) );
-          listener.transformPose(base_footprint_id,ros::Time(0),pose,camera_frame_id,pose_in_base_link);
+          listener.waitForTransform("odom", camera_frame_id, ros::Time(0), ros::Duration(5.0) );
+          listener.transformPose("odom",ros::Time(0),pose,camera_frame_id,pose_in_base_link);
         }
         catch (tf::TransformException ex){
           ROS_ERROR("%s",ex.what());
@@ -200,14 +216,18 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         }
         ROS_DEBUG("pos in camera: [%f, %f, %f]", pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
-        ROS_DEBUG("initial pose: [%f, %f, %f]", initial_position.x);
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
+        //stamped_tf.setOrigin();
+        tf::poseStampedMsgToTF(pose_in_base_link, odom_to_tag_transform);
+        tf::Vector3 robot_pose(current_position.x, current_position.y, current_position.z);
+        tf::Vector3 robot_relative_to_tag = odom_to_tag_transform * robot_pose;
+        ROS_DEBUG("robot x in tag frame = %f",robot_relative_to_tag.x());
         //double dx = fabs(pose_in_base_link.pose.position.x);
         //double dy = fabs(pose_in_base_link.pose.position.y);
         //distance_to_tag = hypot(dx,dy);
-        tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
-        tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
+        //tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
+        //tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
         // distance_to_tag -= 0.2; // hot fix to stop at cross
         aligning_with_crossing = true;
       }
