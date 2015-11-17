@@ -141,7 +141,7 @@
 
             <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-            <param name="print_diagnostics" value="true"/>
+            <param name="print_diagnostics" value="false"/>
 
             <remap from="odometry/filtered" to="odometry/filtered/local"/>
         </node>
@@ -194,7 +194,7 @@
 
             <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-            <param name="print_diagnostics" value="false"/>
+            <param name="print_diagnostics" value="true"/>
 
             <!-- Reject MarkerLocator poses which are too far from current vehicle state -->
             <!-- <param name="odom1_pose_rejection_threshold" value="3"/> -->
