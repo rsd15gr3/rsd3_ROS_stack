@@ -298,4 +298,6 @@
         <param name="camera_name" value="head_camera" />
         <param name="io_method" value="mmap"/>
     </node>
+
+  <include file="$(find free_navigation)/launch/move_base_launch.xml" />  
 </launch>
