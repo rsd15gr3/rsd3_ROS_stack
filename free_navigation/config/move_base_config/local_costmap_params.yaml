@@ -24,5 +24,5 @@ local_costmap:
       marking: true,
       clearing: true,
       max_obstacle_height: 0.4,
-      min_obstacle_height: 0.08
+      min_obstacle_height: -0.05
   }
