@@ -27,23 +27,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #****************************************************************************/
-"""
-2013-11-06 Kjeld Jensen profiled code and added launch parameters for the topics
-	(currently defaults to the previous static names though this is conflicting with
-	the fmNaming convention).
-2015-03-05 KJ Added queue_size to rospy.Publisher calls (Indigo compatiblity)
-2015-08-20 KJ Removed check for deadman signal, this is now handled in fmSafety.
-"""
 
 import rospy
 from geometry_msgs.msg import TwistStamped,Twist
 from std_msgs.msg import Bool
 
 class CmdVelConverter():
-	"""
-		Converter for using FroboMind with stage. 
-		Takes TwistStamped message from /fmSignals/cmd_vel and parses as Twist message on /cmd_vel
-	"""
 	def __init__(self):
 		# Init node
 		topic_tw_stamped = rospy.get_param("~cmd_vel_sub", "/fmCommand/cmd_vel")
