@@ -5,9 +5,12 @@ find_package(catkin REQUIRED COMPONENTS
   mission
   msgs
   roscpp
+  rospy
   roslaunch
   tf
 )
+
+catkin_python_setup()
 
 catkin_package(
   CATKIN_DEPENDS mission msgs roscpp roslaunch tf
