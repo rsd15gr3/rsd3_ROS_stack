@@ -55,7 +55,7 @@ string stopping_qr_tag = "wc_3_conveyor";
 tf::StampedTransform camera_to_base_link_tf;
 
 geometry_msgs::Point initial_position;
-geometry_msgs::Point current_position;
+geometry_msgs::Pose current_pose;
 geometry_msgs::Point tag_position;
 //tf::Stamped<tf::Pose> odom_to_tag_transform;
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     n.param<double>("drive_max_i", max_i, 0.1);
     n.param<double>("target_dist", target_dist, 0.6);
     n.param<double>("forward_speed", forward_Speed, 0.4);
-    n.param<string>("line_sub", lineTopicName, "/line_detector/perception/line");     
+    n.param<string>("line_sub", lineTopicName, "/line_detector/perception/line");
     n.param<string>("odom_sub", odom_sub, "odometry/filtered/local");
     n.param<string>("pid_debug_pub", pidDebugPubName, "/debug/pid_pub");
     n.param<string>("odom_reset_pub", odom_reset_topic, "/initialpose");
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     double update_interval = 1.0 / update_rate;
     ros::Timer timerPid = n.createTimer(ros::Duration(update_interval), pidCb);
     ramp_speed = forward_Speed;
-    line_follow_enabled = true;    
+    line_follow_enabled = true;
     heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, update_interval);
     // Qr pose estimation setup
     aligning_with_crossing = false;
@@ -148,7 +148,7 @@ template <typename T> int sign(T val) {
 
 void odometryCb(const nav_msgs::Odometry &msg)
 {
-  current_position = msg.pose.pose.position;
+  current_pose = msg.pose.pose;
   if(aligning_with_crossing) {
 /*
     tf::Vector3 robot_pose(current_position.x, current_position.y, current_position.z);
@@ -161,8 +161,8 @@ void odometryCb(const nav_msgs::Odometry &msg)
       line_follow_enabled = false;
     }
 */
-    double dx = tag_position.x - current_position.x;
-    double dy = tag_position.y - current_position.y;
+    double dx = tag_position.x - current_pose.position.x;
+    double dy = tag_position.y - current_pose.position.y;
     double dist_to_tag = hypot(dx,dy);
     float ramp_p = 10.0f*forward_Speed;
     ramp_speed = ramp_p * dist_to_tag;
@@ -200,7 +200,7 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
       {
         ROS_DEBUG("Going to stop at tag: %s", tag.c_str());
         geometry_msgs::PoseStamped pose = qr_request.response.qr_tag_pose;
-        geometry_msgs::PoseStamped pose_in_base_link;        
+        geometry_msgs::PoseStamped pose_in_base_link;
         tf::TransformListener listener;
         try{
           listener.waitForTransform(base_footprint_id, camera_frame_id, ros::Time(0), ros::Duration(5.0) );
@@ -212,17 +212,13 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         }
         ROS_DEBUG("pos in camera: [%f, %f, %f]", pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
-        // Maybe TODO: reset odometry to avoid overflow?
-        initial_position = current_position;
-        geometry_msgs::PoseWithCovarianceStamped reset_pose;
+        nav_msgs::Odometry reset_pose;
         reset_pose.header.stamp = ros::Time::now();
         reset_pose.header.frame_id = pose.header.frame_id;
-        reset_pose.pose.pose = pose.pose; // covariance at zero
+        reset_pose.pose.pose = current_pose; // covariance at zero
         odom_reset_pub.publish(reset_pose);
-        //tf::poseStampedMsgToTF(pose_in_base_link, odom_to_tag_transform);
-        tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
-        tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
-        // distance_to_tag -= 0.2; // hot fix to stop at cross
+        tag_position.x = pose_in_base_link.pose.position.x;
+        tag_position.y = pose_in_base_link.pose.position.y;
         aligning_with_crossing = true;
       }
       else
