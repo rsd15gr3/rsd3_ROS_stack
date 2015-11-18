@@ -95,23 +95,16 @@
         <param name="serial_baudrate" value="57600"/>
         <param name="use_nmea_checksum" value="true"/>
     </node>
-
-   <!-- <node pkg="keyboard_remote_control" name="kbd_remote" type="keyboard_remote_control_node.py" output="screen" >
-        <param name="keyboard_sub" value="/fmHMI/keyboard"/>
-        <param name="remote_control_pub" value="/fmHMI/remote_control"/>
+    <!-- Vectornav VN-100 IMU -->
+    <node pkg="vectornav_vn100" name="imu_node" type="vectornav_vn100_node" output="screen">
+        <param name="vectornav_vn100_sub" value="/fmData/imu_rx" />
+        <param name="imu_pub" value="/fmInformation/imu" />
+        <param name="frame_id" value="imu_link" />
+        <param name="use_enu" value="true" />
+        <param name="covariance_x" value="0.001" />
+        <param name="covariance_y" value="0.001" />
+        <param name="covariance_z" value="0.001" />
     </node>
-    
-    <node pkg="keyboard_interface" type="keyboard_node" name="keyboard">
-        <param name="keyboard_pub" value="/fmHMI/keyboard" />
-    </node>
-        serial communication with the IMU
-        node pkg="serial_string" name="imu_serial" type="serial_string_node" respawn="true" output="screen">
-        <param name="publisher_topic" value="/fmData/imu_rx" />
-        <param name="subscriber_topic" value="/fmData/imu_tx" />
-        <param name="device" value="/dev/imu" />
-        <param name="baudrate" value="115200" />
-        <param name="termination_character" value="10"/>
-    </node-->
  </group>
 
  <group ns="external">
@@ -134,39 +127,67 @@
             <param name="enc_right_sub" value="/fmInformation/encoder_right" />
             <param name="imu_sub" value="/fmInformation/imu" />
             <param name="odom_reset_sub" value="/fmInformation/odom_reset" />
-            <param name="odom_pub" value="/fmKnowledge/wheel_odom" />
+            <param name="odom_pub" value="odometry/wheels" />
             <param name="encoder_output" value="absolute" />
             <param name="max_ticks_per_update" value="200" />
             <param name="yaw_angle_source" value="odometry" /> <!-- Do not use IMU as yaw source; EKF fuses the measurements -->
             <param name="publish_transform" value="false" />
-            <param name="odom_estimate_frame" value="wheel_odom" />
+            <param name="odom_estimate_frame" value="odom" />
             <param name="vehicle_frame" value="base_link" />
-            <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
-            <rosparam param="twist_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
+            <rosparam param="pose_covariance_diagonal">[0.3, 0.3, 0.3, 0.5, 0.5, 0.5]</rosparam>
+            <rosparam param="twist_covariance_diagonal">[0.1, 0.1, 0.1, 0.2, 0.2, 0.2]</rosparam>
         </node>
 
-        <!-- MarkerLocator "GPS" -->
-        <node pkg="markerlocator_odometry" name="markerlocator_odometry" type="markerlocator_odometry_node.py" output="screen">
-            <remap from="odom_marloc" to="/fmKnowledge/odom_marloc"/>
-            <param name="host" value="10.115.253.233" />
-            <param name="port" value="21212" />
-            <param name="frame_id" value="marker_link" />
-            <param name="time_offset" type="double" value="-0.001" />
-            <rosparam param="pose_covariance_diagonal">[0.001, 0.001, 99999, 99999, 99999, 0.001]</rosparam>
-        </node>
+        <!-- EKF for fusing continous position data from wheel odometry and IMU -->
+        <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_local" clear_params="true">
+            <param name="frequency" value="30"/>
+            <param name="sensor_timeout" value="0.1"/>
+            <param name="two_d_mode" value="true"/>
 
-        <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
-            <remap from="odom" to="/fmKnowledge/wheel_odom"/>
-            <remap from="imu_data" to="/fmInformation/imu"/>
-            <param name="output_frame" value="odom"/>
-            <param name="base_footprint_frame" value="base_link"/>
-            <param name="freq" value="30.0"/>
-            <param name="sensor_timeout" value="1.0"/>
-            <param name="odom_used" value="true"/>
-            <param name="imu_used" value="true"/>
-            <param name="vo_used" value="false"/>
-            <param name="debug" value="false"/>
-            <param name="self_diagnose" value="true"/>
+            <param name="map_frame" value="map"/>
+            <param name="odom_frame" value="odom"/>
+            <param name="base_link_frame" value="base_link"/>
+            <param name="world_frame" value="odom"/>
+
+            <param name="transform_time_offset" value="0.0"/>
+
+            <param name="odom0" value="odometry/wheels"/>
+            <param name="imu0" value="/fmInformation/imu"/>
+
+            <!--
+            x,     y,      z,
+            roll,  pitch,  yaw,
+            vx,    vy,     vz,
+            vroll, vpitch, vyaw,
+            ax,    ay,     az
+             -->
+
+            <!-- Wheel odometry -->
+            <rosparam param="odom0_config">[false, false, false,
+                                            false, false, false,
+                                            true, true, false,
+                                            false, false, true,
+                                            false, false, false]</rosparam>
+
+            <!-- IMU -->
+            <rosparam param="imu0_config">[false, false, false,
+                                           false, false, true,
+                                           false, false, false,
+                                           false, false, true,
+                                           true,  false, false]</rosparam>
+
+            <param name="odom0_differential" value="false"/>
+            <param name="imu0_differential" value="false"/>
+
+            <param name="odom0_relative" value="true"/>
+            <param name="imu0_relative" value="true"/>
+
+            <param name="imu0_remove_gravitational_acceleration" value="true"/>
+
+            <param name="print_diagnostics" value="false"/>
+
+            <remap from="odometry/filtered" to="odometry/filtered/local"/>
+            <remap from="set_pose" to="/initialpose"/>
         </node>
     </group>
 
@@ -190,8 +211,6 @@
       </node>
       
       <include file="$(find zbar_decoder)/launch/zbar_decoder_node.launch" /> 
-     <!--<node name="line_detector" pkg="line_detection" type="line_detection_node" output="screen" > 
-     </node>-->
 
      <node name="line_pid_control" pkg="line_pid" type="line_pid_node" output="screen" > 
         <param name="update_rate" value="20"/>
@@ -203,9 +222,10 @@
         <param name="drive_max_output" value="0.4"/>
         <param name="forward_speed" value="0.3" />
         <param name="line_sub" value="/line_detector/perception/line" />
-        <param name="action_topic" value="/mission/action_state" />          
+        <param name="odom_sub" value="odometry/filtered/local" /> 
+        <param name="command_pub" value="//fmCommand/cmd_vel" />     
+        <param name="odom_reset_pub" value="/initialpose" />          
         <param name="pid_debug_pub" value="/fmInformation/pid" />
-        <param name="command_pub" value="/fmCommand/cmd_vel" />
      </node>
 
      <node name="line_detector" pkg="line_detection" type="line_detection_node" output="screen" > 

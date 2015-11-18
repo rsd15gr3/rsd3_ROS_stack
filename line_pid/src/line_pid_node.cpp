@@ -25,8 +25,9 @@ double getMovingGoalTargetAngle();
 void pidCb(const ros::TimerEvent &);
 void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered);
 void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg);
-Publisher commandPub;
-Publisher pidDebugPub;
+Publisher pid_debug_pub;
+Publisher odom_reset_pub;
+Publisher command_pub;
 ros::ServiceClient get_qr_client;
 int update_rate = 10;
 double kp = 0;
@@ -43,10 +44,10 @@ double forward_Speed = 0;
 bool line_follow_enabled = false;
 double ramp_speed;
 string lineTopicName = "";
-string actionTopicName = "";
 string pidDebugPubName = "";
-string commandPubName = "";
-
+string odom_sub = "";
+string command_pub_name = "";
+string odom_reset_topic = "";
 string camera_frame_id = "/camera_link";
 string base_footprint_id = "/base_footprint";
 string stopping_qr_tag = "wc_3_conveyor";
@@ -55,7 +56,7 @@ tf::StampedTransform camera_to_base_link_tf;
 geometry_msgs::Point initial_position;
 geometry_msgs::Point current_position;
 geometry_msgs::Point tag_position;
-tf::Stamped<tf::Pose> odom_to_tag_transform;
+//tf::Stamped<tf::Pose> odom_to_tag_transform;
 
 bool aligning_with_crossing;
 double distance_to_tag;
@@ -80,21 +81,23 @@ int main(int argc, char **argv)
     n.param<double>("drive_max_i", max_i, 0.1);
     n.param<double>("target_dist", target_dist, 0.6);
     n.param<double>("forward_speed", forward_Speed, 0.4);
-    n.param<string>("line_sub", lineTopicName, "/line_detector/perception/line");
-    n.param<string>("action_topic", actionTopicName, "/mission/action_state");   
+    n.param<string>("line_sub", lineTopicName, "/line_detector/perception/line");     
+    n.param<string>("odom_sub", odom_sub, "odometry/filtered/local");
     n.param<string>("pid_debug_pub", pidDebugPubName, "/debug/pid_pub");
-    n.param<string>("command_pub", commandPubName, "/fmCommand/cmd_vel");
-    ros::Subscriber errorSub = n.subscribe(lineTopicName, 1, lineCb);
+    n.param<string>("odom_reset_pub", odom_reset_topic, "/initialpose");
+    n.param<string>("command_pub", command_pub_name, "/fmCommand/cmd_vel");
+    ros::Subscriber error_sub = n.subscribe(lineTopicName, 1, lineCb);
     ros::Subscriber qr_tag_detect_sub = n.subscribe("/tag_found", 1, qrTagDetectCb);
-    ros::Subscriber odometry_sub = n.subscribe("/fmProcessors/robot_pose_ekf/odom_combined", 1, odometryCb);
+    ros::Subscriber odometry_sub = n.subscribe(odom_sub, 1, odometryCb);
     // PID control setup
-    commandPub = n.advertise<geometry_msgs::TwistStamped>(commandPubName, 1);    
-    pidDebugPub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
-    double updateInterval = 1.0 / update_rate;
-    ros::Timer timerPid = n.createTimer(ros::Duration(updateInterval), pidCb);
+    pid_debug_pub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
+    odom_reset_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>(odom_reset_topic,1);
+    command_pub = n.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
+    double update_interval = 1.0 / update_rate;
+    ros::Timer timerPid = n.createTimer(ros::Duration(update_interval), pidCb);
     ramp_speed = forward_Speed;
     line_follow_enabled = true;    
-    heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, updateInterval);
+    heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, update_interval);
     // Qr pose estimation setup
     aligning_with_crossing = false;
     get_qr_client = n.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");
@@ -109,7 +112,7 @@ void publishVelCommand(double forward_speed, double angular_speed)
   twistedStamped.twist.linear.x = forward_speed;
   twistedStamped.header.stamp = ros::Time::now();
   twistedStamped.twist.angular.z = angular_speed;
-  commandPub.publish(twistedStamped);
+  command_pub.publish(twistedStamped);
 }
 
 void pidCb(const ros::TimerEvent &)
@@ -121,7 +124,7 @@ void pidCb(const ros::TimerEvent &)
         msgs::FloatArrayStamped pidDebugMsg;
         pidDebugMsg.header.stamp = ros::Time::now();
         pidDebugMsg.data = heading_controller.getLatestUpdateValues();
-        pidDebugPub.publish(pidDebugMsg);
+        pid_debug_pub.publish(pidDebugMsg);
     }
 }
 
@@ -210,6 +213,11 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
+        geometry_msgs::PoseWithCovarianceStamped reset_pose;
+        reset_pose.header.stamp = ros::Time::now();
+        reset_pose.header.frame_id = pose.header.frame_id;
+        reset_pose.pose.pose = pose.pose; // covariance at zero
+        odom_reset_pub.publish(reset_pose);
         //tf::poseStampedMsgToTF(pose_in_base_link, odom_to_tag_transform);
         tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
         tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
