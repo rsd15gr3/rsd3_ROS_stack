@@ -25,7 +25,7 @@ void lineCb(const line_detection::line::ConstPtr &wallPtr);
 double getMovingGoalTargetAngle();
 void pidCb(const ros::TimerEvent &);
 void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered);
-void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg);
+void odometryCb(const nav_msgs::Odometry &msg);
 Publisher pid_debug_pub;
 Publisher odom_reset_pub;
 Publisher command_pub;
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     ros::Subscriber odometry_sub = n.subscribe(odom_sub, 1, odometryCb);
     // PID control setup
     pid_debug_pub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
-    odom_reset_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>(odom_reset_topic,1);
+    odom_reset_pub = n.advertise<nav_msgs::Odometry>(odom_reset_topic,1);
     command_pub = n.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
     double update_interval = 1.0 / update_rate;
     ros::Timer timerPid = n.createTimer(ros::Duration(update_interval), pidCb);
@@ -146,7 +146,7 @@ template <typename T> int sign(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-void odometryCb(const geometry_msgs::PoseWithCovarianceStamped &msg)
+void odometryCb(const nav_msgs::Odometry &msg)
 {
   current_position = msg.pose.pose.position;
   if(aligning_with_crossing) {
