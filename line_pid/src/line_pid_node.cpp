@@ -15,6 +15,7 @@
 #include <tf/tf.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/LinearMath/Transform.h>
+#include <nav_msgs/Odometry.h>
 
 using namespace std;
 using namespace ros;
@@ -213,7 +214,7 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
-        geometry_msgs::PoseWithCovarianceStamped reset_pose;
+        nav_msgs::Odometry reset_pose;
         reset_pose.header.stamp = ros::Time::now();
         reset_pose.header.frame_id = pose.header.frame_id;
         reset_pose.pose.pose = pose.pose; // covariance at zero
