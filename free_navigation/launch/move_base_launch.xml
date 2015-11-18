@@ -3,7 +3,7 @@
   Example move_base configuration. Descriptions of parameters, as well as a full list of all amcl parameters, can be found at http://www.ros.org/wiki/move_base.
 -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base_node" output="screen">
-
+    <remap from="/cmd_vel" to="/fmCommand/cmd_vel" />
     <rosparam file="$(find free_navigation)/config/move_base_config/move_base_params.yaml" command="load" />
     <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />  
     <rosparam file="$(find free_navigation)/config/move_base_config/dwa_local_planner_params.yaml" command="load" />
