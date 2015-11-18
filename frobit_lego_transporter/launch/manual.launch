@@ -301,7 +301,7 @@
 
   <include file="$(find free_navigation)/launch/move_base_launch.xml" />  
 	<node pkg="twist_to_twiststamped" name="converter" type="cmd_vel_converter.py">	
-		<param name="cmd_vel_sub" value="/cmd_vel" />
-		<param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
+		<param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
+		<param name="cmd_vel_pub" value="/cmd_vel" />
 	</node>
 </launch>
