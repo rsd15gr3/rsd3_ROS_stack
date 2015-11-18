@@ -45,8 +45,8 @@ class CmdVelConverter():
 	"""
 	def __init__(self):
 		# Init node
-		topic_tw_stamped = rospy.get_param("~cmd_vel_sub", "/fmCommand/cmd_vel")
-		topic_tw = rospy.get_param("~cmd_vel_pub", "/cmd_vel")
+		topic_tw_stamped = rospy.get_param("~cmd_vel_pub", "/fmCommand/cmd_vel")
+		topic_tw = rospy.get_param("~cmd_vel_sub", "/cmd_vel")
 		self.twist_pub = rospy.Publisher(topic_tw_stamped, TwistStamped, queue_size=1)
 		self.twist_sub = rospy.Subscriber(topic_tw, Twist, self.onTwist )
 		
