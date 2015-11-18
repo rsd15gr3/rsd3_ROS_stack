@@ -92,7 +92,7 @@ int main(int argc, char **argv)
     ros::Subscriber odometry_sub = n.subscribe(odom_sub, 1, odometryCb);
     // PID control setup
     pid_debug_pub = n.advertise<msgs::FloatArrayStamped>(pidDebugPubName, 1);
-    odom_reset_pub = n.advertise<nav_msgs::Odometry>(odom_reset_topic,1);
+    odom_reset_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>(odom_reset_topic,1);
     command_pub = n.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
     double update_interval = 1.0 / update_rate;
     ros::Timer timerPid = n.createTimer(ros::Duration(update_interval), pidCb);
@@ -214,7 +214,7 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
         // Maybe TODO: reset odometry to avoid overflow?
         initial_position = current_position;
-        nav_msgs::Odometry reset_pose;
+        geometry_msgs::PoseWithCovarianceStamped reset_pose;
         reset_pose.header.stamp = ros::Time::now();
         reset_pose.header.frame_id = pose.header.frame_id;
         reset_pose.pose.pose = pose.pose; // covariance at zero
