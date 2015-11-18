@@ -17,8 +17,8 @@ local_costmap:
   observation_sources: base_scan
   base_scan: {
       data_type: LaserScan,
-      sensor_frame: base_laser_link,
-      topic: /base_scan,
+      sensor_frame: laser_link,
+      topic: /fmSensors/scan,
       expected_update_rate: .8,
       observation_persistence: 0.0,
       marking: true,
