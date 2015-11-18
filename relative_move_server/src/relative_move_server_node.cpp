@@ -11,7 +11,7 @@
 
 class RelativeMoveAction{
 public:
-    RelativeMoveAction(ros::NodeHandle& nh): nh_(&nh), as_(nh, "relative_move_action", boost::bind(&RelativeMoveAction::executeCB, this, _1), false){
+    RelativeMoveAction(ros::NodeHandle& nh): nh_(&nh), as_(nh, "/relative_move_action", boost::bind(&RelativeMoveAction::executeCB, this, _1), false){
         std::string cmd_vel_topic;
         nh_->param("cmd_vel_topic", cmd_vel_topic, std::string("/cmd_vel"));
         cmd_vel_pub_ = nh_->advertise<geometry_msgs::Twist>(cmd_vel_topic, 1);
