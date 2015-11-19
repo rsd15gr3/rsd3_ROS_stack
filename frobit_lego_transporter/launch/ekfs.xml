@@ -45,12 +45,6 @@
 
         <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-        <!-- Reject measurements which are too far from current vehicle state -->
-        <param name="odom0_twist_rejection_threshold" value="1"/> <!-- Wheel odom -->
-        <param name="imu0_pose_rejection_threshold" value="0.3"/>
-        <param name="imu0_twist_rejection_threshold" value="0.1"/>
-        <param name="imu0_linear_acceleration_rejection_threshold" value="0.1"/>
-
         <remap from="odometry/filtered" to="odometry/filtered/local"/>
         <remap from="set_pose" to="/initialpose"/>
     </node>
@@ -114,12 +108,7 @@
         <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
         <!-- Reject measurements which are too far from current vehicle state -->
-        <param name="odom0_twist_rejection_threshold" value="0.5"/> <!-- Wheel odom -->
         <param name="odom1_pose_rejection_threshold" value="2"/> <!-- MarkerLocator -->
-        <param name="pose0_rejection_threshold" value="5"/> <!-- AMCL -->
-        <param name="imu0_pose_rejection_threshold" value="0.5"/>
-        <param name="imu0_twist_rejection_threshold" value="0.3"/>
-        <param name="imu0_linear_acceleration_rejection_threshold" value="0.3"/>
 
         <remap from="odometry/filtered" to="odometry/filtered/global"/>
         <remap from="set_pose" to="/initialpose"/>
