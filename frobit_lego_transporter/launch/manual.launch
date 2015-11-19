@@ -168,7 +168,7 @@
 
     <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="-0.475 -1.489 0 0 0 0.710 0.704 map markerlocator 100" />
 
-    <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
+    <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab_hector.yaml" />
 
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
         <remap from="scan" to="/fmSensors/scan" />
