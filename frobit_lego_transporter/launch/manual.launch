@@ -284,7 +284,7 @@
         </node>
     </group>
 
-    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="3.23 -3.06 0 1.5708 0 0 map markerlocator 100" />
+    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="1.489 -0.475 0 0 0 -0.710 0.704 map markerlocator 100" />
 
     <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
 
@@ -363,8 +363,8 @@
         <param name="io_method" value="mmap"/>
     </node>
 
-  <include file="$(find free_navigation)/launch/move_base_launch.xml" />  
-	<node pkg="twist_to_twiststamped" name="converter" type="cmd_vel_converter.py">	
+  <include file="$(find free_navigation)/launch/move_base_launch.xml" />
+	<node pkg="twist_to_twiststamped" name="converter" type="cmd_vel_converter.py">
 		<param name="cmd_vel_sub" value="/cmd_vel" />
 		<param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
 	</node>
