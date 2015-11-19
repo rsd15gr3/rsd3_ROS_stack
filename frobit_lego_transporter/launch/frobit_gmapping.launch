@@ -84,9 +84,9 @@
             <param name="imu_pub" value="/fmInformation/imu" />
             <param name="frame_id" value="imu_link" />
             <param name="use_enu" value="true" />
-            <param name="covariance_x" value="0.001" />
-            <param name="covariance_y" value="0.001" />
-            <param name="covariance_z" value="0.001" />
+            <param name="covariance_x" value="0.01" />
+            <param name="covariance_y" value="0.01" />
+            <param name="covariance_z" value="0.01" />
         </node>
 
         <!-- SICK laser scanner -->
@@ -125,7 +125,7 @@
             <param name="port" value="21212" />
             <param name="frame_id" value="markerlocator" />
             <param name="time_offset" type="double" value="0.0" />
-            <rosparam param="pose_covariance_diagonal">[0.0001, 0.0001, 0.0001, 0.0001, 0.0001, 0.0001]</rosparam>
+            <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
         </node>
 
         <!-- EKF for fusing continous position data from wheel odometry and IMU -->
@@ -228,17 +228,14 @@
 
             <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-            <param name="print_diagnostics" value="false"/>
+            <param name="print_diagnostics" value="true"/>
 
-            <!-- Reject MarkerLocator poses which are too far from current vehicle state -->
+            <!-- Reject measurements which are too far from current vehicle state -->
             <param name="odom1_pose_rejection_threshold" value="2"/>
 
             <remap from="odometry/filtered" to="odometry/filtered/global"/>
             <remap from="set_pose" to="/initialpose"/>
         </node>
-
-        <!-- AMCL resetter -->
-        <!-- <node pkg="amcl_resetter" name="amcl_resetter" type="amcl_resetter_node.py" output="screen" /> -->
     </group>
 
     <group ns="fmControllers">
@@ -309,7 +306,7 @@
         </node>
     </group>
 
-    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="4.11610784307 -3.52470963489 0 1.5708 0 0 map markerlocator 100" />
+    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="3.23 -3.06 0 1.5708 0 0 map markerlocator 100" />
 
     <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
 
