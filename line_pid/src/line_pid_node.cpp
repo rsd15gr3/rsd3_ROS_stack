@@ -44,6 +44,8 @@ double max_i = 0;
 double forward_Speed = 0;
 bool line_follow_enabled = false;
 double ramp_speed;
+double ramp_distance;
+double stop_point_tolerance;
 string lineTopicName = "";
 string pidDebugPubName = "";
 string odom_sub = "";
@@ -82,6 +84,8 @@ int main(int argc, char **argv)
     n.param<double>("drive_max_i", max_i, 0.1);
     n.param<double>("target_dist", target_dist, 0.6);
     n.param<double>("forward_speed", forward_Speed, 0.4);
+    n.param<double>("ramp_dist", ramp_distance, 0.1);
+    n.param<double>("stop_point_tolerance", stop_point_tolerance, 0.01);
     n.param<string>("line_sub", lineTopicName, "/line_detector/perception/line");
     n.param<string>("odom_sub", odom_sub, "odometry/filtered/local");
     n.param<string>("pid_debug_pub", pidDebugPubName, "/debug/pid_pub");
@@ -148,37 +152,29 @@ template <typename T> int sign(T val) {
 
 void odometryCb(const nav_msgs::Odometry &msg)
 {
+  const double ramp_p = forward_Speed/ramp_distance;
   current_position = msg.pose.pose.position;
-  if(aligning_with_crossing) {
-/*
-    tf::Vector3 robot_pose(current_position.x, current_position.y, current_position.z);
-    tf::Vector3 robot_relative_to_tag = odom_to_tag_transform * robot_pose;
-    ROS_DEBUG("robot x in tag frame = %f",robot_relative_to_tag.x());
-    if(robot_relative_to_tag.x() > 0)
-    {
-      publishVelCommand(0,0);
-      heading_controller.reset();
-      line_follow_enabled = false;
-    }
-*/
+  if(aligning_with_crossing)
+  {
     double dx = tag_position.x - current_position.x;
-    double dy = tag_position.y - current_position.y;
-    double dist_to_tag = hypot(dx,dy);
-    float ramp_p = 10.0f*forward_Speed;
-    ramp_speed = ramp_p * dist_to_tag;
+    double dist_to_tag = fabs(dx);
     ROS_DEBUG("Distance to goal: %f", dist_to_tag);
-    if(fabs(ramp_speed) > forward_Speed)
-    {
-      ramp_speed = sign(ramp_speed)*forward_Speed;
-    }
     ROS_DEBUG("dx = %f",dx);
-    if(dx < 0)
+    if(dist_to_tag > ramp_distance)
+    {
+      ramp_speed = forward_Speed;
+    }
+    else if(dist_to_tag > stop_point_tolerance)
+    {
+      ramp_speed = ramp_p * dist_to_tag;
+    }
+    else
     {
       publishVelCommand(0,0);
       heading_controller.reset();
       line_follow_enabled = false;
     }
-
+    ramp_speed *= sign(dist_to_tag);
   }
 }
 
