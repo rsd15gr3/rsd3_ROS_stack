@@ -55,7 +55,7 @@ string stopping_qr_tag = "wc_3_conveyor";
 tf::StampedTransform camera_to_base_link_tf;
 
 geometry_msgs::Point initial_position;
-geometry_msgs::Pose current_pose;
+geometry_msgs::Point current_position;
 geometry_msgs::Point tag_position;
 //tf::Stamped<tf::Pose> odom_to_tag_transform;
 
@@ -148,7 +148,7 @@ template <typename T> int sign(T val) {
 
 void odometryCb(const nav_msgs::Odometry &msg)
 {
-  current_pose = msg.pose.pose;
+  current_position = msg.pose.pose.position;
   if(aligning_with_crossing) {
 /*
     tf::Vector3 robot_pose(current_position.x, current_position.y, current_position.z);
@@ -161,8 +161,8 @@ void odometryCb(const nav_msgs::Odometry &msg)
       line_follow_enabled = false;
     }
 */
-    double dx = tag_position.x - current_pose.position.x;
-    double dy = tag_position.y - current_pose.position.y;
+    double dx = tag_position.x - current_position.x;
+    double dy = tag_position.y - current_position.y;
     double dist_to_tag = hypot(dx,dy);
     float ramp_p = 10.0f*forward_Speed;
     ramp_speed = ramp_p * dist_to_tag;
@@ -212,13 +212,8 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         }
         ROS_DEBUG("pos in camera: [%f, %f, %f]", pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
-        nav_msgs::Odometry reset_pose;
-        reset_pose.header.stamp = ros::Time::now();
-        reset_pose.header.frame_id = pose.header.frame_id;
-        reset_pose.pose.pose = current_pose; // covariance at zero
-        odom_reset_pub.publish(reset_pose);
-        tag_position.x = pose_in_base_link.pose.position.x;
-        tag_position.y = pose_in_base_link.pose.position.y;
+        tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
+        tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
         aligning_with_crossing = true;
       }
       else
