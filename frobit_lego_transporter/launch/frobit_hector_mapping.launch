@@ -148,131 +148,131 @@
         </node>
 
  
-	 <!-- EKF for fusing continous position data from wheel odometry and IMU -->
-	 <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_local" clear_params="true">
-	     <param name="frequency" value="30"/>
-	     <param name="sensor_timeout" value="0.1"/>
-	     <param name="two_d_mode" value="true"/>
+     <!-- EKF for fusing continous position data from wheel odometry and IMU -->
+     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_local" clear_params="true">
+         <param name="frequency" value="30"/>
+         <param name="sensor_timeout" value="0.1"/>
+         <param name="two_d_mode" value="true"/>
 
-	     <param name="map_frame" value="map"/>
-	     <param name="odom_frame" value="odom"/>
-	     <param name="base_link_frame" value="base_link"/>
-	     <param name="world_frame" value="odom"/>
+         <param name="map_frame" value="map"/>
+         <param name="odom_frame" value="odom"/>
+         <param name="base_link_frame" value="base_link"/>
+         <param name="world_frame" value="odom"/>
 
-	     <param name="transform_time_offset" value="0.0"/>
+         <param name="transform_time_offset" value="0.0"/>
 
-	     <param name="odom0" value="odometry/wheels"/>
-	     <param name="imu0" value="/fmInformation/imu"/>
+         <param name="odom0" value="odometry/wheels"/>
+         <param name="imu0" value="/fmInformation/imu"/>
 
-	     <!--
-	     x,     y,      z,
-	     roll,  pitch,  yaw,
-	     vx,    vy,     vz,
-	     vroll, vpitch, vyaw,
-	     ax,    ay,     az
-	      -->
+         <!--
+         x,     y,      z,
+         roll,  pitch,  yaw,
+         vx,    vy,     vz,
+         vroll, vpitch, vyaw,
+         ax,    ay,     az
+          -->
 
-	     <!-- Wheel odometry -->
-	     <rosparam param="odom0_config">[false, false, false,
-	                                     false, false, false,
-	                                     true, true, false,
-	                                     false, false, true,
-	                                     false, false, false]</rosparam>
+         <!-- Wheel odometry -->
+         <rosparam param="odom0_config">[false, false, false,
+                                         false, false, false,
+                                         true, true, false,
+                                         false, false, true,
+                                         false, false, false]</rosparam>
 
-	     <!-- IMU -->
-	     <rosparam param="imu0_config">[false, false, false,
-	                                    false, false, true,
-	                                    false, false, false,
-	                                    false, false, true,
-	                                    true,  false, false]</rosparam>
+         <!-- IMU -->
+         <rosparam param="imu0_config">[false, false, false,
+                                        false, false, true,
+                                        false, false, false,
+                                        false, false, true,
+                                        true,  false, false]</rosparam>
 
-	     <param name="odom0_differential" value="false"/>
-	     <param name="imu0_differential" value="false"/>
+         <param name="odom0_differential" value="false"/>
+         <param name="imu0_differential" value="false"/>
 
-	     <param name="odom0_relative" value="true"/>
-	     <param name="imu0_relative" value="true"/>
+         <param name="odom0_relative" value="true"/>
+         <param name="imu0_relative" value="true"/>
 
-	     <param name="imu0_remove_gravitational_acceleration" value="true"/>
+         <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-	     <!-- Reject measurements which are too far from current vehicle state -->
-	     <param name="odom0_twist_rejection_threshold" value="1"/> <!-- Wheel odom -->
-	     <param name="imu0_pose_rejection_threshold" value="0.3"/>
-	     <param name="imu0_twist_rejection_threshold" value="0.1"/>
-	     <param name="imu0_linear_acceleration_rejection_threshold" value="0.1"/>
+         <!-- Reject measurements which are too far from current vehicle state -->
+         <param name="odom0_twist_rejection_threshold" value="1"/> <!-- Wheel odom -->
+         <param name="imu0_pose_rejection_threshold" value="0.3"/>
+         <param name="imu0_twist_rejection_threshold" value="0.1"/>
+         <param name="imu0_linear_acceleration_rejection_threshold" value="0.1"/>
 
-	     <remap from="odometry/filtered" to="odometry/filtered/local"/>
-	     <remap from="set_pose" to="/initialpose"/>
-	 </node>
+         <remap from="odometry/filtered" to="odometry/filtered/local"/>
+         <remap from="set_pose" to="/initialpose"/>
+     </node>
 
-	 <!-- EKF for also fusing global absolute position data which is subject to discrete jumps -->
-	 <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_global" clear_params="true">
-	     <param name="frequency" value="30"/>
-	     <param name="sensor_timeout" value="0.1"/>
-	     <param name="two_d_mode" value="true"/>
+     <!-- EKF for also fusing global absolute position data which is subject to discrete jumps -->
+     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_global" clear_params="true">
+         <param name="frequency" value="30"/>
+         <param name="sensor_timeout" value="0.1"/>
+         <param name="two_d_mode" value="true"/>
 
-	     <param name="map_frame" value="map"/>
-	     <param name="odom_frame" value="odom"/>
-	     <param name="base_link_frame" value="base_link"/>
-	     <param name="world_frame" value="map"/>
+         <param name="map_frame" value="map"/>
+         <param name="odom_frame" value="odom"/>
+         <param name="base_link_frame" value="base_link"/>
+         <param name="world_frame" value="map"/>
 
-	     <param name="transform_time_offset" value="0.0"/>
+         <param name="transform_time_offset" value="0.0"/>
 
-	     <param name="odom0" value="odometry/wheels"/>
-	     <param name="odom1" value="odometry/markerlocator"/>
-	     <param name="imu0" value="/fmInformation/imu"/>
-	     <param name="pose0" value="/poseupdate"/>
+         <param name="odom0" value="odometry/wheels"/>
+         <param name="odom1" value="odometry/markerlocator"/>
+         <param name="imu0" value="/fmInformation/imu"/>
+         <param name="pose0" value="/poseupdate"/>
 
-	     <!-- Wheel odometry -->
-	     <rosparam param="odom0_config">[false, false, false,
-	                                     false, false, false,
-	                                     true, true, false,
-	                                     false, false, true,
-	                                     false, false, false]</rosparam>
+         <!-- Wheel odometry -->
+         <rosparam param="odom0_config">[false, false, false,
+                                         false, false, false,
+                                         true, true, false,
+                                         false, false, true,
+                                         false, false, false]</rosparam>
 
-	     <!-- MarkerLocator GPS -->
-	     <rosparam param="odom1_config">[true, true, false,
-	                                     false, false, true,
-	                                     false, false, false,
-	                                     false, false, false,
-	                                     false, false, false]</rosparam>
+         <!-- MarkerLocator GPS -->
+         <rosparam param="odom1_config">[true, true, false,
+                                         false, false, true,
+                                         false, false, false,
+                                         false, false, false,
+                                         false, false, false]</rosparam>
 
-	     <!-- IMU -->
-	     <rosparam param="imu0_config">[false, false, false,
-	                                    false, false, true,
-	                                    false, false, false,
-	                                    false, false, true,
-	                                    true,  false, false]</rosparam>
+         <!-- IMU -->
+         <rosparam param="imu0_config">[false, false, false,
+                                        false, false, true,
+                                        false, false, false,
+                                        false, false, true,
+                                        true,  false, false]</rosparam>
 
-	     <!-- AMCL -->
-	     <rosparam param="pose0_config">[true, true, false,
-	                                     false, false, true,
-	                                     false, false, false,
-	                                     false, false, false,
-	                                     false, false, false]</rosparam>
+         <!-- AMCL -->
+         <rosparam param="pose0_config">[true, true, false,
+                                         false, false, true,
+                                         false, false, false,
+                                         false, false, false,
+                                         false, false, false]</rosparam>
 
-	     <param name="odom0_differential" value="false"/>
-	     <param name="odom1_differential" value="false"/>
-	     <param name="imu0_differential" value="false"/>
-	     <param name="pose0_differential" value="false"/>
+         <param name="odom0_differential" value="false"/>
+         <param name="odom1_differential" value="false"/>
+         <param name="imu0_differential" value="false"/>
+         <param name="pose0_differential" value="false"/>
 
-	     <param name="odom0_relative" value="true"/>
-	     <param name="odom1_relative" value="false"/>
-	     <param name="imu0_relative" value="true"/>
-	     <param name="pose0_relative" value="false"/>
+         <param name="odom0_relative" value="true"/>
+         <param name="odom1_relative" value="false"/>
+         <param name="imu0_relative" value="true"/>
+         <param name="pose0_relative" value="false"/>
 
-	     <param name="imu0_remove_gravitational_acceleration" value="true"/>
+         <param name="imu0_remove_gravitational_acceleration" value="true"/>
 
-	     <!-- Reject measurements which are too far from current vehicle state -->
-	     <param name="odom0_twist_rejection_threshold" value="1"/> <!-- Wheel odom -->
-	     <param name="odom1_pose_rejection_threshold" value="1"/> <!-- MarkerLocator -->
-	     <param name="pose0_rejection_threshold" value="1"/> <!-- AMCL -->
-	     <param name="imu0_pose_rejection_threshold" value="0.3"/>
-	     <param name="imu0_twist_rejection_threshold" value="0.1"/>
-	     <param name="imu0_linear_acceleration_rejection_threshold" value="0.1"/>
+         <!-- Reject measurements which are too far from current vehicle state -->
+         <param name="odom0_twist_rejection_threshold" value="1"/> <!-- Wheel odom -->
+         <param name="odom1_pose_rejection_threshold" value="1"/> <!-- MarkerLocator -->
+         <param name="pose0_rejection_threshold" value="1"/> <!-- AMCL -->
+         <param name="imu0_pose_rejection_threshold" value="0.3"/>
+         <param name="imu0_twist_rejection_threshold" value="0.1"/>
+         <param name="imu0_linear_acceleration_rejection_threshold" value="0.1"/>
 
-	     <remap from="odometry/filtered" to="odometry/filtered/global"/>
-	     <remap from="set_pose" to="/initialpose"/>
-	 </node>
+         <remap from="odometry/filtered" to="odometry/filtered/global"/>
+         <remap from="set_pose" to="/initialpose"/>
+     </node>
     </group>
 
     <group ns="fmControllers">
@@ -367,9 +367,9 @@
     </node>
 
   <include file="$(find free_navigation)/launch/move_base_launch.xml" />
-	<node pkg="twist_to_twiststamped" name="converter" type="cmd_vel_converter.py">
-		<param name="cmd_vel_sub" value="/cmd_vel" />
-		<param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
-	</node>
+    <node pkg="twist_to_twiststamped" name="converter" type="cmd_vel_converter.py">
+        <param name="cmd_vel_sub" value="/cmd_vel" />
+        <param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
+    </node>
 </launch>
 
