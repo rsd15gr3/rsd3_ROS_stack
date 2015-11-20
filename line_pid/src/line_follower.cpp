@@ -29,6 +29,7 @@ Line_follower::Line_follower(string name)
   nh.param<double>("drive_max_output", max_output, 0.40);
   nh.param<double>("drive_max_i", max_i, 0.1);
   nh.param<double>("forward_speed", forward_speed, 0.4);
+  nh.param<double>("target_dist", target_dist, 0.6);
   double update_interval = 1.0 / update_rate;
   ros::Timer timerPid = nh.createTimer(ros::Duration(update_interval), &Line_follower::pidCb, this);
   heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, update_interval);
@@ -40,7 +41,7 @@ Line_follower::Line_follower(string name)
   command_pub = nh.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
   // Setup stopping at crossing
   string odom_sub, tag_found_sub;
-  nh.param<double>("target_dist", target_dist, 0.6);
+
   nh.param<double>("ramp_dist", ramp_distance, 0.1);
   nh.param<double>("stop_point_tolerance", stop_point_tolerance, 0.01);
   nh.param<string>("tag_found_sub", tag_found_sub, "/tag_found");
@@ -135,6 +136,7 @@ void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
       publishVelCommand(0,0);
       heading_controller.reset();
       line_follow_enabled = false;
+      result_.distance_to_goal = dist_to_tag;
       as_.setSucceeded(result_);
     }
   }
