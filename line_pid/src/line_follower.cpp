@@ -44,7 +44,7 @@ Line_follower::Line_follower(string name)
   nh.param<double>("target_dist", target_dist, 0.6);
   nh.param<double>("ramp_dist", ramp_distance, 0.1);
   nh.param<double>("stop_point_tolerance", stop_point_tolerance, 0.01);
-  nh.param<string>("tag_found_sub", tag_found_sub, "odometry/filtered/local");
+  nh.param<string>("tag_found_sub", tag_found_sub, "/tag_found");
   qr_tag_detect_sub = nh.subscribe(tag_found_sub, 1, &Line_follower::qrTagDetectCb, this);
   nh.param<string>("odom_sub", odom_sub, "odometry/filtered/local");
   odometry_sub = nh.subscribe(odom_sub, 1, &Line_follower::odometryCb, this);
