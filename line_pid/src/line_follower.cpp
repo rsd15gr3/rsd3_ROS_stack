@@ -14,7 +14,7 @@
 using std::string;
 
 Line_follower::Line_follower(string name)
-  : as_(nh, name, false), name_(name)
+  : nh("~"), as_(nh, name, false), name_(name)
 {
   ROS_DEBUG("Starting line follower");
   // setup line follower pid
@@ -23,8 +23,8 @@ Line_follower::Line_follower(string name)
   string line_topic_name, command_pub_name, pid_debug_pub_name;
   nh.param<int>("update_rate", update_rate, 20);
   nh.param<double>("drive_kp", kp, 10.0);
-  nh.param<double>("drive_ki", ki, 3.35); //3.35
-  nh.param<double>("drive_kd", kd, 10.0); //10.0
+  nh.param<double>("drive_ki", ki, 3.35);
+  nh.param<double>("drive_kd", kd, 10.0);
   nh.param<double>("drive_feed_forward", feed_forward, 0.0);
   nh.param<double>("drive_max_output", max_output, 0.40);
   nh.param<double>("drive_max_i", max_i, 0.1);
@@ -121,7 +121,7 @@ void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
   {
     double dx = tag_position.x - current_position.x;
     double dy = tag_position.y - current_position.y;
-    double dist_to_tag = initial_distance_to_tag - cos(angle_error)*hypot(dx,dy);
+    double dist_to_tag = cos(angle_error)*hypot(dx,dy);
     ROS_DEBUG("Distance to tag: %f", dist_to_tag);
     if(fabs(dist_to_tag) > ramp_distance)
     {
@@ -151,7 +151,7 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
   {
     ROS_DEBUG("Stopping to read tag");
     publishVelCommand(0,0);
-    ros::Duration(0.5).sleep();
+    ros::Duration(1.0).sleep();
     zbar_decoder::decode_qr qr_request;
     qr_request.request.trash = "";
     geometry_msgs::PoseStamped trash;
@@ -177,8 +177,6 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
         tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
         tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
-        double dist_to_tag = hypot(pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y);
-        initial_distance_to_tag = cos(angle_error)*dist_to_tag;
         aligning_with_crossing = true;
       }
       else
