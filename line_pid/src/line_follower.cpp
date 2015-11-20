@@ -39,9 +39,12 @@ Line_follower::Line_follower(string name)
   pid_debug_pub = nh.advertise<msgs::FloatArrayStamped>(pid_debug_pub_name, 1);
   nh.param<string>("command_pub", command_pub_name, "/fmCommand/cmd_vel");
   command_pub = nh.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
+  heading_controller.reset();
+  line_follow_enabled = false;
+  aligning_with_crossing = false;
+  ramp_speed = forward_speed;
   // Setup stopping at crossing
   string odom_sub, tag_found_sub;
-
   nh.param<double>("ramp_dist", ramp_distance, 0.1);
   nh.param<double>("stop_point_tolerance", stop_point_tolerance, 0.01);
   nh.param<string>("tag_found_sub", tag_found_sub, "/tag_found");

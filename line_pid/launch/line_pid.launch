@@ -224,7 +224,9 @@
         <param name="line_sub" value="/line_detector/perception/line" />
         <param name="odom_sub" value="/fmProcessors/odometry/filtered/local" /> 
         <param name="command_pub" value="/fmCommand/cmd_vel" />     
-        <param name="odom_reset_pub" value="/initialpose" />          
+        <param name="ramp_dist" value="0.1" />
+        <param name="stop_point_tolerance" value="0.03" />                  
+
         <param name="pid_debug_pub" value="/fmInformation/pid" />
      </node>
 
