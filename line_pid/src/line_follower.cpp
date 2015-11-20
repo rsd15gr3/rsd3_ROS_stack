@@ -31,7 +31,7 @@ Line_follower::Line_follower(string name)
   nh.param<double>("forward_speed", forward_speed, 0.4);
   nh.param<double>("target_dist", target_dist, 0.6);
   double update_interval = 1.0 / update_rate;
-  ros::Timer timerPid = nh.createTimer(ros::Duration(update_interval), &Line_follower::pidCb, this);
+  timerPid = nh.createTimer(ros::Duration(update_interval), &Line_follower::pidCb, this);
   heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, update_interval);
   nh.param<string>("line_sub", line_topic_name, "/line_detector/perception/line");
   error_sub = nh.subscribe(line_topic_name, 1, &Line_follower::lineCb, this);
