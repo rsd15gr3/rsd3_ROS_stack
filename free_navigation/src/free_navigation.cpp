@@ -58,7 +58,6 @@ void Navigation::feedbackRelativeMovCb(const relative_move_server::RelativeMoveF
 
 void Navigation::actionStateCb(const msgs::IntStamped& action_state)
 {
-    bool run = false;
     ROS_INFO("Action: %i recieved", action_state.data);
     if(action_state.data != prev_action_state_)
     {
@@ -67,8 +66,7 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
         switch (action_state.data) {
         case BOX_CHARGE:
             ROS_INFO("GOING TO CHARGER: %i", BOX_CHARGE);
-            run =true;
-            //goal.target_pose.pose = charge_initial_pose_;
+            goal.target_pose.pose = charge_initial_pose_;
             break;
         case BOX_BRICK:
             ROS_INFO("GOING TO collect bricks: %i", BOX_BRICK);
@@ -90,18 +88,6 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
             return; // not a navigation command so do not navigate
         }
 
-    /*
-        Pose testPose;
-        testPose.position.x=3.305;
-        testPose.position.y=0.366;
-        testPose.position.z=0.0;
-        testPose.orientation.x=0.0;
-        testPose.orientation.y=0;
-        testPose.orientation.z=0.9723;
-        testPose.orientation.w=-0.2319;
-         move_base_msgs::MoveBaseGoal goal;
-        goal.target_pose.pose = testPose;
-        */
         ROS_INFO("(%f, %f)",goal.target_pose.pose.position.x, goal.target_pose.pose.position.y);
         goal.target_pose.header.frame_id = base_frame_id_;
         goal.target_pose.header.stamp = ros::Time::now();        
@@ -111,8 +97,8 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
 
     }
 
-    if(run == true){
-    //if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+    //Nacho: TODO Add the define all the relative movements and add a switch statement out of this callback 
+    if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
         //call server for charging task
 
         double dx, dy, dTh;
@@ -121,7 +107,6 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
         dTh = tf::getYaw(charge_dock_pose_.orientation);
 
         setRelativeMove(dx, dy, dTh);
-        run = false;
     }
 
     prev_action_state_ = action_state.data;
