@@ -62,7 +62,7 @@ geometry_msgs::Point tag_position;
 //tf::Stamped<tf::Pose> odom_to_tag_transform;
 
 bool aligning_with_crossing;
-double distance_to_tag;
+double initial_distance_to_tag;
 
 Pid_controller heading_controller;
 
@@ -146,26 +146,24 @@ double getMovingGoalTargetAngle()
     return movingGoalTargetAngle;
 }
 
-template <typename T> int sign(T val) {
-    return (T(0) < val) - (val < T(0));
-}
-
 void odometryCb(const nav_msgs::Odometry &msg)
 {
-  const double ramp_p = forward_Speed/ramp_distance;
   current_position = msg.pose.pose.position;
   if(aligning_with_crossing)
   {
     double dx = tag_position.x - current_position.x;
-    double dist_to_tag = fabs(dx);
-    ROS_DEBUG("Distance to goal: %f", dist_to_tag);
-    ROS_DEBUG("dx = %f",dx);
-    if(dist_to_tag > ramp_distance)
+    double dy = tag_position.y - current_position.y;
+    double dist_to_tag = initial_distance_to_tag - cos(angle_error)*hypot(dx,dy);
+    ROS_DEBUG("Distance to tag: %f", dist_to_tag);
+    if(fabs(dist_to_tag) > ramp_distance)
     {
       ramp_speed = forward_Speed;
+      if(dist_to_tag < 0)
+        ramp_speed = -forward_Speed;
     }
-    else if(dist_to_tag > stop_point_tolerance)
+    else if(fabs(dist_to_tag) > stop_point_tolerance)
     {
+      const double ramp_p = forward_Speed/ramp_distance;
       ramp_speed = ramp_p * dist_to_tag;
     }
     else
@@ -174,7 +172,6 @@ void odometryCb(const nav_msgs::Odometry &msg)
       heading_controller.reset();
       line_follow_enabled = false;
     }
-    ramp_speed *= sign(dist_to_tag);
   }
 }
 
@@ -210,6 +207,8 @@ void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
         tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
         tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
+        double dist_to_tag = hypot(pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y);
+        initial_distance_to_tag = cos(angle_error)*dist_to_tag;
         aligning_with_crossing = true;
       }
       else
