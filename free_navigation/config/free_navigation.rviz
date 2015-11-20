@@ -199,6 +199,14 @@ Visualization Manager:
       Shape: Arrow
       Topic: /move_base_simple/goal
       Value: true
+    - Alpha: 0.7
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /map
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -231,7 +239,7 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 102.976
+      Scale: 54.3437
       Target Frame: base_link
       Value: TopDownOrtho (rviz)
       X: -1.07651
@@ -253,5 +261,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1301
-  X: 65
-  Y: 24
+  X: 55
+  Y: 86
