@@ -10,8 +10,7 @@ int main(int argc, char **argv)
   }
 #endif
   ros::init(argc, argv, "line_pid_node");
-  //Line_follower(ros::this_node::getName()); // Error: error: invalid use of qualified-name 'ros::this_node::getName'
-  Line_follower("line_pid_node");
+  Line_follower line_follower(ros::this_node::getName()); // Error: error: invalid use of qualified-name 'ros::this_node::getName'
   ros::spin();
   return 0;
 }
