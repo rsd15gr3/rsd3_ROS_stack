@@ -123,6 +123,8 @@ void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
     double dy = tag_position.y - current_position.y;
     double dist_to_tag = cos(angle_error)*hypot(dx,dy);
     ROS_DEBUG("Distance to tag: %f", dist_to_tag);
+    ROS_DEBUG("dx = %f",dx);
+    ROS_DEBUG("dy = %f",dy);
     if(fabs(dist_to_tag) > ramp_distance)
     {
       ramp_speed = forward_speed;
