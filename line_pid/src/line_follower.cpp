@@ -16,41 +16,44 @@ using std::string;
 Line_follower::Line_follower(string name)
   : as_(nh, name, false), name_(name)
 {
-    // setup line follower pid
-    int update_rate;
-    double kp, ki, kd, feed_forward, max_output, max_i;
-    string line_topic_name, command_pub_name, pid_debug_pub_name;
-    nh.param<int>("update_rate", update_rate, 20);
-    nh.param<double>("drive_kp", kp, 10.0);
-    nh.param<double>("drive_ki", ki, 3.35); //3.35
-    nh.param<double>("drive_kd", kd, 10.0); //10.0
-    nh.param<double>("drive_feed_forward", feed_forward, 0.0);
-    nh.param<double>("drive_max_output", max_output, 0.40);
-    nh.param<double>("drive_max_i", max_i, 0.1);
-    nh.param<double>("forward_speed", forward_speed, 0.4);
-    double update_interval = 1.0 / update_rate;
-    ros::Timer timerPid = nh.createTimer(ros::Duration(update_interval), &Line_follower::pidCb, this);
-    heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, update_interval);
-    nh.param<string>("line_sub", line_topic_name, "/line_detector/perception/line");
-    ros::Subscriber error_sub = nh.subscribe(line_topic_name, 1, &Line_follower::lineCb, this);
-    nh.param<string>("pid_debug_pub", pid_debug_pub_name, "/debug/pid_pub");
-    pid_debug_pub = nh.advertise<msgs::FloatArrayStamped>(pid_debug_pub_name, 1);
-    nh.param<string>("command_pub", command_pub_name, "/fmCommand/cmd_vel");
-    command_pub = nh.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
-    // Setup stopping at crossing
-    string odom_sub, tag_found_sub;
-    nh.param<double>("target_dist", target_dist, 0.6);
-    nh.param<double>("ramp_dist", ramp_distance, 0.1);
-    nh.param<double>("stop_point_tolerance", stop_point_tolerance, 0.01);
-    nh.param<string>("tag_found_sub", tag_found_sub, "odometry/filtered/local");
-    qr_tag_detect_sub = nh.subscribe(tag_found_sub, 1, &Line_follower::qrTagDetectCb, this);
-    nh.param<string>("odom_sub", odom_sub, "odometry/filtered/local");
-    odometry_sub = nh.subscribe(odom_sub, 1, &Line_follower::odometryCb, this);
-    get_qr_client = nh.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");
-    // setup action server
-    as_.registerGoalCallback(boost::bind(&Line_follower::goalCb, this) );
-    as_.registerPreemptCallback(boost::bind(&Line_follower::preemtCb, this) );
-    as_.start();
+  ROS_DEBUG("Starting line follower");
+  // setup line follower pid
+  int update_rate;
+  double kp, ki, kd, feed_forward, max_output, max_i;
+  string line_topic_name, command_pub_name, pid_debug_pub_name;
+  nh.param<int>("update_rate", update_rate, 20);
+  nh.param<double>("drive_kp", kp, 10.0);
+  nh.param<double>("drive_ki", ki, 3.35); //3.35
+  nh.param<double>("drive_kd", kd, 10.0); //10.0
+  nh.param<double>("drive_feed_forward", feed_forward, 0.0);
+  nh.param<double>("drive_max_output", max_output, 0.40);
+  nh.param<double>("drive_max_i", max_i, 0.1);
+  nh.param<double>("forward_speed", forward_speed, 0.4);
+  double update_interval = 1.0 / update_rate;
+  ros::Timer timerPid = nh.createTimer(ros::Duration(update_interval), &Line_follower::pidCb, this);
+  heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, update_interval);
+  nh.param<string>("line_sub", line_topic_name, "/line_detector/perception/line");
+  ros::Subscriber error_sub = nh.subscribe(line_topic_name, 1, &Line_follower::lineCb, this);
+  nh.param<string>("pid_debug_pub", pid_debug_pub_name, "/debug/pid_pub");
+  pid_debug_pub = nh.advertise<msgs::FloatArrayStamped>(pid_debug_pub_name, 1);
+  nh.param<string>("command_pub", command_pub_name, "/fmCommand/cmd_vel");
+  command_pub = nh.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
+  // Setup stopping at crossing
+  ROS_DEBUG("setup crossing");
+  string odom_sub, tag_found_sub;
+  nh.param<double>("target_dist", target_dist, 0.6);
+  nh.param<double>("ramp_dist", ramp_distance, 0.1);
+  nh.param<double>("stop_point_tolerance", stop_point_tolerance, 0.01);
+  nh.param<string>("tag_found_sub", tag_found_sub, "odometry/filtered/local");
+  qr_tag_detect_sub = nh.subscribe(tag_found_sub, 1, &Line_follower::qrTagDetectCb, this);
+  nh.param<string>("odom_sub", odom_sub, "odometry/filtered/local");
+  odometry_sub = nh.subscribe(odom_sub, 1, &Line_follower::odometryCb, this);
+  get_qr_client = nh.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");
+  // setup action server
+  ROS_DEBUG("setupe action server");
+  as_.registerGoalCallback(boost::bind(&Line_follower::goalCb, this) );
+  as_.registerPreemptCallback(boost::bind(&Line_follower::preemtCb, this) );
+  as_.start();
 }
 
 void Line_follower::goalCb()
@@ -81,31 +84,30 @@ void Line_follower::publishVelCommand(double forward_speed, double angular_speed
 
 void Line_follower::pidCb(const ros::TimerEvent &)
 {
-    if (line_follow_enabled) {
-        double movingGoalTargetAngle = getMovingGoalTargetAngle();
-        publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
-        // publish PID debug msgs TODO: disable debug publish
-        msgs::FloatArrayStamped pidDebugMsg;
-        pidDebugMsg.header.stamp = ros::Time::now();
-        pidDebugMsg.data = heading_controller.getLatestUpdateValues();
-        pid_debug_pub.publish(pidDebugMsg);
-    }
+  if (line_follow_enabled) {
+    double movingGoalTargetAngle = getMovingGoalTargetAngle();
+    publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
+    // publish PID debug msgs TODO: disable debug publish
+    msgs::FloatArrayStamped pidDebugMsg;
+    pidDebugMsg.header.stamp = ros::Time::now();
+    pidDebugMsg.data = heading_controller.getLatestUpdateValues();
+    pid_debug_pub.publish(pidDebugMsg);
+  }
 }
 
 void Line_follower::lineCb(const line_detection::line::ConstPtr &linePtr)
 {
-    angle_error = linePtr->angle;
-    dist_error = linePtr->offset;
-    // TODO: abort if error is too big
-    // as_.setAborted(result_);
-
+  angle_error = linePtr->angle;
+  dist_error = linePtr->offset;
+  // TODO: abort if error is too big
+  // as_.setAborted(result_);
 }
 
 double Line_follower::getMovingGoalTargetAngle()
 {
-    double closetMovingGoalAngle = atan2(target_dist, dist_error);
-    double movingGoalTargetAngle = M_PI_2 - closetMovingGoalAngle - angle_error;
-    return movingGoalTargetAngle;
+  double closetMovingGoalAngle = atan2(target_dist, dist_error);
+  double movingGoalTargetAngle = M_PI_2 - closetMovingGoalAngle - angle_error;
+  return movingGoalTargetAngle;
 }
 
 void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
@@ -187,8 +189,8 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
   else
   {
     // tag moved out of view
-     //publishVelCommand(0,0);
-     //line_follow_enabled = false;
+    //publishVelCommand(0,0);
+    //line_follow_enabled = false;
   }
 }
 
