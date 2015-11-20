@@ -9,15 +9,19 @@
 
 #include <angles/angles.h>
 
+
+//Nacho: cmd_vel messages changed from twis to twistStamped for real robot tests
+//Changed both topics to connect to real frobit
+//rostopic pub /relative_move_action/goal relative_move_server/RelativeMoveActionGoal
 class RelativeMoveAction{
 public:
     RelativeMoveAction(ros::NodeHandle& nh): nh_(&nh), as_(nh, "/relative_move_action", boost::bind(&RelativeMoveAction::executeCB, this, _1), false){
         std::string cmd_vel_topic;
-        nh_->param("cmd_vel_topic", cmd_vel_topic, std::string("/cmd_vel"));
-        cmd_vel_pub_ = nh_->advertise<geometry_msgs::Twist>(cmd_vel_topic, 1);
+        nh_->param("cmd_vel_topic", cmd_vel_topic, std::string("/fmCommand/cmd_vel")); //("/cmd_vel"));
+        cmd_vel_pub_ = nh_->advertise<geometry_msgs::TwistStamped>(cmd_vel_topic, 1);
 
         std::string odom_topic;
-        nh_->param("odom_topic", odom_topic, std::string("/odom"));
+        nh_->param("odom_topic", odom_topic, std::string("/fmProcessors/odometry/filtered/local"));//("/fmKnowledge/wheel_odom"));
         odom_sub_ = nh_->subscribe(odom_topic, 1, &RelativeMoveAction::odomCB, this);
 
         nh_->param("pid_dist_offset", pid_dist_offset_, 0.85);
@@ -41,9 +45,11 @@ public:
 
 private:
     void publishCmdVel(double lin, double rot){
-        geometry_msgs::Twist cmd_vel;
-        cmd_vel.linear.x = lin;
-        cmd_vel.angular.z = rot;
+        geometry_msgs::TwistStamped cmd_vel;
+        cmd_vel.header.frame_id = 'base_link';
+        cmd_vel.header.stamp = ros::Time::now();
+        cmd_vel.twist.linear.x = lin;
+        cmd_vel.twist.angular.z = rot;
         cmd_vel_pub_.publish(cmd_vel);
     }
 
