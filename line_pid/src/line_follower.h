@@ -22,6 +22,7 @@ public:
   double angle_error, dist_error; // line errors
   double forward_speed, target_dist; // line follow params
   double ramp_speed, ramp_distance, stop_point_tolerance;
+  ros::Timer timerPid;
   // stop at crossing variables
   const std::string camera_frame_id = "/camera_link";
   const std::string base_footprint_id = "/base_footprint";
