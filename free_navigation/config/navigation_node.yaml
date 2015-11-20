@@ -1,6 +1,6 @@
 # waypoints formated as x, y, yaw(radians)
 line_to_manipulator: 
-  [1.271, 3.298, 0.599] 
+  [-1.271, 3.298, 0.599] 
 delivery_pose:
   [-3.022, -0.903, -0.041]
 load_bricks:
