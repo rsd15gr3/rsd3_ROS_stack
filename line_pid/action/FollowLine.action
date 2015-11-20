@@ -2,7 +2,9 @@
 string qr_tag
 ---
 # Result
-uint8 state
+float32 distance_to_goal
 ---
 # Feedback
+string last_seen_tag
 float32 distance_to_goal
+bool approaching_crossing

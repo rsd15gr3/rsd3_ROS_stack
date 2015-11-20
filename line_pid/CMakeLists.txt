@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   actionlib
 )
-add_action_files(DIRECTORY action FILES Follow_line.action)
+add_action_files(DIRECTORY action FILES FollowLine.action)
 generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
 catkin_package(CATKIN_DEPENDS)
 
@@ -23,8 +23,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${mission_INCLUDE_DIRS}
 )
-
-add_executable(line_pid_node src/pid_controller.cpp src/pid_controller.h src/line_pid_node.cpp)
+aux_source_directory(src/ SRC_LIST)
+add_executable(line_pid_node ${SRC_LIST})
 
 add_dependencies(line_pid_node ${catkin_EXPORTED_TARGETS})
 
