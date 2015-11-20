@@ -33,13 +33,12 @@ Line_follower::Line_follower(string name)
   ros::Timer timerPid = nh.createTimer(ros::Duration(update_interval), &Line_follower::pidCb, this);
   heading_controller.set_parameters(kp, ki, kd, feed_forward, max_output, max_i, update_interval);
   nh.param<string>("line_sub", line_topic_name, "/line_detector/perception/line");
-  ros::Subscriber error_sub = nh.subscribe(line_topic_name, 1, &Line_follower::lineCb, this);
+  error_sub = nh.subscribe(line_topic_name, 1, &Line_follower::lineCb, this);
   nh.param<string>("pid_debug_pub", pid_debug_pub_name, "/debug/pid_pub");
   pid_debug_pub = nh.advertise<msgs::FloatArrayStamped>(pid_debug_pub_name, 1);
   nh.param<string>("command_pub", command_pub_name, "/fmCommand/cmd_vel");
   command_pub = nh.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
   // Setup stopping at crossing
-  ROS_DEBUG("setup crossing");
   string odom_sub, tag_found_sub;
   nh.param<double>("target_dist", target_dist, 0.6);
   nh.param<double>("ramp_dist", ramp_distance, 0.1);
@@ -50,18 +49,18 @@ Line_follower::Line_follower(string name)
   odometry_sub = nh.subscribe(odom_sub, 1, &Line_follower::odometryCb, this);
   get_qr_client = nh.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");
   // setup action server
-  ROS_DEBUG("setupe action server");
   as_.registerGoalCallback(boost::bind(&Line_follower::goalCb, this) );
   as_.registerPreemptCallback(boost::bind(&Line_follower::preemtCb, this) );
   as_.start();
 }
 
 void Line_follower::goalCb()
-{
+{ 
   aligning_with_crossing = false;
   ramp_speed = forward_speed;
   line_follow_enabled = true;
   stopping_qr_tag = as_.acceptNewGoal()->qr_tag;
+  ROS_DEBUG_NAMED(name_,"Goal recieved. Going to stop at tag with value: %s", stopping_qr_tag.c_str());
 }
 
 void Line_follower::preemtCb()
@@ -71,6 +70,7 @@ void Line_follower::preemtCb()
   line_follow_enabled = false;
   aligning_with_crossing = false;
   as_.setPreempted();
+  ROS_DEBUG_NAMED(name_,"Line follower is preemted");
 }
 
 void Line_follower::publishVelCommand(double forward_speed, double angular_speed)
