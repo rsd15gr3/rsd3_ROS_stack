@@ -245,7 +245,8 @@
         <param name="io_method" value="mmap"/>
     </node>
 
-  <include file="$(find free_navigation)/launch/move_base_launch.xml" />
+  <!-- <include file="$(find free_navigation)/launch/move_base_launch.xml" /> -->
+  <include file="$(find free_navigation)/launch/free_navigation.launch" />
 	<node pkg="twist_to_twiststamped" name="converter" type="cmd_vel_converter.py">
 		<param name="cmd_vel_sub" value="/cmd_vel" />
 		<param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
