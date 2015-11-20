@@ -13,9 +13,10 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
 )
 
+catkin_python_setup()
+
 add_action_files(DIRECTORY action FILES NavigateFreely.action)
 generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
-catkin_python_setup()
 
 catkin_package(
   CATKIN_DEPENDS mission msgs roscpp roslaunch tf
