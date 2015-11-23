@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   test_server
+  line_pid
+  mission
 )
 
 

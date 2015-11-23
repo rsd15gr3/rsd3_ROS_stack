@@ -4,16 +4,23 @@
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 #include <test_server/testAction.h>
+#include "line_pid/FollowLineAction.h"
 
+#include "mission/action_states.h"
 
 int state_counter = 0;
 const int nr_of_states = 6;
 bool active_action = false;
 
-void state_pick(int cell, bool activate);
-
 void doneCb(const actionlib::SimpleClientGoalState& state,
             const test_server::testResultConstPtr& result)
+{
+    active_action = false;
+    state_counter++;
+}
+
+void doneCbLine(const actionlib::SimpleClientGoalState& state,
+            const line_pid::FollowLineResultConstPtr& result)
 {
     active_action = false;
     state_counter++;
@@ -31,7 +38,7 @@ protected:
   // create messages that are used to published feedback/result
   test_server::testFeedback feedback_;
   test_server::testResult result_;
-  actionlib::SimpleActionClient<test_server::testAction> action_line_follow;
+  actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
   actionlib::SimpleActionClient<test_server::testAction> action_free_navigation;
   actionlib::SimpleActionClient<test_server::testAction> action_tipper;
   void state_pick(int cell, bool active);
@@ -82,6 +89,7 @@ public:
         // set the action state to preempted
         as_.setPreempted();
         success = false;
+        state_pick(goal->order, false); // cancel current action
         break;
       }
 
@@ -118,10 +126,29 @@ void testAction::state_pick(int cell, bool active)
         case 0:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = "cell_" + std::to_string(cell);
-                action_line_follow.sendGoal(goal, &doneCb);
+                line_pid::FollowLineGoal goal;
                 active_action = true;
+
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal.qr_tag = "wc_1_entrance";
+                    break;
+
+                    case CELL_2:
+                    goal.qr_tag = "wc_2_entrance";
+                    break;
+
+                    case CELL_3:
+                    goal.qr_tag = "wc_3_entrance";
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+                action_line_follow.sendGoal(goal, &doneCbLine);
+
             }
             else
             {
@@ -146,9 +173,27 @@ void testAction::state_pick(int cell, bool active)
         case 2:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = "bricks";
-                action_line_follow.sendGoal(goal, &doneCb);
+                line_pid::FollowLineGoal goal;
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal.qr_tag = "wc_1_conveyor";
+                    break;
+
+                    case CELL_2:
+                    goal.qr_tag = "wc_2_conveyor";
+                    break;
+
+                    case CELL_3:
+                    goal.qr_tag = "wc_3_conveyor";
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+
+                action_line_follow.sendGoal(goal, &doneCbLine);
                 active_action = true;
             }
             else
@@ -188,9 +233,26 @@ void testAction::state_pick(int cell, bool active)
         case 5:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = "cell";
-                action_line_follow.sendGoal(goal, &doneCb);
+                line_pid::FollowLineGoal goal;
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal.qr_tag = "wc_1_load";
+                    break;
+
+                    case CELL_2:
+                    goal.qr_tag = "wc_2_load";
+                    break;
+
+                    case CELL_3:
+                    goal.qr_tag = "wc_3_load";
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+                action_line_follow.sendGoal(goal, &doneCbLine);
                 active_action = true;
             }
             else

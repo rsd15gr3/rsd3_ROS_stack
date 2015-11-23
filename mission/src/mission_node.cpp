@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 
     //path.brickOrder(CELL_1);
     mission_queue.push(BRICK_ORDER_2);
-    mission_queue.push(BRICK_DELIVERY);
+    //mission_queue.push(BRICK_DELIVERY);
 
     test_server::testGoal goal;
     action_test.sendGoal(goal );

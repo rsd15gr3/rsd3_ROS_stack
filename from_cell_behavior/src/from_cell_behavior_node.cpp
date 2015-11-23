@@ -4,7 +4,8 @@
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 #include <test_server/testAction.h>
-
+#include "line_pid/FollowLineAction.h"
+#include "mission/action_states.h"
 
 int state_counter = 0;
 const int nr_of_states = 5;
@@ -14,6 +15,13 @@ void state_pick(int cell, bool activate);
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
             const test_server::testResultConstPtr& result)
+{
+    active_action = false;
+    state_counter++;
+}
+
+void doneCbLine(const actionlib::SimpleClientGoalState& state,
+            const line_pid::FollowLineResultConstPtr& result)
 {
     active_action = false;
     state_counter++;
@@ -31,7 +39,7 @@ protected:
   // create messages that are used to published feedback/result
   test_server::testFeedback feedback_;
   test_server::testResult result_;
-  actionlib::SimpleActionClient<test_server::testAction> action_line_follow;
+  actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
   actionlib::SimpleActionClient<test_server::testAction> action_free_navigation;
   void state_pick(int cell, bool active);
 
@@ -138,9 +146,26 @@ void testAction::state_pick(int cell, bool active)
         case 2:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = "left turn";
-                action_line_follow.sendGoal(goal, &doneCb);
+                line_pid::FollowLineGoal goal;
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal.qr_tag = "wc_1_exit";
+                    break;
+
+                    case CELL_2:
+                    goal.qr_tag = "wc_2_exit";
+                    break;
+
+                    case CELL_3:
+                    goal.qr_tag = "wc_3_exit";
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+                action_line_follow.sendGoal(goal, &doneCbLine);
                 active_action = true;
             }
             else
@@ -166,9 +191,9 @@ void testAction::state_pick(int cell, bool active)
         case 4:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = "left turn";
-                action_line_follow.sendGoal(goal, &doneCb);
+                line_pid::FollowLineGoal goal;
+                goal.qr_tag = "line_out";
+                action_line_follow.sendGoal(goal, &doneCbLine);
                 active_action = true;
             }
             else
