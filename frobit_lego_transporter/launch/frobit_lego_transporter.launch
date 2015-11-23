@@ -217,6 +217,14 @@
       <param name="node_name" value="action_tipper" />
     </node>
 
+      <!-- Modified relative move server node -->
+    <node name="relative_move_server_node" pkg="relative_move_server" type="relative_move_server_node" output="screen">
+        <param name="cmd_vel_topic" value="/fmCommand/cmd_vel" />
+        <param name="odom_topic" value="/fmProcessors/odometry/filtered/local" />
+        <param name="/fmExecutors/wptnav/max_linear_velocity" value="0.5" />
+        <param name="/fmExecutors/wptnav/max_angular_velocity" value="0.5" />
+    </node>
+
     <group ns="fmControllers">
         <!-- Frobit interface -->
         <node pkg="sdu_frobit_v2" name="frobit" type="frobit_interface_node.py" output="screen">
