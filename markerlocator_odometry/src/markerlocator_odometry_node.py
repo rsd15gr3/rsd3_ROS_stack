@@ -18,6 +18,7 @@ class MarkerLocatorOdometryNode:
         self.time_offset = rospy.get_param("~time_offset", 0.0)
 
         self.tf_listener = tf.TransformListener()
+        self.tf_listener.waitForTransform("marker_link", "base_link", rospy.Time(), rospy.Duration(2.0))
 
         # Publishers
         self.odom_gps_pub = rospy.Publisher("odometry/markerlocator", Odometry, queue_size=1)
@@ -45,7 +46,10 @@ class MarkerLocatorOdometryNode:
         return {"order": s[0], "timestamp": float(s[1]), "x": float(s[2]), "y": float(s[3]), "angle": float(s[4])}
 
     def publish_odom_gps_message(self, marloc):
-        (t, r) = self.tf_listener.lookupTransform("marker_link", "base_link", rospy.Time(0));
+        # The MarkerLocator outputs the coordinates of the marker itself, and
+        # since the marker is not placed in the origin of base_link, we move the
+        # coordinates by the transformation between marker_link and base_link.
+        (t, r) = self.tf_listener.lookupTransform("marker_link", "base_link", rospy.Time(0))
         R = tf.transformations.rotation_matrix(marloc["angle"], (0, 0, 1))
         t = np.hstack((t, 1))
         P = np.dot(R, t)
