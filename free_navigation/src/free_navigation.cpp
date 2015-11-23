@@ -62,51 +62,53 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
     if(action_state.data != prev_action_state_)
     {
         ac_.cancelAllGoals();
-        move_base_msgs::MoveBaseGoal goal;
         switch (action_state.data) {
+        //Cases for waypoint navigation
         case BOX_CHARGE:
             ROS_INFO("GOING TO CHARGER: %i", BOX_CHARGE);
-            goal.target_pose.pose = charge_initial_pose_;
+            setTargetWayPoint(charge_initial_pose_);
             break;
         case BOX_BRICK:
             ROS_INFO("GOING TO collect bricks: %i", BOX_BRICK);
-            goal.target_pose.pose = load_bricks_pose_;
+            setTargetWayPoint(load_bricks_pose_);
             break;
         case GPS_LINE:
             ROS_INFO("GOING TO line: %i", GPS_LINE);
-            goal.target_pose.pose = line_from_manipulator_pose_;
+            setTargetWayPoint(line_from_manipulator_pose_);
             break;
         case GPS_DOOR:
             ROS_INFO("GOING TO line to manipulators: %i", GPS_DOOR);
-            goal.target_pose.pose = line_to_manipulator_pose_;
+            setTargetWayPoint(line_to_manipulator_pose_);
             ROS_WARN("GPS door is depleted");
             break;
-        case BOX_DOOR:
-            ROS_WARN("Box door is depleted");
+        //Cases for relative movement navigation
+        case TURN90LEFT:
+            ROS_INFO("Turning 90º left: %i", TURN90LEFT);
+            double dx, dy, dTh;
+            dx = turn_90_left_pose_.position.x;
+            dy = turn_90_left_pose_.position.y;
+            dTh = turn_90_left_pose_.position.z;
+            //tf::getYaw(charge_dock_pose_.orientation);
+            setRelativeMove(dx, dy, dTh);
+        case TURN90RIGHT:
+            ROS_INFO("Turning 90º right: %i", TURN90RIGHT);
+            double dx, dy, dTh;
+            dx = turn_90_right_pose_.position.x;
+            dy = turn_90_right_pose_.position.y;
+            dTh = turn_90_right_pose_.position.z;
+            setRelativeMove(dx, dy, dTh);
+        case TURN180:
+            ROS_INFO("Turning 180º: %i", TURN180);
+            double dx, dy, dTh;
+            dx = turn_180_pose_.position.x;
+            dy = turn_180_pose_.position.y;
+            dTh = turn_180_pose_.position.z;
+            setRelativeMove(dx, dy, dTh);
+
         default:
             //ac_.cancelAllGoals();
             return; // not a navigation command so do not navigate
         }
-
-        ROS_INFO("(%f, %f)",goal.target_pose.pose.position.x, goal.target_pose.pose.position.y);
-        goal.target_pose.header.frame_id = base_frame_id_;
-        goal.target_pose.header.stamp = ros::Time::now();        
-        ac_.sendGoal(goal, boost::bind(&Navigation::doneCb,this,_1, _2),
-                     boost::bind(&Navigation::activeCb, this),
-                     boost::bind(&Navigation::feedbackCb, this, _1) );
-
-    }
-
-    //Nacho: TODO Add the define all the relative movements and add a switch statement out of this callback 
-    if (action_state.data == BOX_CHARGE && ac_.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-        //call server for charging task
-
-        double dx, dy, dTh;
-        dx = charge_dock_pose_.position.x;
-        dy = charge_dock_pose_.position.y;
-        dTh = tf::getYaw(charge_dock_pose_.orientation);
-
-        setRelativeMove(dx, dy, dTh);
     }
 
     prev_action_state_ = action_state.data;
@@ -148,10 +150,20 @@ bool Navigation::setRelativeMove(double dx, double dy, double dth){
 bool Navigation::sendGoal(relative_move_server::RelativeMoveGoal& goal){
     goal.target_pose.header.stamp = ros::Time::now();
     rel_move_done_ = false;
-    char_client_.sendGoal(goal,
-                           boost::bind(&Navigation::doneRelativeMovCb, this, _1, _2),
-                           boost::bind(&Navigation::activeRelativeMovCb, this),
-                           boost::bind(&Navigation::feedbackRelativeMovCb, this, _1));
+    char_client_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMovCb, this, _1, _2),
+                         boost::bind(&Navigation::activeRelativeMovCb, this),
+                         boost::bind(&Navigation::feedbackRelativeMovCb, this, _1));
 
     return true;
+}
+
+bool Navigation::setTargetWayPoint(const geometry_msgs::Pose goalPose){
+    move_base_msgs::MoveBaseGoal goal;
+    goal.target_pose.pose = goalPose;
+    ROS_INFO("(%f, %f)",goal.target_pose.pose.position.x, goal.target_pose.pose.position.y);
+    goal.target_pose.header.frame_id = base_frame_id_;
+    goal.target_pose.header.stamp = ros::Time::now();        
+    ac_.sendGoal(goal, boost::bind(&Navigation::doneCb,this,_1, _2),
+                 boost::bind(&Navigation::activeCb, this),
+                 boost::bind(&Navigation::feedbackCb, this, _1) );
 }

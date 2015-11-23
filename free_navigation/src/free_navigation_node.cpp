@@ -35,7 +35,12 @@ int main(int argc, char** argv){
         navigation.charge_initial_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
         n.param<vector<double>>("charge_dock", tmp_in_plane_pose, vector<double>{0,0,0});
         navigation.charge_dock_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
-        
+        n.param<vector<double>>("90degrees_left", tmp_in_plane_pose, vector<double>{0,0,0});
+        navigation.turn_90_left_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
+        n.param<vector<double>>("90degrees_right", tmp_in_plane_pose, vector<double>{0,0,0});
+        navigation.turn_90_right_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
+        n.param<vector<double>>("180degrees_turn", tmp_in_plane_pose, vector<double>{0,0,0});
+        navigation.turn_180_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
     }    
     ros::Subscriber sub = n.subscribe(action_topic, 1, &Navigation::actionStateCb, &navigation);
     //ros::Subscriber sub = n.subscribe(action_topic, 1, &actionCb);

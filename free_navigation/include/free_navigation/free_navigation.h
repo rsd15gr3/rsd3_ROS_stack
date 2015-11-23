@@ -19,12 +19,18 @@ public:
     Navigation();
     void setNavigationPoint(int action_state_id, vector<double> in_plane_pose);
     void actionStateCb(const msgs::IntStamped& action_state);
+    bool setTargetWayPoint(const geometry_msgs::Pose goalPose);
     static Pose convertVecToPose(const vector<double>& poses);
+    //Waypoints for absolute navigation poses
     Pose line_to_manipulator_pose_;
     Pose line_from_manipulator_pose_;
     Pose load_bricks_pose_;
     Pose charge_initial_pose_;
     Pose charge_dock_pose_;
+    //Relative movement poses
+    Pose turn_180_pose_;
+    Pose turn_90_right_pose_;
+    Pose turn_90_left_pose_;
     string base_frame_id_;
 private:
     MoveBaseClient ac_;

@@ -18,3 +18,7 @@
 //Tipper area perception/tipper_verify
 #define TIPPER_UP      	11
 #define TIPPER_DOWN    	12
+//Relative movements inside robot cell
+#define TURN90LEFT	13
+#define TURN90RIGHT	14
+#define TURN180	15

@@ -12,3 +12,10 @@ charge_initial:
   [1, 1, 1.57]
 charge_dock:
   [3, 1, 0.0]
+#Relative movements
+90degrees_left:
+  [0, 0, 1.57]
+90degrees_right:
+  [0, 0, -1.57]
+180degrees_turn:
+  [0, 0, 3.14]
