@@ -1,0 +1,40 @@
+<!-- -->
+<launch> 
+    <node name="test_server" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="test_server" />
+    </node>
+
+    <node name="action_navigation" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="action_navigation" />
+    </node>
+
+    <node name="action_to_cell" pkg="to_cell_behavior" type="to_cell_behavior_node" output="screen" > 
+      <param name="node_name" value="action_to_cell" />
+    </node>
+
+<!--
+    <node name="action_from_cell" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="action_from_cell" />
+    </node>
+-->
+    <node name="action_from_cell" pkg="from_cell_behavior" type="from_cell_behavior_node" output="screen" > 
+      <param name="node_name" value="action_from_cell" />
+    </node>
+
+    <node name="mission" pkg="mission" type="mission_node" output="screen" > 
+      <param name="loopRate" value="10" />
+    </node>
+
+    <node name="action_line_follow" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="action_line_follow" />
+    </node>
+
+    <node name="action_free_navigation" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="action_free_navigation" />
+    </node>
+
+    <node name="action_tipper" pkg="test_server" type="test_server_node" output="screen" > 
+      <param name="node_name" value="action_tipper" />
+    </node>
+
+</launch>

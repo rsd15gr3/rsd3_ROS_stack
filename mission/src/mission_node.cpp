@@ -1,5 +1,6 @@
 #include <iostream>
 #include <queue>
+#include <string>
 
 #include "route.h"
 
@@ -7,6 +8,7 @@
 #include <actionlib/client/simple_action_client.h>
 
 #include <msgs/IntStamped.h>
+#include "std_msgs/String.h"
 #include "mission/action_states.h"
 #include <test_server/testAction.h>
 
@@ -20,6 +22,7 @@ ros::Publisher action_publisher;
 
 //Subscribers
 ros::Subscriber mission_subscriber;
+ros::Subscriber automode_subscriber;
 
 Route path;
 std::queue<int> mission_queue;
@@ -27,6 +30,8 @@ std::queue<int> mission_queue;
 bool navigation_area = true;
 bool active_behavior = false;
 bool automode = true;
+
+std::string get_string(int value);
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
             const test_server::testResultConstPtr& result)
@@ -56,9 +61,10 @@ int main(int argc, char **argv)
     ros::Rate rate(loopRate);
 
 	//init publishers
-    action_publisher = nodeHandler.advertise<msgs::IntStamped>("mission/next_mission",1);
+    action_publisher = nodeHandler.advertise<std_msgs::String>("mission/next_mission",1);
 
-    ros::Subscriber sub = nodeHandler.subscribe("ui/mes", 5, missionCallback);
+    mission_subscriber = nodeHandler.subscribe("ui/mes", 5, missionCallback);
+    automode_subscriber = nodeHandler.subscribe("fmPlan/automode", 5, automodeCallback);
 
     actionlib::SimpleActionClient<test_server::testAction> action_test("test_server", true);
     actionlib::SimpleActionClient<test_server::testAction> action_navigation("action_navigation", true);
@@ -86,8 +92,8 @@ int main(int argc, char **argv)
     }
 
     //path.brickOrder(CELL_1);
-    //mission_queue.push(BRICK_ORDER_2);
-    //mission_queue.push(BRICK_DELIVERY);
+    mission_queue.push(BRICK_ORDER_2);
+    mission_queue.push(BRICK_DELIVERY);
 
     test_server::testGoal goal;
     action_test.sendGoal(goal );
@@ -192,15 +198,22 @@ int main(int argc, char **argv)
 
             path.infoRoute();
             //send message for gui
-            msgs::IntStamped gui_message;
-            gui_message.header.stamp = ros::Time::now();
+            std_msgs::String gui_message;
+            //gui_message.header.stamp = ros::Time::now();
             if(!path.empty())
             {
-                gui_message.data = path.next();
+                gui_message.data = get_string(path.next());
             }
             else
             {
-                gui_message.data = CTR_IDLE;
+                if(path.getCurrentState() == CHARGE)
+                {
+                    gui_message.data = "Wait now(Charge)";
+                }
+                else
+                {
+                    gui_message.data = "Wait now(Cell)";
+                }
             }
             action_publisher.publish(gui_message);
         }
@@ -217,4 +230,45 @@ int main(int argc, char **argv)
     }
 
 	return 0;
+}
+
+
+std::string get_string(int value)
+{
+    std::string ret;
+    switch (value)
+    {
+        case CTR_IDLE:
+            ret = "Wait now";
+        break;
+
+        case BRICK:
+            ret = "Get some bricks";
+        break;
+
+        case TRANSITION:
+            ret = "Go to transition area";
+        break;
+
+        case CHARGE:
+            ret = "Go to charge station";
+        break;
+
+        case DELIVERY:
+            ret = "Deliver the bricks";
+        break;
+
+        case CELL_1:
+            ret = "Go to workcell 1";
+        break;
+
+        case CELL_2:
+            ret = "Go to workcell 2";
+        break;
+
+        case CELL_3:
+            ret = "Go to workcell 3";
+        break;
+    }
+    return ret;
 }
