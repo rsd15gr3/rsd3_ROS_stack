@@ -144,6 +144,7 @@ void testAction::state_pick(int cell, bool active)
             if(active)
             {
                 line_pid::FollowLineGoal goal;
+                goal.dist = 0.0;
                 active_action = true;
 
                 switch (cell)
@@ -190,6 +191,7 @@ void testAction::state_pick(int cell, bool active)
             if(active)
             {
                 line_pid::FollowLineGoal goal;
+                goal.dist = 0.2;
                 switch (cell)
                 {
                     case CELL_1:
@@ -372,6 +374,7 @@ void testAction::state_pick(int cell, bool active)
             if(active)
             {
                 line_pid::FollowLineGoal goal;
+                goal.dist = 0.0;
                 switch (cell)
                 {
                     case CELL_1:

@@ -63,6 +63,7 @@ void Line_follower::goalCb()
   aligning_with_crossing = false;
   ramp_speed = forward_speed;
   line_follow_enabled = true;
+  stop_before_tag_dist = as_.acceptNewGoal()->dist;
   stopping_qr_tag = as_.acceptNewGoal()->qr_tag;
   ROS_DEBUG_NAMED(name_,"Goal recieved. Going to stop at tag with value: %s", stopping_qr_tag.c_str());
 }
@@ -122,6 +123,7 @@ void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
     double dx = tag_position.x - current_position.x;
     double dy = tag_position.y - current_position.y;
     double dist_to_tag = cos(angle_error)*hypot(dx,dy);
+    dist_to_tag -= stop_before_tag_dist;
     ROS_DEBUG("Distance to tag: %f", dist_to_tag);
     ROS_DEBUG("dx = %f",dx);
     ROS_DEBUG("dy = %f",dy);

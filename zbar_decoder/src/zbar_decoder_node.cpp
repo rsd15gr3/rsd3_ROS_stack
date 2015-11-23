@@ -26,7 +26,7 @@ const string node_name("zbar_decoder_node");
 string frame_id("camera_link");
 const double min_white_area = 60000;
 const unsigned min_tag_area = 30000;
-const int threshold_value = 210;
+int threshold_value = 210;
 ImageScanner scanner;
 bool prev_tag_found;
 cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/msg/Image.html
@@ -76,7 +76,7 @@ int main(int argc, char **argv){
   pub = n.advertise<msgs::BoolStamped>("/tag_found", 1);
   n.param<double>("tag_scale_factor",scale_factor, 0.5);
   n.param<int>("debounce_size", debounce_size, 3);
-  n.param<double>("threshold", threshold_value, 210);
+  n.param<int>("threshold", threshold_value, 210);
   if(debounce_size < 1) {
     debounce_size = 1;
     ROS_WARN("Debounce size less than 1 so defaults to: %i", debounce_size);

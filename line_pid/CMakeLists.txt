@@ -32,7 +32,6 @@ target_link_libraries(line_pid_node
   ${catkin_LIBRARIES}
 )
 
-
 # Compiler flags
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11 -Wall -Wextra" HAS_FLAGS)

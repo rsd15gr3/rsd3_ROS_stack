@@ -182,6 +182,7 @@ void testAction::state_pick(int cell, bool active)
             if(active)
             {
                 line_pid::FollowLineGoal goal;
+                goal.dist = 0.0;
                 switch (cell)
                 {
                     case CELL_1:
@@ -227,6 +228,7 @@ void testAction::state_pick(int cell, bool active)
             if(active)
             {
                 line_pid::FollowLineGoal goal;
+                goal.dist = 0.0;
                 goal.qr_tag = "line_out";
                 action_line_follow.sendGoal(goal, &doneCbLine);
                 active_action = true;

@@ -32,7 +32,8 @@ public:
   // action server
   actionlib::SimpleActionServer<line_pid::FollowLineAction> as_;
   line_pid::FollowLineResult result_;
-  std::string stopping_qr_tag = "wc_3_conveyor"; // goal
+  std::string stopping_qr_tag; // goal
+  double stop_before_tag_dist;
   // functions
   void publishVelCommand(double forward_speed, double angular_speed);
   void pidCb(const ros::TimerEvent &);
