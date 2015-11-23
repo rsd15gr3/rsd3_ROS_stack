@@ -172,8 +172,8 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         geometry_msgs::PoseStamped pose_in_base_link;
         tf::TransformListener listener;
         try{
-          listener.waitForTransform(base_footprint_id, camera_frame_id, ros::Time(0), ros::Duration(5.0) );
-          listener.transformPose(base_footprint_id,ros::Time(0),pose,camera_frame_id,pose_in_base_link);
+          listener.waitForTransform("odom", camera_frame_id, ros::Time(0), ros::Duration(5.0) );
+          listener.transformPose("odom",ros::Time(0),pose,camera_frame_id,pose_in_base_link);
         }
         catch (tf::TransformException ex){
           ROS_ERROR("%s",ex.what());
@@ -181,8 +181,8 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
         }
         ROS_DEBUG("pos in camera: [%f, %f, %f]", pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
         ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
-        tag_position.x = current_position.x + pose_in_base_link.pose.position.x;
-        tag_position.y = current_position.y + pose_in_base_link.pose.position.y;
+        tag_position.x = pose_in_base_link.pose.position.x;
+        tag_position.y = pose_in_base_link.pose.position.y;
         aligning_with_crossing = true;
       }
       else
