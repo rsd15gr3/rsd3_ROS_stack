@@ -125,13 +125,11 @@ void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
     ROS_DEBUG("Distance to tag: %f", dist_to_tag);
     ROS_DEBUG("dx = %f",dx);
     ROS_DEBUG("dy = %f",dy);
-    if(fabs(dist_to_tag) > ramp_distance)
+    if(dist_to_tag > ramp_distance)
     {
       ramp_speed = forward_speed;
-      if(dist_to_tag < 0)
-        ramp_speed = -forward_speed;
     }
-    else if(fabs(dist_to_tag) > stop_point_tolerance)
+    else if(dist_to_tag > stop_point_tolerance)
     {
       const double ramp_p = forward_speed/ramp_distance;
       ramp_speed = ramp_p * dist_to_tag;
@@ -152,8 +150,10 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
   if(qr_tag_entered.data)
   {
     ROS_DEBUG("Stopping to read tag");
+    publishVelCommand(-0.5,0);
+    ros::Duration(0.1).sleep();
     publishVelCommand(0,0);
-    ros::Duration(1.0).sleep();
+    ros::Duration(0.5).sleep();
     zbar_decoder::decode_qr qr_request;
     qr_request.request.trash = "";
     geometry_msgs::PoseStamped trash;
