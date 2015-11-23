@@ -191,7 +191,7 @@ void testAction::state_pick(int cell, bool active)
             if(active)
             {
                 line_pid::FollowLineGoal goal;
-                goal.dist = 0.2;
+                goal.dist = 0.25;
                 switch (cell)
                 {
                     case CELL_1:
