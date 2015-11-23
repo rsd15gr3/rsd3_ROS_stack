@@ -87,20 +87,19 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
             ROS_INFO("Turning 90º left: %i", TURN90LEFT);
             dx = turn_90_left_pose_.position.x;
             dy = turn_90_left_pose_.position.y;
-            dTh = turn_90_left_pose_.position.z;
-            //tf::getYaw(charge_dock_pose_.orientation);
+            dTh = tf::getYaw(turn_90_left_pose_.orientation);
             setRelativeMove(dx, dy, dTh);
         case TURN90RIGHT:
             ROS_INFO("Turning 90º right: %i", TURN90RIGHT);
             dx = turn_90_right_pose_.position.x;
             dy = turn_90_right_pose_.position.y;
-            dTh = turn_90_right_pose_.position.z;
+            dTh = tf::getYaw(turn_90_right_pose_.orientation);
             setRelativeMove(dx, dy, dTh);
         case TURN180:
             ROS_INFO("Turning 180º: %i", TURN180);
             dx = turn_180_pose_.position.x;
             dy = turn_180_pose_.position.y;
-            dTh = turn_180_pose_.position.z;
+            dTh = tf::getYaw(turn_180_pose_.orientation);
             setRelativeMove(dx, dy, dTh);
 
         default:

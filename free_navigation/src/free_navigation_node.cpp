@@ -22,7 +22,7 @@ int main(int argc, char** argv){
         string base_link_id;
         n.param<string>("base_link_id", base_link_id, "base_link");
         navigation.base_frame_id_ = base_link_id;
-        n.param<string>("action_topic", action_topic, "mission/action_state");
+        n.param<string>("action_topic", action_topic, "/mission/action_state");
         vector<double> tmp_in_plane_pose;
         n.param<vector<double>>("line_to_manipulator", tmp_in_plane_pose, vector<double>{0,0,0});
         navigation.line_to_manipulator_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
