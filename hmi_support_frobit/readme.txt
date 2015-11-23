@@ -7,6 +7,7 @@ subscribing:
 
 publishing:
 - /fmPlan/automode      (on change, Frobit's automode state, IntStamped)
+- /fmSafe/deadman      	(20Hz, Frobit's deadman state, always True, BoolStamped)
 - /fmCommand/cmd_vel    (20Hz if automode=0, Frobit's manual control, TwistStamped)
 - /ui/tipper_automode   (on change, Tipper's automode state, BoolStamped)
 - /ui/tipper_position   (on change, Tipper's manul control, FloatStamped : 0.0 .. bottom, 1.0 .. top)

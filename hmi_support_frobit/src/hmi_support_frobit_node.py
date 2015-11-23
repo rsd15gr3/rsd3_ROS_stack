@@ -29,6 +29,7 @@ class Frobit():
 
         ''' Read parameters from launchfile '''
         self.tp_automode = rospy.get_param('~mr_tp_automode', '/fmPlan/automode')
+        self.tp_deadman = rospy.get_param('~mr_tp_deadman', '/fmSafe/deadman')
         self.tp_cmd_vel = rospy.get_param('~mr_tp_cmd_vel', '/fmCommand/cmd_vel')
         self.tp_cmd_vel_rate = rospy.Rate(rospy.get_param('~mr_tp_cmd_vel_rate', 20))          # [Hz]
         self.vel_lin_max = rospy.get_param('~mr_max_linear_velocity', 1)                    # [m/s]     TODO: tune max velocities
@@ -39,6 +40,11 @@ class Frobit():
         self.tp_automode_message = IntStamped()
         self.tp_automode_message.data = 0
         self.tp_automode_publisher = rospy.Publisher(self.tp_automode, IntStamped, queue_size=1)
+
+        # Setup Mobile Robot deadman publish topic
+        self.tp_deadman_message = BoolStamped()
+        self.tp_deadman_message.data = True
+        self.tp_deadman_publisher = rospy.Publisher(self.tp_deadman, BoolStamped, queue_size=1)
 
         # Setup Mobile Robot manual velocity topic
         self.tp_cmd_vel_message = TwistStamped()
@@ -91,6 +97,10 @@ class Frobit():
         self.tp_automode_message.header.stamp = rospy.get_rostime()
         self.tp_automode_publisher.publish (self.tp_automode_message)
 
+    def publish_tp_deadman_message(self):
+        self.tp_deadman_message.header.stamp = rospy.get_rostime()
+        self.tp_deadman_publisher.publish(self.tp_deadman_message)
+
     def publish_tp_cmd_vel_message(self):
         self.tp_cmd_vel_message.header.stamp = rospy.Time.now()
         self.tp_cmd_vel_message.twist.linear.x = self.vel_lin
@@ -101,8 +111,9 @@ class Frobit():
         self.vel_ang = 0.0
         self.vel_lin = 0.0
 
-    def keep_publishing_tp_cmd_vel(self):
+    def keep_publishing(self):
         while not rospy.is_shutdown():
+            self.publish_tp_deadman_message()
             if self.tp_automode_message.data == 0:
                 self.publish_tp_cmd_vel_message()
             self.tp_cmd_vel_rate.sleep()
@@ -174,7 +185,7 @@ class Node():
         rospy.Subscriber(self.tp_ui_str_control, String, self.on_topic_ui_str_control)
 
         # Loop function
-        self.frobit.keep_publishing_tp_cmd_vel()
+        self.frobit.keep_publishing()
 
     def on_topic_ui_str_control(self, msg):
         data = msg.data.split('_')

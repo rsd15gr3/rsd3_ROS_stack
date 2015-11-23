@@ -4,6 +4,7 @@
     <node pkg="hmi_support_frobit" name="hmi_support_frobit_node" type="hmi_support_frobit_node.py" output="screen">
         <!-- Frobit's params -->
         <param name="mr_tp_automode" value="/fmPlan/automode" />
+        <param name="mr_tp_deadman" value="/fmSafe/deadman" />
         <param name="mr_tp_cmd_vel" value="/fmCommand/cmd_vel" />
         <param name="mr_tp_cmd_vel_rate" value="20"/>
         <param name="mr_max_linear_velocity" value="1.0"/>
