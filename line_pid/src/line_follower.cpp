@@ -10,6 +10,7 @@
 #include <tf/transform_listener.h>
 #include <tf/tf.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include "line_pid/FollowLineAction.h"
 
 using std::string;
 
@@ -63,8 +64,9 @@ void Line_follower::goalCb()
   aligning_with_crossing = false;
   ramp_speed = forward_speed;
   line_follow_enabled = true;
-  stop_before_tag_dist = as_.acceptNewGoal()->dist;
-  stopping_qr_tag = as_.acceptNewGoal()->qr_tag;
+  line_pid::FollowLineGoal::Ptr line_goal = as_.acceptNewGoal();
+  stop_before_tag_dist = line_goal->dist;
+  stopping_qr_tag = line_goal->qr_tag;
   ROS_DEBUG_NAMED(name_,"Goal recieved. Going to stop at tag with value: %s", stopping_qr_tag.c_str());
 }
 
