@@ -136,7 +136,6 @@ bool findCross(line_detection::cross::Request &req,
 
 void verifyPubCb(const ros::TimerEvent &) 
 {
-    ROS_INFO("timer");
     msgs::BoolStamped msg;
     msg.header.stamp = ros::Time::now();
     msg.data = verification;
