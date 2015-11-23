@@ -6,6 +6,7 @@
 #include <test_server/testAction.h>
 #include "line_pid/FollowLineAction.h"
 #include "mission/action_states.h"
+#include "relative_move_server/RelativeMoveAction.h"
 
 int state_counter = 0;
 const int nr_of_states = 5;
@@ -27,6 +28,24 @@ void doneCbLine(const actionlib::SimpleClientGoalState& state,
     state_counter++;
 }
 
+void doneCbMove(const actionlib::SimpleClientGoalState& state,
+            const relative_move_server::RelativeMoveResultConstPtr& result)
+{
+    active_action = false;
+    state_counter++;
+}
+
+
+relative_move_server::RelativeMoveGoal getRelativeMove(double dx, double dy, double dth){
+    relative_move_server::RelativeMoveGoal goal;
+    goal.target_pose.header.frame_id = "base_link";
+    goal.target_pose.header.stamp = ros::Time::now();
+    goal.target_pose.pose.position.x = dx;
+    goal.target_pose.pose.position.y = dy;
+    goal.target_yaw = dth;
+
+    return goal;
+}
 
 class testAction
 {
@@ -40,7 +59,7 @@ protected:
   test_server::testFeedback feedback_;
   test_server::testResult result_;
   actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
-  actionlib::SimpleActionClient<test_server::testAction> action_free_navigation;
+  actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> action_free_navigation;
   void state_pick(int cell, bool active);
 
 public:
@@ -119,9 +138,8 @@ void testAction::state_pick(int cell, bool active)
         case 0:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = ;
-                action_free_navigation.sendGoal(goal, &doneCb);
+                relative_move_server::RelativeMoveGoal goal = getRelativeMove(-0.7,0,0);
+                action_free_navigation.sendGoal(goal, &doneCbMove);
                 active_action = true;
             }
             else
@@ -132,9 +150,26 @@ void testAction::state_pick(int cell, bool active)
         case 1:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = ;
-                action_free_navigation.sendGoal(goal, &doneCb);
+                relative_move_server::RelativeMoveGoal goal;
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal = getRelativeMove(0,0,3.14);
+                    break;
+
+                    case CELL_2:
+                    goal = getRelativeMove(0,0,-3.14);
+                    break;
+
+                    case CELL_3:
+                    goal = getRelativeMove(0,0,3.14);
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+                action_free_navigation.sendGoal(goal, &doneCbMove);
                 active_action = true;
             }
             else
@@ -177,9 +212,9 @@ void testAction::state_pick(int cell, bool active)
         case 3:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = ;
-                action_free_navigation.sendGoal(goal, &doneCb);
+                relative_move_server::RelativeMoveGoal goal;
+                goal = getRelativeMove(0,0, 1.57);
+                action_free_navigation.sendGoal(goal, &doneCbMove);
                 active_action = true;
             }
             else

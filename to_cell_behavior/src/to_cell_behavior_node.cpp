@@ -5,11 +5,12 @@
 #include <actionlib/client/simple_action_client.h>
 #include <test_server/testAction.h>
 #include "line_pid/FollowLineAction.h"
+#include "relative_move_server/RelativeMoveAction.h"
 
 #include "mission/action_states.h"
 
 int state_counter = 0;
-const int nr_of_states = 6;
+const int nr_of_states = 10;
 bool active_action = false;
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
@@ -26,7 +27,23 @@ void doneCbLine(const actionlib::SimpleClientGoalState& state,
     state_counter++;
 }
 
+void doneCbMove(const actionlib::SimpleClientGoalState& state,
+            const relative_move_server::RelativeMoveResultConstPtr& result)
+{
+    active_action = false;
+    state_counter++;
+}
 
+relative_move_server::RelativeMoveGoal getRelativeMove(double dx, double dy, double dth){
+    relative_move_server::RelativeMoveGoal goal;
+    goal.target_pose.header.frame_id = "base_link";
+    goal.target_pose.header.stamp = ros::Time::now();
+    goal.target_pose.pose.position.x = dx;
+    goal.target_pose.pose.position.y = dy;
+    goal.target_yaw = dth;
+
+    return goal;
+}
 class testAction
 {
 protected:
@@ -39,7 +56,7 @@ protected:
   test_server::testFeedback feedback_;
   test_server::testResult result_;
   actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
-  actionlib::SimpleActionClient<test_server::testAction> action_free_navigation;
+  actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> action_free_navigation;
   actionlib::SimpleActionClient<test_server::testAction> action_tipper;
   void state_pick(int cell, bool active);
 
@@ -159,9 +176,8 @@ void testAction::state_pick(int cell, bool active)
         case 1:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = ;
-                action_free_navigation.sendGoal(goal, &doneCb);
+                relative_move_server::RelativeMoveGoal goal = getRelativeMove(0,0,-1.57);
+                action_free_navigation.sendGoal(goal, &doneCbMove);
                 active_action = true;
             }
             else
@@ -215,13 +231,12 @@ void testAction::state_pick(int cell, bool active)
                 action_tipper.cancelAllGoals();
             }
         break;
-        //Go to the other line
+        //Back off from the belt
         case 4:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = ;
-                action_free_navigation.sendGoal(goal, &doneCb);
+                relative_move_server::RelativeMoveGoal goal = getRelativeMove(-0.1,0,0);
+                action_free_navigation.sendGoal(goal, &doneCbMove);
                 active_action = true;
             }
             else
@@ -229,8 +244,131 @@ void testAction::state_pick(int cell, bool active)
                 action_free_navigation.cancelAllGoals();
             }
         break;
-        //Go to pickup place
+        //Turn depending of cell
         case 5:
+            if(active)
+            {
+                relative_move_server::RelativeMoveGoal goal;
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal = getRelativeMove(0,0,-0.8);
+                    break;
+
+                    case CELL_2:
+                    goal = getRelativeMove(0,0,0.8);
+                    break;
+
+                    case CELL_3:
+                    goal = getRelativeMove(0,0,-0.8);
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+                action_free_navigation.sendGoal(goal, &doneCbMove);
+                active_action = true;
+            }
+            else
+            {
+                action_free_navigation.cancelAllGoals();
+            }
+        break;
+        //Go to the other line
+        case 6:
+            if(active)
+            {
+                relative_move_server::RelativeMoveGoal goal;
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal = getRelativeMove(0.45,0,0);
+                    break;
+
+                    case CELL_2:
+                    goal = getRelativeMove(0.45,0,0);
+                    break;
+
+                    case CELL_3:
+                    goal = getRelativeMove(0.45,0,0);
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+                action_free_navigation.sendGoal(goal, &doneCbMove);
+                active_action = true;
+            }
+            else
+            {
+                action_free_navigation.cancelAllGoals();
+            }
+        break;            
+        //Turn depending of cell
+        case 7:
+            if(active)
+            {
+                relative_move_server::RelativeMoveGoal goal;
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal = getRelativeMove(0.1,0,0.77);
+                    break;
+
+                    case CELL_2:
+                    goal = getRelativeMove(0.1,0,-0.77);
+                    break;
+
+                    case CELL_3:
+                    goal = getRelativeMove(0.1,0,0.77);
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+                action_free_navigation.sendGoal(goal, &doneCbMove);
+                active_action = true;
+            }
+            else
+            {
+                action_free_navigation.cancelAllGoals();
+            }
+        break;
+        //Turn depending of cell
+        case 8:
+            if(active)
+            {
+                relative_move_server::RelativeMoveGoal goal;
+                switch (cell)
+                {
+                    case CELL_1:
+                    goal = getRelativeMove(0.2,0,0.4);
+                    break;
+
+                    case CELL_2:
+                    goal = getRelativeMove(0.2,0,-0.4);
+                    break;
+
+                    case CELL_3:
+                    goal = getRelativeMove(0.2,0,0.4);
+                    break;
+
+                    default:
+                    ROS_ERROR("Invalid cell pick");
+                    break;
+                }
+                action_free_navigation.sendGoal(goal, &doneCbMove);
+                active_action = true;
+            }
+            else
+            {
+                action_free_navigation.cancelAllGoals();
+            }
+        break;        //Go to pickup place
+        case 9:
             if(active)
             {
                 line_pid::FollowLineGoal goal;

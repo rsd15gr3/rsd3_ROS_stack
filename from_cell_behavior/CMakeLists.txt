@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   test_server
   line_pid
   mission
+  relative_move_server
 )
 
 
