@@ -209,10 +209,6 @@
       <param name="loopRate" value="10" />
     </node>
 
-    <node name="action_free_navigation" pkg="test_server" type="test_server_node" output="screen" > 
-      <param name="node_name" value="action_free_navigation" />
-    </node>
-
     <node name="action_tipper" pkg="test_server" type="test_server_node" output="screen" > 
       <param name="node_name" value="action_tipper" />
     </node>

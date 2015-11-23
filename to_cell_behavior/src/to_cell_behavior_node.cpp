@@ -65,8 +65,8 @@ public:
   testAction(std::string name) :
     as_(nh_, name, boost::bind(&testAction::executeCB, this, _1), false),
     action_name_(name),
-    action_line_follow("action_line_follow", true),
-    action_free_navigation("action_free_navigation", true),
+    action_line_follow("/action_line_follow", true),
+    action_free_navigation("/relative_move_action", true),
     action_tipper("action_tipper", true)
   {
     as_.start();
