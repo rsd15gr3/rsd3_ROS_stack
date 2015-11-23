@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(line_pid)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   geometry_msgs
