@@ -76,6 +76,7 @@ int main(int argc, char **argv){
   pub = n.advertise<msgs::BoolStamped>("/tag_found", 1);
   n.param<double>("tag_scale_factor",scale_factor, 0.5);
   n.param<int>("debounce_size", debounce_size, 3);
+  n.param<double>("threshold", threshold_value, 210);
   if(debounce_size < 1) {
     debounce_size = 1;
     ROS_WARN("Debounce size less than 1 so defaults to: %i", debounce_size);
