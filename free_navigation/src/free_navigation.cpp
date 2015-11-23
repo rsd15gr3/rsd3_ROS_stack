@@ -61,6 +61,7 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
     ROS_INFO("Action: %i recieved", action_state.data);
     if(action_state.data != prev_action_state_)
     {
+        double dx, dy, dTh;
         ac_.cancelAllGoals();
         switch (action_state.data) {
         //Cases for waypoint navigation
@@ -84,7 +85,6 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
         //Cases for relative movement navigation
         case TURN90LEFT:
             ROS_INFO("Turning 90º left: %i", TURN90LEFT);
-            double dx, dy, dTh;
             dx = turn_90_left_pose_.position.x;
             dy = turn_90_left_pose_.position.y;
             dTh = turn_90_left_pose_.position.z;
@@ -92,14 +92,12 @@ void Navigation::actionStateCb(const msgs::IntStamped& action_state)
             setRelativeMove(dx, dy, dTh);
         case TURN90RIGHT:
             ROS_INFO("Turning 90º right: %i", TURN90RIGHT);
-            double dx, dy, dTh;
             dx = turn_90_right_pose_.position.x;
             dy = turn_90_right_pose_.position.y;
             dTh = turn_90_right_pose_.position.z;
             setRelativeMove(dx, dy, dTh);
         case TURN180:
             ROS_INFO("Turning 180º: %i", TURN180);
-            double dx, dy, dTh;
             dx = turn_180_pose_.position.x;
             dy = turn_180_pose_.position.y;
             dTh = turn_180_pose_.position.z;
