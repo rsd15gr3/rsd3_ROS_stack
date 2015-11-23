@@ -293,7 +293,7 @@ void testAction::state_pick(int cell, bool active)
                     break;
 
                     case CELL_3:
-                    goal = getRelativeMove(0.45,0,0);
+                    goal = getRelativeMove(0.35,0,0);
                     break;
 
                     default:
