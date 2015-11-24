@@ -43,5 +43,9 @@ private:
     static Pose convertVecToPose(const vector<double>& poses);
     // Docking client
     actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
+    void doneCbLine(const actionlib::SimpleClientGoalState& state,
+                const line_pid::FollowLineResultConstPtr& result);
+    line_pid::FollowLineGoal line_goal;
+    const double stop_dist_before_tag = 0.25;
 };
 #endif // Navigation_H

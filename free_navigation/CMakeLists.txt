@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   actionlib_msgs
   actionlib
-  line_pid
 )
 
 catkin_python_setup()
@@ -28,6 +27,7 @@ roslaunch_add_file_check(launch)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${mission_INCLUDE_DIRS}
+  ${line_pid_INCLUDE_DIRS}
 )
 
 add_executable(free_navigation_node
@@ -39,6 +39,7 @@ add_executable(free_navigation_node
 add_dependencies(free_navigation_node
     ${catkin_EXPORTED_TARGETS}    
     mission
+    line_pid
 )
 
 target_link_libraries(free_navigation_node
