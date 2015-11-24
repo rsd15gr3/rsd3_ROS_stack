@@ -85,7 +85,7 @@
             <rosparam param="pose_covariance_diagonal">[0.3, 0.3, 0.3, 0.5, 0.5, 0.5]</rosparam>
             <rosparam param="twist_covariance_diagonal">[0.1, 0.1, 0.1, 0.2, 0.2, 0.2]</rosparam>
         </node>
-
+        <include file="$(find line_pid)/launch/line_pid.launch" />
         <!-- MarkerLocator "GPS" -->
         <node pkg="markerlocator_odometry" name="markerlocator_odometry" type="markerlocator_odometry_node.py" output="screen">
             <param name="host" value="10.115.253.233" />

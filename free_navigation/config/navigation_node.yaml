@@ -8,3 +8,4 @@ load_bricks:
 charge:
   # [0.029, -0.282, 1.600] # 3
     [0.809, 0.483, 1.469]
+stopping_tag: "wc_3_entrance"

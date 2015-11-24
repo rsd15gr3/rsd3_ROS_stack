@@ -31,6 +31,7 @@ Navigation::Navigation(std::string name)
   {
       ROS_INFO("Waiting for the action_line_follow server to come up");
   }
+  nh_.param<std::string>("stopping_tag", stopping_tag, "wc_3_entrance");
   line_goal.dist = stop_dist_before_tag;
   ROS_DEBUG("Starting action server");
   as_.start();
@@ -106,6 +107,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
   switch (goal_) {
   case CHARGE:
       ROS_INFO("Docking in CHARGER: %i", BOX_CHARGE);
+      line_goal.qr_tag = stopping_tag;
       action_line_follow.sendGoal(line_goal, boost::bind(&Navigation::doneCbLine,this,_1,_2));
       break;
   case BRICK:

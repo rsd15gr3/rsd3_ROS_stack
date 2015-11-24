@@ -47,5 +47,6 @@ private:
                 const line_pid::FollowLineResultConstPtr& result);
     line_pid::FollowLineGoal line_goal;
     const double stop_dist_before_tag = 0.25;
+    string stopping_tag;
 };
 #endif // Navigation_H
