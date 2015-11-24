@@ -7,9 +7,10 @@ subscribing:
 - ui/str_control_frobit
 
 publishing:
-- /fmPlan/automode      (on change, Frobit's automode state, IntStamped)
+- /fmSafe/deadman       (20Hz, Frobit's deadman signal, always True, BoolStamped)
+- /fmPlan/automode      (20Hz, Frobit's automode state, IntStamped)
 - /fmCommand/cmd_vel    (20Hz if automode=0, Frobit's manual control, TwistStamped)
-- /ui/tipper_automode   (on change, Tipper's automode state, BoolStamped)
+- /ui/tipper_automode   (20Hz, Tipper's automode state, BoolStamped)
 - /ui/tipper_position   (on change, Tipper's manul control, FloatStamped : 0.0 .. bottom, 1.0 .. top)
 """
 
@@ -31,7 +32,6 @@ class Frobit():
         self.tp_automode = rospy.get_param('~mr_tp_automode', '/fmPlan/automode')
         self.tp_deadman = rospy.get_param('~mr_tp_deadman', '/fmSafe/deadman')
         self.tp_cmd_vel = rospy.get_param('~mr_tp_cmd_vel', '/fmCommand/cmd_vel')
-        self.tp_cmd_vel_rate = rospy.Rate(rospy.get_param('~mr_tp_cmd_vel_rate', 20))          # [Hz]
         self.vel_lin_max = rospy.get_param('~mr_max_linear_velocity', 1)                    # [m/s]     TODO: tune max velocities
         self.vel_ang_max = rospy.get_param('~mr_max_angular_velocity', 1)                   # [rad/s]
 
@@ -91,7 +91,6 @@ class Frobit():
             elif data[2] == 'manual':
                 self.stop_frobit()
                 self.tp_automode_message.data = 0
-            self.publish_tp_automode_message()
 
     def publish_tp_automode_message(self):
         self.tp_automode_message.header.stamp = rospy.get_rostime()
@@ -110,13 +109,6 @@ class Frobit():
     def stop_frobit(self):
         self.vel_ang = 0.0
         self.vel_lin = 0.0
-
-    def keep_publishing(self):
-        while not rospy.is_shutdown():
-            self.publish_tp_deadman_message()
-            if self.tp_automode_message.data == 0:
-                self.publish_tp_cmd_vel_message()
-            self.tp_cmd_vel_rate.sleep()
 
 
 class Tipper():
@@ -158,7 +150,6 @@ class Tipper():
             elif data[2] == 'manual':
                 self.tp_position_message.data = 0.0
                 self.tp_automode_message.data = False
-            self.publish_tp_automode_message()
 
     def publish_tp_automode_message(self):
         self.tp_automode_message.header.stamp = rospy.get_rostime()
@@ -184,8 +175,11 @@ class Node():
         self.tp_ui_str_control = rospy.get_param('~tp_ui_str_control', '/ui/str_control_frobit')
         rospy.Subscriber(self.tp_ui_str_control, String, self.on_topic_ui_str_control)
 
+        ''' Publishing rate '''
+        self.publishing_rate = rospy.Rate(rospy.get_param('~publishing_rate', 20))          # [Hz]
+
         # Loop function
-        self.frobit.keep_publishing()
+        self.keep_publishing()
 
     def on_topic_ui_str_control(self, msg):
         data = msg.data.split('_')
@@ -193,6 +187,15 @@ class Node():
             self.frobit.decode_control(data=data)
         elif data[0] == 'tipper':
             self.tipper.decode_control(data=data)
+
+    def keep_publishing(self):
+        while not rospy.is_shutdown():
+            self.frobit.publish_tp_deadman_message()
+            self.frobit.publish_tp_automode_message()
+            self.tipper.publish_tp_automode_message()
+            if self.frobit.tp_automode_message.data == 0:
+                self.frobit.publish_tp_cmd_vel_message()
+            self.publishing_rate.sleep()
 
 if __name__ == '__main__':
     """ The program starts here by naming the node and initializing it. """

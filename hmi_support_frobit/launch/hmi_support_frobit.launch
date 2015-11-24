@@ -6,7 +6,6 @@
         <param name="mr_tp_automode" value="/fmPlan/automode" />
         <param name="mr_tp_deadman" value="/fmSafe/deadman" />
         <param name="mr_tp_cmd_vel" value="/fmCommand/cmd_vel" />
-        <param name="mr_tp_cmd_vel_rate" value="20"/>
         <param name="mr_max_linear_velocity" value="1.0"/>
         <param name="mr_max_angular_velocity" value="0.8"/>
         
@@ -19,6 +18,9 @@
         
         <!-- HMI control topic for Frobit -->
         <param name="tp_ui_str_control" value="/ui/str_control_frobit" />
+
+        <!-- Rate for publishing topics [Hz] -->
+        <param name="publishing_rate" value="20"/>
     </node>
 </launch>
 
