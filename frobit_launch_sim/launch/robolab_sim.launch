@@ -35,5 +35,4 @@
 	    <param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
 	    <param name="cmd_vel_pub" value="/cmd_vel" />
     </node>
-    </group>
 </launch>
