@@ -3,7 +3,8 @@
 #include <tf/tf.h>
 #include <mission/action_states.h>
 Navigation::Navigation(std::string name)
-    : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), base_frame_id_("map")
+    : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("map"),
+      action_line_follow("/action_line_follow", true)
 {
   ROS_INFO("Starting navigation");
   // setup action server
@@ -26,6 +27,11 @@ Navigation::Navigation(std::string name)
   while(!move_base_ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
       ROS_INFO("Waiting for the move_base action server to come up");
   }
+  while(!action_line_follow.waitForServer(ros::Duration(5.0)) && ros::ok())
+  {
+      ROS_INFO("Waiting for the action_line_follow server to come up");
+  }
+
   ROS_DEBUG("Starting action server");
   as_.start();
 }
@@ -43,6 +49,13 @@ void Navigation::preemtCb()
   ROS_INFO_NAMED(name_,"Behavior preemted");
   // cancel all actions
   move_base_ac_.cancelAllGoals();
+}
+
+void Navigation::doneCbLine(const actionlib::SimpleClientGoalState& state,
+            const line_pid::FollowLineResultConstPtr& result)
+{
+  ROS_INFO("Distance to goal: %f", result->distance_to_goal);
+  as_.setSucceeded(result_); // first set succeeded in collecting doneCb
 }
 
 void Navigation::approachGoal()
@@ -73,7 +86,7 @@ void Navigation::approachGoal()
           return; // not a navigation command so do not navigate
       }
       ROS_INFO("(%f, %f)",goal_msg.target_pose.pose.position.x, goal_msg.target_pose.pose.position.y);
-      goal_msg.target_pose.header.frame_id = base_frame_id_;
+      goal_msg.target_pose.header.frame_id = static_frame_id;
       goal_msg.target_pose.header.stamp = ros::Time::now();
       move_base_ac_.sendGoal(goal_msg, boost::bind(&Navigation::doneCb,this,_1, _2),
                    boost::bind(&Navigation::activeCb, this),
@@ -93,7 +106,9 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
   switch (goal_) {
   case CHARGE:
       ROS_INFO("Docking in CHARGER: %i", BOX_CHARGE);
-      as_.setSucceeded(result_); // first set succeeded in docking doneCb
+      line_pid::FollowLineGoal goal;
+      goal.dist = 0.25;
+      action_line_follow.sendGoal(goal, &doneCbLine);
       break;
   case BRICK:
       ROS_INFO("going in to collect bricks: %i", BRICK);

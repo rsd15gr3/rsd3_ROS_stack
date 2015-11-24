@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   actionlib_msgs
   actionlib
+  line_pid
 )
 
 catkin_python_setup()

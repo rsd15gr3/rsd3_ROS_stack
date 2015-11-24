@@ -8,6 +8,7 @@
 #include <msgs/IntStamped.h>
 #include <actionlib/server/simple_action_server.h>
 #include <free_navigation/NavigateFreelyAction.h>
+#include "line_pid/FollowLineAction.h"
 using std::string;
 using std::vector;
 using geometry_msgs::Pose;
@@ -32,7 +33,7 @@ private:
     Pose delivery_pose_;
     Pose charge_pose_;
     Pose load_bricks_pose_;
-    string base_frame_id_;
+    string static_frame_id;
     MoveBaseClient move_base_ac_;
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);
     void goalCb();
@@ -40,5 +41,7 @@ private:
     void activeCb();
     void feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback);
     static Pose convertVecToPose(const vector<double>& poses);
+    // Docking client
+    actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
 };
 #endif // Navigation_H
