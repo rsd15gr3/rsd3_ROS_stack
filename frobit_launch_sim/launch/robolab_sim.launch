@@ -35,4 +35,7 @@
 	    <param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
 	    <param name="cmd_vel_pub" value="/cmd_vel" />
     </node>
+    
+    <include file="$(find hmi_support_frobit)/launch/hmi_support_frobit.launch" />
+	<include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
 </launch>
