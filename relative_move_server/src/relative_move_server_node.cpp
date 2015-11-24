@@ -46,7 +46,7 @@ public:
 private:
     void publishCmdVel(double lin, double rot){
         geometry_msgs::TwistStamped cmd_vel;
-        cmd_vel.header.frame_id = 'base_link';
+        cmd_vel.header.frame_id = "base_link";
         cmd_vel.header.stamp = ros::Time::now();
         cmd_vel.twist.linear.x = lin;
         cmd_vel.twist.angular.z = rot;
