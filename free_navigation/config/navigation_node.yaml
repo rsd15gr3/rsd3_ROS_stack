@@ -9,4 +9,4 @@ charge:
   [0.231, -0.115, 1.389] # 3
   # [0.809, 0.483, 1.469] # dock 1
 stop_dist_to_wall: 0.1
-undock_relative_move: -1.0
+undock_relative_move: -0.75
