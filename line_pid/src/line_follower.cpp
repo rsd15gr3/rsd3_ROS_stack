@@ -156,7 +156,7 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
   {
     ROS_DEBUG("Stopping to read tag");
     publishVelCommand(-1.0,0);
-    ros::Duration(0.1).sleep();
+    ros::Duration(0.2).sleep();
     publishVelCommand(0,0);
     ros::Duration(0.5).sleep();
     zbar_decoder::decode_qr qr_request;
