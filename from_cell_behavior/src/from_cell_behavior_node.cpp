@@ -102,6 +102,7 @@ public:
         // set the action state to preempted
         as_.setPreempted();
         success = false;
+        state_pick(goal->order, false);
         break;
       }
 
@@ -134,114 +135,114 @@ void testAction::state_pick(int cell, bool active)
     std::cout << "executeing action: " << state_counter << std::endl;
     switch (state_counter)
     {
-        //Back off a bit
-        case 0:
-            if(active)
-            {
-                relative_move_server::RelativeMoveGoal goal = getRelativeMove(-0.7,0,0);
-                action_free_navigation.sendGoal(goal, &doneCbMove);
-                active_action = true;
-            }
-            else
-            {
-                action_free_navigation.cancelAllGoals();
-            }
+    //Back off a bit
+    case 0:
+        if(active)
+        {
+            relative_move_server::RelativeMoveGoal goal = getRelativeMove(-0.7,0,0);
+            action_free_navigation.sendGoal(goal, &doneCbMove);
+            active_action = true;
+        }
+        else
+        {
+            action_free_navigation.cancelAllGoals();
+        }
         break;
         //Turn 180
-        case 1:
-            if(active)
+    case 1:
+        if(active)
+        {
+            relative_move_server::RelativeMoveGoal goal;
+            switch (cell)
             {
-                relative_move_server::RelativeMoveGoal goal;
-                switch (cell)
-                {
-                    case CELL_1:
-                    goal = getRelativeMove(0,0,3.14);
-                    break;
+            case CELL_1:
+                goal = getRelativeMove(0,0,3.14);
+                break;
 
-                    case CELL_2:
-                    goal = getRelativeMove(0,0,-3.14);
-                    break;
+            case CELL_2:
+                goal = getRelativeMove(0,0,-3.14);
+                break;
 
-                    case CELL_3:
-                    goal = getRelativeMove(0,0,3.14);
-                    break;
+            case CELL_3:
+                goal = getRelativeMove(0,0,3.14);
+                break;
 
-                    default:
-                    ROS_ERROR("Invalid cell pick");
-                    break;
-                }
-                action_free_navigation.sendGoal(goal, &doneCbMove);
-                active_action = true;
+            default:
+                ROS_ERROR("Invalid cell pick");
+                break;
             }
-            else
-            {
-                action_free_navigation.cancelAllGoals();
-            }
+            action_free_navigation.sendGoal(goal, &doneCbMove);
+            active_action = true;
+        }
+        else
+        {
+            action_free_navigation.cancelAllGoals();
+        }
         break;
         //go to intersection
-        case 2:
-            if(active)
+    case 2:
+        if(active)
+        {
+            line_pid::FollowLineGoal goal;
+            goal.dist = 0.0;
+            switch (cell)
             {
-                line_pid::FollowLineGoal goal;
-                goal.dist = 0.0;
-                switch (cell)
-                {
-                    case CELL_1:
-                    goal.qr_tag = "wc_1_exit";
-                    break;
+            case CELL_1:
+                goal.qr_tag = "wc_1_exit";
+                break;
 
-                    case CELL_2:
-                    goal.qr_tag = "wc_2_exit";
-                    break;
+            case CELL_2:
+                goal.qr_tag = "wc_2_exit";
+                break;
 
-                    case CELL_3:
-                    goal.qr_tag = "wc_3_exit";
-                    break;
+            case CELL_3:
+                goal.qr_tag = "wc_3_exit";
+                break;
 
-                    default:
-                    ROS_ERROR("Invalid cell pick");
-                    break;
-                }
-                action_line_follow.sendGoal(goal, &doneCbLine);
-                active_action = true;
+            default:
+                ROS_ERROR("Invalid cell pick");
+                break;
             }
-            else
-            {
-                action_line_follow.cancelAllGoals();
-            }
+            action_line_follow.sendGoal(goal, &doneCbLine);
+            active_action = true;
+        }
+        else
+        {
+            action_line_follow.cancelAllGoals();
+        }
         break;
         //Turn left
-        case 3:
-            if(active)
-            {
-                relative_move_server::RelativeMoveGoal goal;
-                goal = getRelativeMove(0,0, 1.57);
-                action_free_navigation.sendGoal(goal, &doneCbMove);
-                active_action = true;
-            }
-            else
-            {
-                action_free_navigation.cancelAllGoals();
-            }
+    case 3:
+        if(active)
+        {
+            relative_move_server::RelativeMoveGoal goal;
+            goal = getRelativeMove(0,0, 1.57);
+            action_free_navigation.sendGoal(goal, &doneCbMove);
+            active_action = true;
+        }
+        else
+        {
+            action_free_navigation.cancelAllGoals();
+        }
         break;
         //Go to the transition area
-        case 4:
-            if(active)
-            {
-                line_pid::FollowLineGoal goal;
-                goal.dist = 0.0;
-                goal.qr_tag = "line_out";
-                action_line_follow.sendGoal(goal, &doneCbLine);
-                active_action = true;
-            }
-            else
-            {
-                action_line_follow.cancelAllGoals();
-            }
+    case 4:
+        if(active)
+        {
+            line_pid::FollowLineGoal goal;
+            goal.dist = 0.0;
+            goal.qr_tag = "line_out";
+            action_line_follow.sendGoal(goal, &doneCbLine);
+            active_action = true;
+        }
+        else
+        {
+            action_line_follow.cancelAllGoals();
+        }
         break;
 
-        default:
-            ROS_ERROR("Some to cell state logic went wrong");
+    default:
+        ROS_ERROR("Some to cell state logic went wrong");
         break;
     }
 }
