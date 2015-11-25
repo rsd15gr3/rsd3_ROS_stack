@@ -90,8 +90,9 @@ void Line_follower::pidCb(const ros::TimerEvent &)
     }
     else if(distance_to_dock > dock_goal->dist)
     {
-      const double ramp_p = forward_speed/ramp_distance;
-      ramp_speed = ramp_p * distance_to_dock;
+      //const double ramp_p = forward_speed/ramp_distance;
+      //ramp_speed = ramp_p * distance_to_dock;
+      ramp_speed = 0.1;
       publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
     }
     else
