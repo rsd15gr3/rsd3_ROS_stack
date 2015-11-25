@@ -143,6 +143,7 @@ void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
       publishVelCommand(0,0);
       heading_controller.reset();
       line_follow_enabled = false;
+      aligning_with_crossing = false;
       result_.distance_to_goal = dist_to_tag;
       as_.setSucceeded(result_);
     }
