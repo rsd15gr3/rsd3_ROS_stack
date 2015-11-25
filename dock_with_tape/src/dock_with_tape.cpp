@@ -46,6 +46,7 @@ Line_follower::Line_follower(string name)
   line_follow_enabled = false;
   ramp_speed = forward_speed;
   // Setup stopping when docked 
+  nh.param<double>("ramp_dist", ramp_distance, 0.1);
   nh.param<double>("dock_speed", dock_speed, 0.15);
   // setup action server
   as_.registerGoalCallback(boost::bind(&Line_follower::goalCb, this) );
