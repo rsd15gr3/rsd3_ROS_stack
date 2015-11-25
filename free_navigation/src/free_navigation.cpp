@@ -3,7 +3,8 @@
 #include <tf/tf.h>
 #include <mission/action_states.h>
 Navigation::Navigation(std::string name)
-    : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), base_frame_id_("map")
+    : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("map"),
+      dock_with_tape_ac_("/docker", true), relative_move_ac_("/relative_move_action", true)
 {
   ROS_INFO("Starting navigation");
   // setup action server
@@ -26,15 +27,48 @@ Navigation::Navigation(std::string name)
   while(!move_base_ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
       ROS_INFO("Waiting for the move_base action server to come up");
   }
+  while(!dock_with_tape_ac_.waitForServer(ros::Duration(5.0)) && ros::ok())
+  {
+      ROS_INFO("Waiting for the dock with tape server to come up");
+  }  
+  while(!relative_move_ac_.waitForServer(ros::Duration(5.0)) && ros::ok())
+  {
+      ROS_INFO("Waiting for the relative move server to come up");
+  }
+  nh_.param<double>("stop_dist_to_wall", stop_dist_to_wall, 0.1);
+  dock_goal.dist = stop_dist_to_wall;
+  current_position = Navigation::free;
   ROS_DEBUG("Starting action server");
+  nh_.param<double>("undock_relative_move", undock_relative_move, -1.0);
   as_.start();
 }
 
 void Navigation::goalCb()
 {
   goal_ = as_.acceptNewGoal()->behavior_type;
-  approachGoal();
+  relative_move_server::RelativeMoveGoal goal;
+  switch (current_position) {
+  case Navigation::docked:
+      goal = getRelativeMove(undock_relative_move,0,0);
+      relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
+    break;
+  case Navigation::under_dispenser:
+      approachGoal();
+    break;
+  case Navigation::free:
+      approachGoal();
+    break;
+  default:
+    break;
+  }
   ROS_INFO_NAMED(name_,"New behavior accepted");
+}
+
+void Navigation::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state,
+                        const relative_move_server::RelativeMoveResultConstPtr& result)
+{
+  approachGoal();
+  current_position = Navigation::free;
 }
 
 void Navigation::preemtCb()
@@ -43,6 +77,13 @@ void Navigation::preemtCb()
   ROS_INFO_NAMED(name_,"Behavior preemted");
   // cancel all actions
   move_base_ac_.cancelAllGoals();
+}
+
+void Navigation::doneCbLine(const actionlib::SimpleClientGoalState& state,
+            const dock_with_tape::DockWithTapeResultConstPtr &result)
+{
+  current_position = Navigation::docked;
+  as_.setSucceeded(result_); // first set succeeded in collecting doneCb
 }
 
 void Navigation::approachGoal()
@@ -73,7 +114,7 @@ void Navigation::approachGoal()
           return; // not a navigation command so do not navigate
       }
       ROS_INFO("(%f, %f)",goal_msg.target_pose.pose.position.x, goal_msg.target_pose.pose.position.y);
-      goal_msg.target_pose.header.frame_id = base_frame_id_;
+      goal_msg.target_pose.header.frame_id = static_frame_id;
       goal_msg.target_pose.header.stamp = ros::Time::now();
       move_base_ac_.sendGoal(goal_msg, boost::bind(&Navigation::doneCb,this,_1, _2),
                    boost::bind(&Navigation::activeCb, this),
@@ -88,24 +129,28 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
   {
     ROS_ERROR_NAMED(name_, "Move base failed to approach target");
     as_.setAborted(result_,"Move base failed to approach target");
+    return;
   }
   //ROS_INFO("Finished in state: %s", state.getText().c_str());
   switch (goal_) {
   case CHARGE:
       ROS_INFO("Docking in CHARGER: %i", BOX_CHARGE);
-      as_.setSucceeded(result_); // first set succeeded in docking doneCb
+      dock_with_tape_ac_.sendGoal(dock_goal, boost::bind(&Navigation::doneCbLine,this,_1,_2));
       break;
   case BRICK:
       ROS_INFO("going in to collect bricks: %i", BRICK);
       as_.setSucceeded(result_); // first set succeeded in collecting doneCb
+      current_position = Navigation::free;
       break;
   case DELIVERY:
       ROS_INFO("Tipping of at DELIVERY: %i", DELIVERY);
       as_.setSucceeded(result_);
+      current_position = Navigation::free;
       break;
   case TRANSITION:
       ROS_INFO("At transition: %i", TRANSITION);
       as_.setSucceeded(result_);
+      current_position = Navigation::free;
       break;
   default:
       //ac_.cancelAllGoals();
@@ -135,4 +180,15 @@ Pose Navigation::convertVecToPose(const vector<double>& poses)
     pose.position.z = 0;
     pose.orientation = tf::createQuaternionMsgFromYaw(poses[2]);
     return pose;
+}
+
+relative_move_server::RelativeMoveGoal Navigation::getRelativeMove(double dx, double dy, double dth){
+    relative_move_server::RelativeMoveGoal goal;
+    goal.target_pose.header.frame_id = "base_link";
+    goal.target_pose.header.stamp = ros::Time::now();
+    goal.target_pose.pose.position.x = dx;
+    goal.target_pose.pose.position.y = dy;
+    goal.target_yaw = dth;
+
+    return goal;
 }
