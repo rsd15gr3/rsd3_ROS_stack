@@ -28,6 +28,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${mission_INCLUDE_DIRS}
   ${dock_with_tape_INCLUDE_DIRS}
+  ${relative_move_server_INCLUDE_DIRS}
 )
 
 add_executable(free_navigation_node
@@ -39,7 +40,7 @@ add_executable(free_navigation_node
 add_dependencies(free_navigation_node
     ${catkin_EXPORTED_TARGETS}    
     mission
-    dock_with_tape
+    dock_with_tape    
 )
 
 target_link_libraries(free_navigation_node

@@ -9,6 +9,8 @@
 #include <actionlib/server/simple_action_server.h>
 #include <free_navigation/NavigateFreelyAction.h>
 #include "dock_with_tape/DockWithTapeAction.h"
+#include <relative_move_server/RelativeMoveAction.h>
+
 using std::string;
 using std::vector;
 using geometry_msgs::Pose;
@@ -19,10 +21,13 @@ class Navigation
 public:
     Navigation(std::string name);
 private:
+    enum position_state
+    {
+      docked, under_dispenser, free
+    } current_position;
     void approachGoal();
     string name_;
     ros::NodeHandle nh_;
-
     // action server
     actionlib::SimpleActionServer<free_navigation::NavigateFreelyAction> as_;
     free_navigation::NavigateFreelyResult result_;
@@ -35,7 +40,7 @@ private:
     Pose load_bricks_pose_;
     string static_frame_id;
     MoveBaseClient move_base_ac_;
-    void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);
+    void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);    
     void goalCb();
     void preemtCb();
     void activeCb();
@@ -47,5 +52,10 @@ private:
                 const dock_with_tape::DockWithTapeResultConstPtr& result);
     dock_with_tape::DockWithTapeGoal dock_goal;
     double stop_dist_to_wall;
+    // relative move
+    void doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state, const relative_move_server::RelativeMoveResultConstPtr& result);
+    actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> relative_move_ac_;
+    relative_move_server::RelativeMoveGoal getRelativeMove(double dx, double dy, double dth);
+    double undock_relative_move;
 };
 #endif // Navigation_H
