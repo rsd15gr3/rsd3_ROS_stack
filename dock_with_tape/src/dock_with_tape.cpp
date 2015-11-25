@@ -126,9 +126,9 @@ double Line_follower::getMovingGoalTargetAngle()
 
 void Line_follower::laserCb(const sensor_msgs::LaserScan &laser){
     double distances[3];
-    distances[0] = laser.ranges[sizeof(laser.ranges)/2-1];
-    distances[1] = laser.ranges[sizeof(laser.ranges)/2];
-    distances[2] = laser.ranges[sizeof(laser.ranges)/2+1];
+    distances[0] = laser.ranges[laser.ranges.size()/2-1];
+    distances[1] = laser.ranges[laser.ranges.size()/2];
+    distances[2] = laser.ranges[laser.ranges.size()/2+1];
 
     distance_to_dock = (distances[0]+distances[1]+distances[2])/3;
     ROS_DEBUG_STREAM("Distance: " << distance_to_dock);
