@@ -6,6 +6,6 @@ delivery_pose:
 load_bricks:
   [0.522, -0.063, -0.443]
 charge:
-  [0.280, 0.041, 1.329] # 3
+  [0.268, 0.084, 1.509] # 3
   # [0.809, 0.483, 1.469] # dock 1
 stopping_tag: "wc_3_entrance"
