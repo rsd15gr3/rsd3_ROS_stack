@@ -25,7 +25,7 @@
       <param name="camera_frame_id" value="camera_link" />
       <param name="show_lines" value="true" />
       <param name="a_threshold" value="85" />
-      <param name="b_threshold" value="150" />
+      <param name="b_threshold" value="160" />
       <param name="threshold_random" value="25" />
   </node>
 
