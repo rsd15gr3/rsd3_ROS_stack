@@ -8,7 +8,7 @@
 #include <msgs/IntStamped.h>
 #include <actionlib/server/simple_action_server.h>
 #include <free_navigation/NavigateFreelyAction.h>
-#include "line_pid/FollowLineAction.h"
+#include "dock_with_tape/DockWithTapeAction.h"
 using std::string;
 using std::vector;
 using geometry_msgs::Pose;
@@ -42,11 +42,10 @@ private:
     void feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback);
     static Pose convertVecToPose(const vector<double>& poses);
     // Docking client
-    actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
+    actionlib::SimpleActionClient<dock_with_tape::DockWithTapeAction> dock_with_tape_ac_;
     void doneCbLine(const actionlib::SimpleClientGoalState& state,
-                const line_pid::FollowLineResultConstPtr& result);
-    line_pid::FollowLineGoal line_goal;
-    const double stop_dist_before_tag = 0.25;
-    string stopping_tag;
+                const dock_with_tape::DockWithTapeResultConstPtr& result);
+    dock_with_tape::DockWithTapeGoal dock_goal;
+    double stop_dist_to_wall;
 };
 #endif // Navigation_H

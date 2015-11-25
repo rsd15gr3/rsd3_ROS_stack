@@ -245,10 +245,15 @@
         <param name="io_method" value="mmap"/>
     </node>
 
-  <!-- <include file="$(find free_navigation)/launch/move_base_launch.xml" /> -->
-  <include file="$(find free_navigation)/launch/free_navigation.launch" />
+	<!-- <include file="$(find free_navigation)/launch/move_base_launch.xml" /> -->
+	<include file="$(find free_navigation)/launch/free_navigation.launch" />
 	<node pkg="twist_to_twiststamped" name="converter" type="cmd_vel_converter.py">
 		<param name="cmd_vel_sub" value="/cmd_vel" />
 		<param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
+	</node>
+	<node pkg="dock_with_tape" name="docker" type="dock_with_tape_node" >
+		<param name="laser_sub" value="/fmSensors/scan" />
+		<param name="ramp_dist" value="0.15" />
+		<param name="stop_dist_to_wall" value="0.1" />
 	</node>
 </launch>

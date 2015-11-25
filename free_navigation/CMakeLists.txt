@@ -27,7 +27,7 @@ roslaunch_add_file_check(launch)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${mission_INCLUDE_DIRS}
-  ${line_pid_INCLUDE_DIRS}
+  ${dock_with_tape_INCLUDE_DIRS}
 )
 
 add_executable(free_navigation_node
@@ -39,7 +39,7 @@ add_executable(free_navigation_node
 add_dependencies(free_navigation_node
     ${catkin_EXPORTED_TARGETS}    
     mission
-    line_pid
+    dock_with_tape
 )
 
 target_link_libraries(free_navigation_node

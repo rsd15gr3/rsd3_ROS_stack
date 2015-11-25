@@ -37,7 +37,7 @@ public:
   double getMovingGoalTargetAngle();
   void goalCb();
   void preemtCb();
-  double distance_to_dock, stop_point_tolerance;
+  double distance_to_dock;
 };
 
 #endif // LINE_FOLLOWER_H
