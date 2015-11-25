@@ -3,13 +3,13 @@
   <include file="$(find zbar_decoder)/launch/zbar_decoder_node.launch" /> 
 
   <node name="action_line_follow" pkg="line_pid" type="line_pid_node" output="screen" > 
-    <param name="update_rate" value="20"/>
+    <param name="update_rate" value="10"/>
     <param name="drive_kp" value="1.0"/>
-    <param name="drive_ki" value="0.05"/>
-    <param name="drive_kd" value="0.5"/>
+    <param name="drive_ki" value="0.1"/>
+    <param name="drive_kd" value="0.7"/>
     <param name="drive_max_i" value="1" />
     <param name="drive_feed_forward" value="0.00"/>
-    <param name="drive_max_output" value="0.4"/>
+    <param name="drive_max_output" value="1.0"/>
     <param name="forward_speed" value="0.3" />
     <param name="line_sub" value="/line_detector/perception/line" />
     <param name="odom_sub" value="/fmProcessors/odometry/filtered/local" /> 
