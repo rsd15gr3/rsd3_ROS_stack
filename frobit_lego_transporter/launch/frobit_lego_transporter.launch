@@ -259,4 +259,21 @@
             <param name="show_voltage_interval" value="300" />
         </node>
     </group>
+    <node pkg="dock_with_tape" name="docker" type="dock_with_tape_node" output="screen">
+        <param name="update_rate" value="20"/>
+        <param name="drive_kp" value="10.0"/>
+        <param name="drive_ki" value="3.5"/>
+        <param name="drive_kd" value="10.0"/>
+        <param name="drive_max_i" value="1" />
+        <param name="drive_feed_forward" value="0.00"/>
+        <param name="drive_max_output" value="0.4"/>
+        <param name="forward_speed" value="0.2" />
+        <param name="line_sub" value="/line_detector/perception/line" />
+        <param name="odom_sub" value="/fmProcessors/odometry/filtered/local" /> 
+        <param name="command_pub" value="/fmCommand/cmd_vel" />                        
+        <param name="pid_debug_pub" value="/fmInformation/pid" />
+        <param name="laser_sub" value="/fmSensors/scan" />
+        <param name="dock_speed" value="0.1" />
+        <param name="ramp_dist" value="0.2" />
+    </node>
 </launch>
