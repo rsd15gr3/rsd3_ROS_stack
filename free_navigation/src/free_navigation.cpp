@@ -101,6 +101,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
   {
     ROS_ERROR_NAMED(name_, "Move base failed to approach target");
     as_.setAborted(result_,"Move base failed to approach target");
+    return;
   }
   //ROS_INFO("Finished in state: %s", state.getText().c_str());
   switch (goal_) {
