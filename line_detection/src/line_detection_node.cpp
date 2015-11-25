@@ -274,6 +274,9 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
     unsigned int start, width, total_width = 0;
     double average_white = 0;
     double average_black = 0;
+    double max_black = 0;
+    double min_white = 255;
+
     mid = -1;
     bool counting = false;
     Line_type type = Line_type::NO_LINE;
@@ -295,6 +298,11 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
         if(p[x] < threshold_gray)
         {
             average_black += p[x];
+            if(p[x] > max_black)
+            {
+                max_black = p[x];
+            }
+
             //count the width of the found dark scan
             if(counting == false)
             {
@@ -312,6 +320,11 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
         if(p[x] > threshold_gray || x == lineImage.cols-1)
         {
             average_white += p[x];
+            if(p[x] < min_white)
+            {
+                min_white = p[x];
+            }
+
             if(counting == true)
             {
                 counting = false;
@@ -331,7 +344,8 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
     //update threshold
     if(type == Line_type::LINE)
     {
-        threshold_gray = (average_black/total_width+average_white/(lineImage.cols-total_width))/2;
+        threshold_gray = (min_white + max_black)/2;
+        //threshold_gray = (average_black/total_width+average_white/(lineImage.cols-total_width))/2;
     }
 
     //103 190
