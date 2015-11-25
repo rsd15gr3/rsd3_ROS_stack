@@ -29,7 +29,7 @@ Line_follower::Line_follower(string name)
   nh.param<double>("drive_feed_forward", feed_forward, 0.0);
   nh.param<double>("drive_max_output", max_output, 0.40);
   nh.param<double>("drive_max_i", max_i, 0.1);
-  nh.param<double>("forward_speed", forward_speed, 0.4);
+  nh.param<double>("forward_speed", forward_speed, 0.1);
   nh.param<double>("target_dist", target_dist, 0.6);
   double update_interval = 1.0 / update_rate;
   timerPid = nh.createTimer(ros::Duration(update_interval), &Line_follower::pidCb, this);
@@ -46,15 +46,8 @@ Line_follower::Line_follower(string name)
   line_follow_enabled = false;
   aligning_with_crossing = false;
   ramp_speed = forward_speed;
-  // Setup stopping at crossing
-  string odom_sub, tag_found_sub;
-  nh.param<double>("ramp_dist", ramp_distance, 0.1);
-  nh.param<double>("stop_point_tolerance", stop_point_tolerance, 0.01);
-  nh.param<string>("tag_found_sub", tag_found_sub, "/tag_found");
-  qr_tag_detect_sub = nh.subscribe(tag_found_sub, 1, &Line_follower::qrTagDetectCb, this);
-  nh.param<string>("odom_sub", odom_sub, "odometry/filtered/local");
-  odometry_sub = nh.subscribe(odom_sub, 1, &Line_follower::odometryCb, this);
-  get_qr_client = nh.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");
+  // Setup stopping when docked
+
   // setup action server
   as_.registerGoalCallback(boost::bind(&Line_follower::goalCb, this) );
   as_.registerPreemptCallback(boost::bind(&Line_follower::preemtCb, this) );
@@ -63,13 +56,10 @@ Line_follower::Line_follower(string name)
 
 void Line_follower::goalCb()
 { 
-  aligning_with_crossing = false;
   ramp_speed = forward_speed;
   line_follow_enabled = true;
-  dock_with_tape::DockWithTapeGoalConstPtr line_goal = as_.acceptNewGoal();
-  stop_before_tag_dist = line_goal->dist;
-  stopping_qr_tag = line_goal->qr_tag;
-  ROS_DEBUG_NAMED(name_,"Goal recieved. Going to stop at tag with value: %s", stopping_qr_tag.c_str());
+  dock_goal = as_.acceptNewGoal();
+  ROS_DEBUG_NAMED(name_,"Goal recieved. Going to this from the wall: %f", dock_goal->dist);
 }
 
 void Line_follower::preemtCb()
@@ -77,7 +67,6 @@ void Line_follower::preemtCb()
   publishVelCommand(0,0);
   heading_controller.reset();
   line_follow_enabled = false;
-  aligning_with_crossing = false;
   as_.setPreempted();
   ROS_DEBUG_NAMED(name_,"Line follower is preemted");
 }
@@ -118,100 +107,3 @@ double Line_follower::getMovingGoalTargetAngle()
   double movingGoalTargetAngle = M_PI_2 - closetMovingGoalAngle - angle_error;
   return movingGoalTargetAngle;
 }
-
-void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
-{
-  current_position = msg.pose.pose.position;
-  if(aligning_with_crossing)
-  {
-    double dx = tag_position.x - current_position.x;
-    double dy = tag_position.y - current_position.y;
-    double dist_to_tag = cos(angle_error)*hypot(dx,dy);
-    dist_to_tag -= stop_before_tag_dist;
-    ROS_DEBUG("Distance to tag: %f", dist_to_tag);
-    ROS_DEBUG("dx = %f",dx);
-    ROS_DEBUG("dy = %f",dy);
-    if(dist_to_tag > ramp_distance)
-    {
-      ramp_speed = forward_speed;
-    }
-    else if(dist_to_tag > stop_point_tolerance)
-    {
-      const double ramp_p = forward_speed/ramp_distance;
-      ramp_speed = ramp_p * dist_to_tag;
-    }
-    else
-    {
-      publishVelCommand(0,0);
-      heading_controller.reset();
-      line_follow_enabled = false;
-      result_.distance_to_goal = dist_to_tag;
-      as_.setSucceeded(result_);
-    }
-  }
-}
-
-void Line_follower::laserCb(const sensor_msgs::LaserScan &laser){
-    double distances[3];
-    distances[0] = laser.ranges[sizeof(laser.ranges)/2-1];
-    distances[1] = laser.ranges[sizeof(laser.ranges)/2];
-    distances[2] = laser.ranges[sizeof(laser.ranges)/2+1];
-
-    distance_to_dock = (distances[0]+distances[1]+distances[2])/3;
-    ROS_DEBUG_STREAM("Distance: " << distance_to_dock);
-}
-
-void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
-{
-  if(qr_tag_entered.data)
-  {
-    ROS_DEBUG("Stopping to read tag");
-    publishVelCommand(-0.5,0);
-    ros::Duration(0.1).sleep();
-    publishVelCommand(0,0);
-    ros::Duration(0.5).sleep();
-    zbar_decoder::decode_qr qr_request;
-    qr_request.request.trash = "";
-    geometry_msgs::PoseStamped trash;
-    qr_request.request.trash2 = trash;
-    if(get_qr_client.call(qr_request))
-    {
-      string tag = qr_request.response.value;
-      if(tag == stopping_qr_tag)
-      {
-        ROS_DEBUG("Going to stop at tag: %s", tag.c_str());
-        geometry_msgs::PoseStamped pose = qr_request.response.qr_tag_pose;
-        geometry_msgs::PoseStamped pose_in_base_link;
-        tf::TransformListener listener;
-        try{
-          listener.waitForTransform("odom", camera_frame_id, ros::Time(0), ros::Duration(5.0) );
-          listener.transformPose("odom",ros::Time(0),pose,camera_frame_id,pose_in_base_link);
-        }
-        catch (tf::TransformException ex){
-          ROS_ERROR("%s",ex.what());
-          ros::Duration(1.0).sleep();
-        }
-        ROS_DEBUG("pos in camera: [%f, %f, %f]", pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
-        ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
-        tag_position.x = pose_in_base_link.pose.position.x;
-        tag_position.y = pose_in_base_link.pose.position.y;
-        aligning_with_crossing = true;
-      }
-      else
-      {
-        ROS_DEBUG("Continuing past tag: %s", tag.c_str());
-      }
-    }
-    else
-    {
-      ROS_ERROR("qr decoder server returned false");
-    }
-  }
-  else
-  {
-    // tag moved out of view
-    //publishVelCommand(0,0);
-    //line_follow_enabled = false;
-  }
-}
-
