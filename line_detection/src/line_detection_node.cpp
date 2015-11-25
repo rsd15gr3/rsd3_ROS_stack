@@ -36,12 +36,14 @@ typedef line_types::Line_type Line_type;
 void imageCb(const sensor_msgs::ImageConstPtr& msg);
 void camInfoCb(const sensor_msgs::CameraInfoConstPtr& info_msg);
 inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray, int &mid, bool cross = false);
+double darkestPixel(const Mat& lineImage, int line);
 void verifyPubCb(const ros::TimerEvent &);
 double lineWidth(int line);
 double sideLineWidth(int line);
 bool findCross(line_detection::cross::Request  &req, line_detection::cross::Response &res);
 
-image_transport::Publisher image_pub;
+image_transport::Publisher image_pub_top;
+image_transport::Publisher image_pub_bot;
 cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/msg/Image.html
 
 ros::Publisher line_pub;
@@ -50,7 +52,10 @@ ros::Publisher verify_pub;
 //random generator
 std::random_device rd;
 std::mt19937 gen(rd());
-std::uniform_int_distribution<> threshold_random(90, 140);
+std::uniform_int_distribution<> threshold_random(75,140);
+//to pick threshold method
+int random_counter = 0;
+int threshold_offset;
 
 
 bool verification = false; /* Verify is set true when is likley that a "preception" is valid, */
@@ -91,9 +96,17 @@ int main(int argc, char** argv)
     image_sub = it.subscribe("/usb_cam/image_raw", 1, &imageCb);
     verify_pub = n.advertise<msgs::BoolStamped>(verification_topic,1);
     line_pub = n.advertise<line_detection::line>(line_topic,1);
-    image_pub = it.advertise("line_debug_image", 1);
+    image_pub_top = it.advertise("line_debug_image_top", 1);
+    image_pub_bot = it.advertise("line_debug_image_bot", 1);
     ros::ServiceServer service = n.advertiseService("getCross", findCross);
     ros::Timer timeVerify = n.createTimer(ros::Duration(1.0 / verify_pub_rate), verifyPubCb);
+
+    //set up random generator
+    int a,b;
+    n.param<int>("a_threshold", a, 75);
+    n.param<int>("b_threshold", b, 130);
+    threshold_random = std::uniform_int_distribution<>(a,b);
+    n.param<int>("threshold_offset", threshold_offset, 25);
 
     ros::spin();
     return 0;
@@ -207,8 +220,23 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
     }
     else
     {
-        threshold_top = threshold_random(gen);//threshold_gray;
-        threshold_bot = threshold_random(gen);
+        //use
+        if(random_counter == 0)
+        {
+            threshold_top = darkestPixel(cv_ptr->image, 0)+25;
+            threshold_bot = darkestPixel(cv_ptr->image, cv_ptr->image.rows-1)+25;
+        }
+        else
+        {
+            threshold_top = threshold_random(gen);//threshold_gray;
+            threshold_bot = threshold_random(gen);
+            if(random_counter == 10)
+            {
+                random_counter = 0;
+            }
+        }
+        random_counter++;
+
         ROS_WARN("No valid line found, T_top %f, T_bot %f", threshold_top, threshold_bot);
         angle=0;
         offset=0;
@@ -227,18 +255,17 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         Mat line_img;
         cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
 
+        //show top image
         threshold(cv_ptr->image, line_img,threshold_top,255,0);
         cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
-        //cv::circle(line_img, Point(cv_ptr->image.cols/2+offset,0), 2, 100, 2);
-        //imshow("lines top", line_img);
+        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", line_img).toImageMsg();
+        image_pub_top.publish(msg);
 
+        //show bot image
         threshold(cv_ptr->image, line_img,threshold_bot,255,0);
         cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
-        //imshow("lines bot", line_img);
-
-        //cv::waitKey(1);
-        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", line_img).toImageMsg();
-        image_pub.publish(msg);
+        msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", line_img).toImageMsg();
+        image_pub_bot.publish(msg);
     }
 }
 
@@ -312,10 +339,26 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
     return type;
 }
 
+double darkestPixel(const Mat& lineImage, int line)
+{
+    int dark = 255;
+    const uchar* p;
+    p = lineImage.ptr<uchar>(line);
+    for(unsigned x=0; x<lineImage.cols; x++)
+    {
+        if(p[x] < dark)
+        {
+            dark = p[x];
+        }
+    }
+
+    return (double)dark;
+}
+
 //gives the line width depending on the position in the image
 double lineWidth(int line)
 {
-    return 190.0-(190.0-103.0)/720.0*(double)line-10.0;
+    return 190.0-(190.0-103.0)/720.0*(double)line-5.0;
 }
 
 double sideLineWidth(int line)
