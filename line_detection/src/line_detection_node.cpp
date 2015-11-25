@@ -344,8 +344,8 @@ inline Line_type scanline(const Mat& lineImage, int line, double &threshold_gray
     //update threshold
     if(type == Line_type::LINE)
     {
-        threshold_gray = (min_white + max_black)/2;
-        //threshold_gray = (average_black/total_width+average_white/(lineImage.cols-total_width))/2;
+        //threshold_gray = (min_white + max_black)/2;
+        threshold_gray = (average_black/total_width+average_white/(lineImage.cols-total_width))/2;
     }
 
     //103 190
