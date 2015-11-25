@@ -333,7 +333,7 @@
         <param name="sharpness" value="72" />
         <param name="autofocus" value="false" />
         <param name="focus" value="-1" />
-        <param name="camera_info_url" value="package://line_detection/config/head_camera.yaml" />
+        <param name="camera_info_url" value="package://frobit_lego_transporter/config/head_camera.yaml" />
         <param name="camera_name" value="head_camera" />
         <param name="io_method" value="mmap"/>
     </node>
