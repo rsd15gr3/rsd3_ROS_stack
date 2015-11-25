@@ -114,7 +114,7 @@ void Line_follower::pidCb(const ros::TimerEvent &)
 void Line_follower::lineCb(const line_detection::line::ConstPtr &linePtr)
 {
   angle_error = linePtr->angle;
-  dist_error = linePtr->offset;
+  dist_error = linePtr->offset - 0.022;
   // TODO: abort if error is too big
   // as_.setAborted(result_);
 }
