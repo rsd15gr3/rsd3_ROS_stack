@@ -45,8 +45,8 @@ Line_follower::Line_follower(string name)
   heading_controller.reset();
   line_follow_enabled = false;
   ramp_speed = forward_speed;
-  // Setup stopping when docked
-  nh.param<double>("ramp_dist", ramp_distance, 0.1);
+  // Setup stopping when docked 
+  nh.param<double>("dock_speed", dock_speed, 0.15);
   // setup action server
   as_.registerGoalCallback(boost::bind(&Line_follower::goalCb, this) );
   as_.registerPreemptCallback(boost::bind(&Line_follower::preemtCb, this) );
@@ -92,7 +92,7 @@ void Line_follower::pidCb(const ros::TimerEvent &)
     {
       //const double ramp_p = forward_speed/ramp_distance;
       //ramp_speed = ramp_p * distance_to_dock;
-      ramp_speed = 0.1;
+      ramp_speed = dock_speed;
       publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
     }
     else

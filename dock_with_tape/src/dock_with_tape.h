@@ -38,6 +38,7 @@ public:
   void goalCb();
   void preemtCb();
   double distance_to_dock;
+  double dock_speed;
 };
 
 #endif // LINE_FOLLOWER_H
