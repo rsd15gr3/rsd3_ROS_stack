@@ -1,0 +1,11 @@
+# Goal
+string qr_tag
+float64 dist
+---
+# Result
+float32 distance_to_goal
+---
+# Feedback
+string last_seen_tag
+float32 distance_to_goal
+bool approaching_crossing
