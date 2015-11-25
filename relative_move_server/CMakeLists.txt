@@ -107,7 +107,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES relative_move_server
 #  CATKIN_DEPENDS actionlib actionlib_msgs message_generation roscpp rospy std_msgs
-#  DEPENDS system_lib
+  DEPENDS message_runtime
 )
 
 ###########
@@ -137,7 +137,7 @@ add_executable(relative_move_server_node src/relative_move_server_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(relative_move_server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(relative_move_server_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(relative_move_server_node

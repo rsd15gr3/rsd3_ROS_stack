@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(zbar_decoder)
-set(CMAKE_BUILD_TYPE Debug)
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 aux_source_directory(src/ SRC_LIST)
@@ -32,7 +32,7 @@ include_directories(${catkin_INCLUDE_DIRS} ${ZBAR_INCLUDE_DIRS})
 
 add_executable(zbar_decoder_node ${SRC_LIST})
 
-add_dependencies(zbar_decoder_node ${catkin_EXPORTED_TARGETS} zbar_decoder_generate_messages_cpp)
+add_dependencies(zbar_decoder_node ${catkin_EXPORTED_TARGETS} zbar_decoder_gencpp)
 
 target_link_libraries(zbar_decoder_node
   ${OpenCV_LIBS}

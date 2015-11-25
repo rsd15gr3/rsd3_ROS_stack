@@ -1,16 +1,18 @@
 #include "line_follower.h"
-#include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/Pose.h>
-#include <msgs/IntStamped.h>
-#include <cmath>
-#include <msgs/FloatArrayStamped.h>
-#include <vector>
-#include <std_msgs/String.h>
-#include <zbar_decoder/decode_qr.h>
-#include <tf/transform_listener.h>
-#include <tf/tf.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include "line_pid/FollowLineAction.h"
+
+#include "geometry_msgs/TwistStamped.h"
+#include "geometry_msgs/Pose.h"
+#include "msgs/IntStamped.h"
+#include "msgs/FloatArrayStamped.h"
+#include "std_msgs/String.h"
+#include "zbar_decoder/decode_qr.h"
+#include "tf/transform_listener.h"
+#include "tf/tf.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
+
+#include <cmath>
+#include <vector>
 
 using std::string;
 
@@ -60,7 +62,7 @@ Line_follower::Line_follower(string name)
 }
 
 void Line_follower::goalCb()
-{ 
+{
   aligning_with_crossing = false;
   ramp_speed = forward_speed;
   line_follow_enabled = true;
