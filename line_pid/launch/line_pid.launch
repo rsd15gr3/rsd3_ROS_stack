@@ -21,12 +21,12 @@
   </node>
 
   <node name="line_detector" pkg="line_detection" type="line_detection_node" output="screen" > 
-    <param name="line_width" value="90" />
-    <param name="cross_width" value="210" />
-    <param name="threshold_gray" value="95" />
-    <param name="camera_frame_id" value="camera_link" />
-    <param name="line_to_cross_scale" value="3.0" />
-    <param name="show_lines" value="true" />
+      <param name="threshold_gray" value="110" />
+      <param name="camera_frame_id" value="camera_link" />
+      <param name="show_lines" value="true" />
+      <param name="a_threshold" value="75" />
+      <param name="b_threshold" value="140" />
+      <param name="threshold_random" value="25" />
   </node>
 
   <node pkg="safety_speed" name="obstacle_detector" type="lidar_obstacle_node.py" output="screen">
