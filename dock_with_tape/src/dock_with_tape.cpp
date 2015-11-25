@@ -1,17 +1,20 @@
 #include "dock_with_tape.h"
-#include <geometry_msgs/TwistStamped.h>
-#include <geometry_msgs/Pose.h>
-#include <sensor_msgs/LaserScan.h>
-#include <msgs/IntStamped.h>
-#include <cmath>
-#include <msgs/FloatArrayStamped.h>
-#include <vector>
-#include <std_msgs/String.h>
-#include <zbar_decoder/decode_qr.h>
-#include <tf/transform_listener.h>
-#include <tf/tf.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include "dock_with_tape/DockWithTapeAction.h"
+
+#include "zbar_decoder/decode_qr.h"
+#include "geometry_msgs/TwistStamped.h"
+#include "geometry_msgs/Pose.h"
+#include "sensor_msgs/LaserScan.h"
+#include "msgs/IntStamped.h"
+#include "msgs/FloatArrayStamped.h"
+#include "std_msgs/String.h"
+#include "tf/transform_listener.h"
+#include "tf/tf.h"
+#include "geometry_msgs/PoseWithCovarianceStamped.h"
+
+#include <cmath>
+#include <vector>
+
 using std::string;
 
 Line_follower::Line_follower(string name)
@@ -55,7 +58,7 @@ Line_follower::Line_follower(string name)
 }
 
 void Line_follower::goalCb()
-{ 
+{
   ramp_speed = forward_speed;
   line_follow_enabled = true;
   dock_goal = as_.acceptNewGoal();

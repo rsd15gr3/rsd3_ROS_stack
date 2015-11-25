@@ -3,11 +3,12 @@
 
 #include <iostream>
 #include <zbar.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
-#include <ros/ros.h>
+#include "ros/ros.h"
+
 using namespace std;
 using namespace cv;
 using namespace zbar;
@@ -50,7 +51,7 @@ public:
     Mat_<double> cam_to_cross = cam_to_marker_tf * marker_to_cross_tf;
     position = cam_to_cross(cv::Range(0,3),cv::Range(3,4));
   }
-#if CMAKE_BUILD_TYPE == Debug
+#ifndef NDEBUG
   void showPoseEst(const zbar::Symbol &tag_sym, Mat &R, Mat &position, const Mat &qr_tag_im)
   {
     vector<Point2f> image_points(4);

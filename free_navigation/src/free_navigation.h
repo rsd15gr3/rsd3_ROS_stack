@@ -1,13 +1,13 @@
 #ifndef Navigation_H
 #define Navigation_H
 #include <ros/ros.h>
-#include<string>
+#include <string>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
-#include<geometry_msgs/Pose.h>
+#include <geometry_msgs/Pose.h>
 #include <msgs/IntStamped.h>
 #include <actionlib/server/simple_action_server.h>
-#include <free_navigation/NavigateFreelyAction.h>
+#include "free_navigation/NavigateFreelyAction.h"
 #include "dock_with_tape/DockWithTapeAction.h"
 #include <relative_move_server/RelativeMoveAction.h>
 
