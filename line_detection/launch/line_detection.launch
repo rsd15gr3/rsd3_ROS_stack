@@ -30,5 +30,9 @@
       <param name="threshold_gray" value="110" />
       <param name="camera_frame_id" value="camera_link" />
       <param name="show_lines" value="true" />
+      <param name="a_threshold" value="75" />
+      <param name="b_threshold" value="140" />
+      <param name="threshold_random" value="25" />
+      
     </node>
 </launch>
