@@ -1,6 +1,7 @@
 #include "dock_with_tape.h"
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Pose.h>
+#include <sensor_msgs/LaserScan.h>
 #include <msgs/IntStamped.h>
 #include <cmath>
 #include <msgs/FloatArrayStamped.h>
@@ -20,7 +21,7 @@ Line_follower::Line_follower(string name)
   // setup line follower pid
   int update_rate;
   double kp, ki, kd, feed_forward, max_output, max_i;
-  string line_topic_name, command_pub_name, pid_debug_pub_name;
+  string line_topic_name, command_pub_name, pid_debug_pub_name, laser_topic_name;
   nh.param<int>("update_rate", update_rate, 20);
   nh.param<double>("drive_kp", kp, 10.0);
   nh.param<double>("drive_ki", ki, 3.35);
@@ -39,6 +40,8 @@ Line_follower::Line_follower(string name)
   pid_debug_pub = nh.advertise<msgs::FloatArrayStamped>(pid_debug_pub_name, 1);
   nh.param<string>("command_pub", command_pub_name, "/fmCommand/cmd_vel");
   command_pub = nh.advertise<geometry_msgs::TwistStamped>(command_pub_name, 1);
+  nh.param<string>("laser_sub", laser_topic_name, "/fmSensors/scan");
+  laser_sub = nh.subscribe(laser_topic_name, 1, &Line_follower::laserCb, this);
   heading_controller.reset();
   line_follow_enabled = false;
   aligning_with_crossing = false;
@@ -146,6 +149,16 @@ void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
       as_.setSucceeded(result_);
     }
   }
+}
+
+void Line_follower::laserCb(const sensor_msgs::LaserScan &laser){
+    double distances[3];
+    distances[0] = laser.ranges[sizeof(laser.ranges)/2-1];
+    distances[1] = laser.ranges[sizeof(laser.ranges)/2];
+    distances[2] = laser.ranges[sizeof(laser.ranges)/2+1];
+
+    distance_to_dock = (distances[0]+distances[1]+distances[2])/3;
+    ROS_DEBUG_STREAM("Distance: " << distance_to_dock);
 }
 
 void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)

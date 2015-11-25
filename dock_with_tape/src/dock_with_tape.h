@@ -5,6 +5,7 @@
 #include <msgs/BoolStamped.h>
 #include <line_detection/line.h>
 #include <nav_msgs/Odometry.h>
+#include <sensor_msgs/LaserScan.h>
 #include <actionlib/server/simple_action_server.h>
 #include <dock_with_tape/DockWithTapeAction.h>
 class Line_follower
@@ -15,7 +16,7 @@ public:
   // ros setup
   ros::NodeHandle nh;
   ros::Publisher pid_debug_pub, command_pub;
-  ros::Subscriber error_sub, qr_tag_detect_sub, odometry_sub;
+  ros::Subscriber error_sub, qr_tag_detect_sub, odometry_sub, laser_sub;
   ros::ServiceClient get_qr_client;
   // Line follower variables
   Pid_controller heading_controller;
@@ -34,11 +35,14 @@ public:
   dock_with_tape::DockWithTapeResult result_;
   std::string stopping_qr_tag; // goal
   double stop_before_tag_dist;
+
+  double distance_to_dock; // Distance to the docking given by the lidar
   // functions
   void publishVelCommand(double forward_speed, double angular_speed);
   void pidCb(const ros::TimerEvent &);
   void lineCb(const line_detection::line::ConstPtr &linePtr);
   void odometryCb(const nav_msgs::Odometry &msg);
+  void laserCb(const sensor_msgs::LaserScan &laser);
   void qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered);
   double getMovingGoalTargetAngle();
   void goalCb();
