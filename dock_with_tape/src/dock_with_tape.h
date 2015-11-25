@@ -21,8 +21,8 @@ public:
   // Line follower variables
   Pid_controller heading_controller;
   double angle_error, dist_error; // line errors
-  double forward_speed, target_dist; // line follow params
-  double ramp_speed, ramp_distance, stop_point_tolerance;
+  double forward_speed; // line follow params
+  double ramp_speed, ramp_distance, target_dist;
   ros::Timer timerPid;
   bool line_follow_enabled;// state variables
   // action server
@@ -37,6 +37,7 @@ public:
   double getMovingGoalTargetAngle();
   void goalCb();
   void preemtCb();
+  double distance_to_dock, stop_point_tolerance;
 };
 
 #endif // LINE_FOLLOWER_H

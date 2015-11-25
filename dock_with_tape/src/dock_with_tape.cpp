@@ -44,10 +44,10 @@ Line_follower::Line_follower(string name)
   laser_sub = nh.subscribe(laser_topic_name, 1, &Line_follower::laserCb, this);
   heading_controller.reset();
   line_follow_enabled = false;
-  aligning_with_crossing = false;
   ramp_speed = forward_speed;
   // Setup stopping when docked
-
+  nh.param<double>("docking_dist", stop_point_tolerance, 0.5);
+  nh.param<double>("ramp_dist", ramp_distance, 0.1);
   // setup action server
   as_.registerGoalCallback(boost::bind(&Line_follower::goalCb, this) );
   as_.registerPreemptCallback(boost::bind(&Line_follower::preemtCb, this) );
@@ -84,7 +84,24 @@ void Line_follower::pidCb(const ros::TimerEvent &)
 {
   if (line_follow_enabled) {
     double movingGoalTargetAngle = getMovingGoalTargetAngle();
-    publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
+    if(distance_to_dock > ramp_distance)
+    {
+      ramp_speed = forward_speed;
+      publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
+    }
+    else if(distance_to_dock > stop_point_tolerance)
+    {
+      const double ramp_p = forward_speed/ramp_distance;
+      ramp_speed = ramp_p * distance_to_dock;
+      publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
+    }
+    else
+    {
+      publishVelCommand(0,0);
+      heading_controller.reset();
+      line_follow_enabled = false;
+      as_.setSucceeded(result_);
+    }
     // publish PID debug msgs TODO: disable debug publish
     msgs::FloatArrayStamped pidDebugMsg;
     pidDebugMsg.header.stamp = ros::Time::now();
@@ -106,4 +123,14 @@ double Line_follower::getMovingGoalTargetAngle()
   double closetMovingGoalAngle = atan2(target_dist, dist_error);
   double movingGoalTargetAngle = M_PI_2 - closetMovingGoalAngle - angle_error;
   return movingGoalTargetAngle;
+}
+
+void Line_follower::laserCb(const sensor_msgs::LaserScan &laser){
+    double distances[3];
+    distances[0] = laser.ranges[sizeof(laser.ranges)/2-1];
+    distances[1] = laser.ranges[sizeof(laser.ranges)/2];
+    distances[2] = laser.ranges[sizeof(laser.ranges)/2+1];
+
+    distance_to_dock = (distances[0]+distances[1]+distances[2])/3;
+    ROS_DEBUG_STREAM("Distance: " << distance_to_dock);
 }
