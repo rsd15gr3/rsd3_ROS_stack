@@ -146,6 +146,7 @@ void testAction::state_pick(int cell, bool active)
             {
                 action_free_navigation.cancelAllGoals();
             }
+        break;
         //Turn 180
         case 1:
             if(active)
@@ -222,7 +223,7 @@ void testAction::state_pick(int cell, bool active)
             {
                 action_free_navigation.cancelAllGoals();
             }
-        break;        break;
+        break;
         //Go to the transition area
         case 4:
             if(active)
