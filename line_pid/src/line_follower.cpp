@@ -155,14 +155,19 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
   if(qr_tag_entered.data)
   {
     ROS_DEBUG("Stopping to read tag");
-    publishVelCommand(-1.0,0);
-    ros::Duration(0.2).sleep();
-    publishVelCommand(0,0);
-    ros::Duration(0.5).sleep();
     zbar_decoder::decode_qr qr_request;
     qr_request.request.trash = "";
     geometry_msgs::PoseStamped trash;
     qr_request.request.trash2 = trash;
+    int i = 0;
+    while(!get_qr_client.call(qr_request) && i < 5)
+    {
+      publishVelCommand(-1.0,0);
+      ros::Duration(0.1).sleep();
+      publishVelCommand(0,0);
+      ros::Duration(0.5).sleep();
+      i++;
+    }
     if(get_qr_client.call(qr_request))
     {
       string tag = qr_request.response.value;
