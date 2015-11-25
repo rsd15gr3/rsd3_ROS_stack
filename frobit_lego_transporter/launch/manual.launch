@@ -251,9 +251,9 @@
 		<param name="cmd_vel_sub" value="/cmd_vel" />
 		<param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
 	</node>
-	<node pkg="dock_with_tape" name="docker" type="dock_with_tape_node" >
+	<node pkg="dock_with_tape" name="docker" type="dock_with_tape_node" output="screen">
 		<param name="laser_sub" value="/fmSensors/scan" />
 		<param name="ramp_dist" value="0.15" />
-		<param name="stop_dist_to_wall" value="0.1" />
+		<param name="stop_dist_to_wall" value="0.08" />
 	</node>
 </launch>
