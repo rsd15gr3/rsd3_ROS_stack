@@ -10,7 +10,6 @@
         <param name="cmd_vel_sub" value="/cmd_vel" />
         <param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
     </node>
-    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="-0.475 -1.489 0 0 0 0.710 0.704 map markerlocator 100" />
 
     <!-- test mission -->
     <node name="test_server" pkg="test_server" type="test_server_node" output="screen" >
@@ -44,42 +43,22 @@
         <param name="/fmExecutors/wptnav/max_linear_velocity" value="0.5" />
         <param name="/fmExecutors/wptnav/max_angular_velocity" value="0.5" />
     </node>
-</launch>
 
-    <group ns="fmControllers">
-        <!-- Frobit interface -->
-        <node pkg="sdu_frobit_v2" name="frobit" type="frobit_interface_node.py" output="screen">
-            <param name="actuation_enable_sub" value="/fmSafe/actuation_enable" />
-            <param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
-            <param name="enc_left_pub" value="/fmInformation/encoder_left" />
-            <param name="enc_right_pub" value="/fmInformation/encoder_right" />
-            <param name="wheel_status_left_pub" value="/fmInformation/wheel_status_left" />
-            <param name="wheel_status_right_pub" value="/fmInformation/wheel_status_right" />
-            <param name="wheel_feedback_left_pub" value="/fmInformation/wheel_feedback_left" />
-            <param name="wheel_feedback_right_pub" value="/fmInformation/wheel_feedback_right" />
-            <param name="wheel_pid_left_pub" value="/fmInformation/wheel_pid_left" />
-            <param name="wheel_pid_right_pub" value="/fmInformation/wheel_pid_right" />
-            <param name="nmea_from_frobit_sub" value="/fmSignal/nmea_from_frobit" />
-            <param name="nmea_to_frobit_pub" value="/fmSignal/nmea_to_frobit" />
-            <param name="publish_wheel_status_rate" value="10" />
-            <param name="publish_wheel_feedback_rate" value="10" />
-            <param name="publish_wheel_pid_rate" value="10" />
-            <param name="castor_front" value="true" />
-            <param name="max_linear_acceleration" value="16.2" />
-            <param name="max_angular_acceleration" value="16.0" />
-            <param name="wheel_drive_feed_forward" value="85" />
-            <param name="wheel_drive_kp" value="5" />
-            <param name="wheel_drive_ki" value="10" />
-            <param name="wheel_drive_kd" value="5" />
-            <param name="wheel_drive_max_integral_output" value="300" />
-            <param name="wheel_turn_feed_forward" value="110" />
-            <param name="wheel_turn_kp" value="10" />
-            <param name="wheel_turn_ki" value="20" />
-            <param name="wheel_turn_kd" value="3" />
-            <param name="wheel_turn_max_integral_output" value="300" />
-            <param name="supply_voltage_scale_factor" value="0.03747" />
-            <param name="min_supply_voltage" value="12.1" />
-            <param name="show_voltage_interval" value="300" />
-        </node>
-    </group>
+    <node pkg="dock_with_tape" name="docker" type="dock_with_tape_node" output="screen">
+        <param name="update_rate" value="20"/>
+        <param name="drive_kp" value="10.0"/>
+        <param name="drive_ki" value="3.5"/>
+        <param name="drive_kd" value="10.0"/>
+        <param name="drive_max_i" value="1" />
+        <param name="drive_feed_forward" value="0.00"/>
+        <param name="drive_max_output" value="0.4"/>
+        <param name="forward_speed" value="0.2" />
+        <param name="line_sub" value="/line_detector/perception/line" />
+        <param name="odom_sub" value="/fmProcessors/odometry/filtered/local" />
+        <param name="command_pub" value="/fmCommand/cmd_vel" />
+        <param name="pid_debug_pub" value="/fmInformation/pid" />
+        <param name="laser_sub" value="/fmSensors/scan" />
+        <param name="dock_speed" value="0.1" />
+        <param name="ramp_dist" value="0.2" />
+    </node>
 </launch>
