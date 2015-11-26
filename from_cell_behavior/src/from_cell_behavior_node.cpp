@@ -142,7 +142,6 @@ void testAction::state_pick(int cell, bool active)
             relative_move_server::RelativeMoveGoal goal = getRelativeMove(-0.7,0,0);
             action_free_navigation.sendGoal(goal, &doneCbMove);
             active_action = true;
-            ROS_INFO("state 0: backwards movm");
         }
         else
         {
@@ -174,7 +173,6 @@ void testAction::state_pick(int cell, bool active)
                 break;
             }
             action_free_navigation.sendGoal(goal, &doneCbMove);
-            ROS_INFO("state 1: turn 180 in cell: %d", cell);
             active_action = true;
         }
         else
@@ -186,7 +184,6 @@ void testAction::state_pick(int cell, bool active)
     case 2:
         if(active)
         {
-            ROS_INFO("Reached state 2 go to intersection");
             line_pid::FollowLineGoal goal;
             goal.dist = 0.0;
             switch (cell)
