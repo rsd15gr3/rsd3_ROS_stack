@@ -161,10 +161,12 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
     qr_request.request.trash = "";
     geometry_msgs::PoseStamped trash;
     qr_request.request.trash2 = trash;
+    publishVelCommand(0,0);
+    ros::Duration(0.5).sleep();
     int i = 0;
     while(!get_qr_client.call(qr_request) && i < 5)
     {
-      publishVelCommand(-1.0,0);
+      publishVelCommand(-0.5,0);
       ros::Duration(0.1).sleep();
       publishVelCommand(0,0);
       ros::Duration(0.5).sleep();
