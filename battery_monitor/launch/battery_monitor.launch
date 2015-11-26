@@ -1,0 +1,7 @@
+<launch>
+	<node name="battery_monitor" pkg="battery_monitor" type="battery_monitor_node" >
+		<param name="min_battery_level" value="12.0" />
+		<param name="publish_rate" value="5" />
+	</node>
+
+</launch>
