@@ -237,7 +237,7 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         }
         random_counter++;
 
-        ROS_WARN("No valid line found, T_top %f, T_bot %f", threshold_top, threshold_bot);
+        ROS_DEBUG("No valid line found, T_top %f, T_bot %f", threshold_top, threshold_bot);
         angle=0;
         offset=0;
     }    
