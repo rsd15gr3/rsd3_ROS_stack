@@ -2,7 +2,6 @@
 #include <msgs/nmea.h>
 #include <msgs/FloatStamped.h>
 #include <msgs/BoolStamped.h>
-#define ROSCONSOLE_MIN_SEVERITY ROSCONSOLE_SEVERITY_DEBUG //ROSCONSOLE_SEVERITY_INFO, ROSCONSOLE_SEVERITY_DEBUG
 using namespace std;
 using namespace ros;
 
@@ -19,11 +18,6 @@ void nmeaFromFrobitCb(msgs::nmeaConstPtr msg)
 
 int main(int argc, char **argv)
 {
-#if ROSCONSOLE_MIN_SEVERITY == ROSCONSOLE_SEVERITY_DEBUG
-  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
-    ros::console::notifyLoggerLevelsChanged();
-  }
-#endif
   init(argc, argv, "battery_monitor_node");
   NodeHandle nh("~");
   double min_battery_level;
