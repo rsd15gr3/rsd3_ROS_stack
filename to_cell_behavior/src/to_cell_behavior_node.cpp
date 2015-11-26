@@ -10,7 +10,7 @@
 #include "mission/action_states.h"
 
 int state_counter = 0;
-const int nr_of_states = 10;
+const int nr_of_states = 11;
 bool active_action = false;
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
