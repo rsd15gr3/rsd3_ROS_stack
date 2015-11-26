@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   msgs
   test_server
-  free_navigation
 )
 
 catkin_package(
