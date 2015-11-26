@@ -64,6 +64,9 @@ void up(){
     digitalWrite(EnB, LOW);
 
     state_ = 0;
+    answer_.data = state_;
+    answer_.header.stamp = nh.now();
+    pub.publish(&answer_);
 }
 
 void down(){
@@ -80,6 +83,9 @@ void down(){
     digitalWrite(EnB, LOW);
 
     state_ = 2;
+    answer_.data = state_;
+    answer_.header.stamp = nh.now();
+    pub.publish(&answer_);
 }
 
 void setup() {
@@ -99,10 +105,6 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly:
-    //publish();
-    answer_.data = state_;
-    answer_.header.stamp = nh.now();
-    pub.publish(&answer_);
     if(digitalRead(Button)){
         deadman_switch_.data = true;
     }
@@ -112,7 +114,7 @@ void loop() {
     deadman_switch_.header.stamp = nh.now();
     pub.publish(&deadman_switch_);
     nh.spinOnce();
-    delay(1000);
+    delay(50);
 }
 
 //void darthVader(){
@@ -170,4 +172,7 @@ void loop() {
 //    digitalWrite(EnB, LOW);
 
 //    state_ = 1;
+//    answer_.data = state_;
+//    answer_.header.stamp = nh.now();
+//    pub.publish(&answer_);
 //}
