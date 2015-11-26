@@ -66,7 +66,7 @@ void up(){
     state_ = 0;
     answer_.data = state_;
     answer_.header.stamp = nh.now();
-    pub.publish(&answer_);
+    answer_pub.publish(&answer_);
 }
 
 void down(){
@@ -85,7 +85,7 @@ void down(){
     state_ = 2;
     answer_.data = state_;
     answer_.header.stamp = nh.now();
-    pub.publish(&answer_);
+    answer_pub.publish(&answer_);
 }
 
 void setup() {
@@ -112,7 +112,7 @@ void loop() {
         deadman_switch_.data = false;
     }
     deadman_switch_.header.stamp = nh.now();
-    pub.publish(&deadman_switch_);
+    switch_pub.publish(&deadman_switch_);
     nh.spinOnce();
     delay(50);
 }
@@ -174,5 +174,5 @@ void loop() {
 //    state_ = 1;
 //    answer_.data = state_;
 //    answer_.header.stamp = nh.now();
-//    pub.publish(&answer_);
+//    answer_pub.publish(&answer_);
 //}
