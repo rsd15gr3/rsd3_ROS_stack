@@ -180,7 +180,7 @@ int main(int argc, char **argv)
                     {
                         navigation_area = true;
                         test_server::testGoal goal;
-                        goal.order = path.next();
+                        goal.order = path.getCurrentState();
                         action_from_cell.sendGoal(goal, &doneCb);
                         active_behavior = true;
                     }
