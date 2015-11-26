@@ -237,7 +237,7 @@ void testAction::state_pick(int cell, bool active)
         case 4:
             if(active)
             {
-                relative_move_server::RelativeMoveGoal goal = getRelativeMove(-0.1,0,0);
+                relative_move_server::RelativeMoveGoal goal = getRelativeMove(-0.3,0,0);
                 action_free_navigation.sendGoal(goal, &doneCbMove);
                 active_action = true;
             }
