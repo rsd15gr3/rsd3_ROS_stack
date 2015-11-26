@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   actionlib
   dock_with_tape
+  relative_move_server
 )
 
 catkin_python_setup()
@@ -37,13 +38,13 @@ include_directories(
 )
 
 add_executable(free_navigation_node
-    src/free_navigation.h
-    src/free_navigation_node.cpp
-    src/free_navigation.cpp
+  src/free_navigation.h
+  src/free_navigation_node.cpp
+  src/free_navigation.cpp
 )
 
 add_dependencies(free_navigation_node
-    ${catkin_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
 )
 
 target_link_libraries(free_navigation_node
@@ -55,7 +56,7 @@ add_executable(test_mission
 )
 
 add_dependencies(test_mission
-    ${catkin_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(test_mission
   ${catkin_LIBRARIES}
