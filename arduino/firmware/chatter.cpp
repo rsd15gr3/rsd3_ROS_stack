@@ -3,6 +3,7 @@
 #include <ros/time.h>
 #include <std_msgs/String.h>
 #include <msgs/IntStamped.h>
+#include <msgs/BoolStamped.h>
 #include <Stepper.h>
 
 const int stepsPerRevolution = 200;
@@ -29,7 +30,9 @@ void down();
 
 ros::Subscriber<msgs::IntStamped> sub("arduino_goal", &tipper);
 msgs::IntStamped answer_;
-ros::Publisher pub("arduino_answer", &answer_);
+ros::Publisher answer_pub("arduino_answer", &answer_);
+msgs::BoolStamped deadman_switch_;
+ros::Publisher switch_pub("arduino_switch", &deadman_switch_);
 
 void tipper(const msgs::IntStamped& msg){
     switch(msg.data){
@@ -89,7 +92,8 @@ void setup() {
     pinMode(EnB, OUTPUT);
     nh.initNode();
     nh.subscribe(sub);
-    nh.advertise(pub);
+    nh.advertise(answer_pub);
+    nh.advertise(switch_pub);
     down();
 }
 
@@ -99,6 +103,14 @@ void loop() {
     answer_.data = state_;
     answer_.header.stamp = nh.now();
     pub.publish(&answer_);
+    if(digitalRead(Button)){
+        deadman_switch_.data = true;
+    }
+    else{
+        deadman_switch_.data = false;
+    }
+    deadman_switch_.header.stamp = nh.now();
+    pub.publish(&deadman_switch_);
     nh.spinOnce();
     delay(1000);
 }
