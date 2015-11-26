@@ -26,7 +26,7 @@ ros::NodeHandle nh;
 void tipper(const msgs::IntStamped& msg);
 void up();
 void down();
-//void darthVader();
+void darthVader();
 
 ros::Subscriber<msgs::IntStamped> sub("arduino_goal", &tipper);
 msgs::IntStamped answer_;
@@ -41,7 +41,7 @@ void tipper(const msgs::IntStamped& msg){
         break;
 
     case 1:
-//        darthVader();
+        darthVader();
         break;
 
     case 2:
@@ -54,9 +54,11 @@ void up(){
     digitalWrite(EnA, HIGH);
     digitalWrite(EnB, HIGH);
 
+    StepMotor.setSpeed(150);
+
     if(Sensor_Up!=1){
         while(digitalRead(Sensor_Up)!=1){
-            StepMotor.step(stepsPerRevolution);
+            StepMotor.step(stepsPerRevolution/4);
         }
     }
 
@@ -73,9 +75,11 @@ void down(){
     digitalWrite(EnA, HIGH);
     digitalWrite(EnB, HIGH);
 
+    StepMotor.setSpeed(150);
+
     if(Sensor_Down!=1){
       while(digitalRead(Sensor_Down)!=1){
-        StepMotor.step(-stepsPerRevolution);
+        StepMotor.step(-stepsPerRevolution/4);
       }
     }
 
@@ -117,62 +121,62 @@ void loop() {
     delay(50);
 }
 
-//void darthVader(){
-//    digitalWrite(EnA, HIGH);
-//    digitalWrite(EnB, HIGH);
+void darthVader(){
+    digitalWrite(EnA, HIGH);
+    digitalWrite(EnB, HIGH);
 
-//    //Empirial March
-//    StepMotor.setSpeed(20);
-//    StepMotor.step(35);
-//    delay(60);
-//    StepMotor.step(-35);
-//    delay(60);
-//    StepMotor.step(35);String
-//    delay(60);
-//    StepMotor.setSpeed(15);
-//    StepMotor.step(-20);
-//    delay(50);
-//    StepMotor.setSpeed(24);
-//    StepMotor.step(14);
-//    StepMotor.setSpeed(20);
-//    StepMotor.step(-35);
-//    delay(30);
-//    StepMotor.setSpeed(15);
-//    StepMotor.step(20);
-//    delay(50);
-//    StepMotor.setSpeed(24);
-//    StepMotor.step(-14);
-//    StepMotor.setSpeed(20);
-//    StepMotor.step(65);
-//    delay(100);
-//    StepMotor.setSpeed(30);
-//    StepMotor.step(-50);
-//    delay(60);
-//    StepMotor.step(50);
-//    delay(60);
-//    StepMotor.step(-50);
-//    delay(60);
-//    StepMotor.setSpeed(32);
-//    StepMotor.step(40);
-//    delay(50);
-//    StepMotor.setSpeed(24);
-//    StepMotor.step(14);
-//    StepMotor.setSpeed(19);
-//    StepMotor.step(-30);
-//    delay(60);
-//    StepMotor.setSpeed(15);
-//    StepMotor.step(20);
-//    delay(50);
-//    StepMotor.setSpeed(24);
-//    StepMotor.step(-14);
-//    StepMotor.setSpeed(20);
-//    StepMotor.step(70);
+    //Empirial March
+    StepMotor.setSpeed(20);
+    StepMotor.step(35);
+    delay(60);
+    StepMotor.step(-35);
+    delay(60);
+    StepMotor.step(35);
+    delay(60);
+    StepMotor.setSpeed(15);
+    StepMotor.step(-20);
+    delay(50);
+    StepMotor.setSpeed(24);
+    StepMotor.step(14);
+    StepMotor.setSpeed(20);
+    StepMotor.step(-35);
+    delay(30);
+    StepMotor.setSpeed(15);
+    StepMotor.step(20);
+    delay(50);
+    StepMotor.setSpeed(24);
+    StepMotor.step(-14);
+    StepMotor.setSpeed(20);
+    StepMotor.step(65);
+    delay(100);
+    StepMotor.setSpeed(30);
+    StepMotor.step(-50);
+    delay(60);
+    StepMotor.step(50);
+    delay(60);
+    StepMotor.step(-50);
+    delay(60);
+    StepMotor.setSpeed(32);
+    StepMotor.step(40);
+    delay(50);
+    StepMotor.setSpeed(24);
+    StepMotor.step(14);
+    StepMotor.setSpeed(19);
+    StepMotor.step(-30);
+    delay(60);
+    StepMotor.setSpeed(15);
+    StepMotor.step(20);
+    delay(50);
+    StepMotor.setSpeed(24);
+    StepMotor.step(-14);
+    StepMotor.setSpeed(20);
+    StepMotor.step(70);
 
-//    digitalWrite(EnA, LOW);
-//    digitalWrite(EnB, LOW);
+    digitalWrite(EnA, LOW);
+    digitalWrite(EnB, LOW);
 
-//    state_ = 1;
-//    answer_.data = state_;
-//    answer_.header.stamp = nh.now();
-//    answer_pub.publish(&answer_);
-//}
+    state_ = 1;
+    answer_.data = state_;
+    answer_.header.stamp = nh.now();
+    answer_pub.publish(&answer_);
+}
