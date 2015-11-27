@@ -125,6 +125,10 @@ void darthVader(){
     digitalWrite(EnA, HIGH);
     digitalWrite(EnB, HIGH);
 
+    StepMotor.setSpeed(150);
+    StepMotor.step(-stepsPerRevolution);
+    delay(500);
+
     //Empirial March
     StepMotor.setSpeed(20);
     StepMotor.step(35);
