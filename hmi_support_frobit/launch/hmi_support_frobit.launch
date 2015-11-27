@@ -12,9 +12,9 @@
         <!-- Tipper's params -->
         <param name="tipper_tp_automode" value="/ui/tipper_automode" />
         <param name="tipper_tp_position" value="/ui/tipper_position" />
-        <param name="tipper_position_top" value="1.0" />
-        <param name="tipper_position_bottom" value="0.0" />
-        <param name="tipper_position_step" value="0.2" />
+        <param name="tipper_position_top" value="0" />
+        <param name="tipper_position_bottom" value="2" />
+        <param name="tipper_position_step" value="1" />
         
         <!-- HMI control topic for Frobit -->
         <param name="tp_ui_str_control" value="/ui/str_control_frobit" />

@@ -123,8 +123,8 @@ class Tipper():
         self.tp_automode = rospy.get_param('~tipper_tp_automode', '/ui/tipper_automode')
         self.tp_position = rospy.get_param('~tipper_tp_position', '/ui/tipper_position')
         self.position_top = rospy.get_param('~tipper_position_top', 1.0)
-        self.position_bottom = rospy.get_param('~tipper_position_bottom', 0.0)
-        self.position_step = rospy.get_param('~tipper_position_step', 0.2)
+        self.position_bottom = rospy.get_param('~tipper_position_bottom', 0)
+        self.position_step = rospy.get_param('~tipper_position_step', 2)
 
         ''' Setup topics '''
         # Setup Tipper automode publish topic
@@ -133,9 +133,9 @@ class Tipper():
         self.tp_automode_publisher = rospy.Publisher(self.tp_automode, BoolStamped, queue_size=1)
 
         # Setup Tipper position publish topic
-        self.tp_position_message = FloatStamped()
+        self.tp_position_message = IntStamped()
         self.tp_position_message.data = self.position_bottom
-        self.tp_position_publisher = rospy.Publisher(self.tp_position, FloatStamped, queue_size=1)
+        self.tp_position_publisher = rospy.Publisher(self.tp_position, IntStamped, queue_size=1)
 
     def decode_control(self, data):
         if data[1] == 'move':
