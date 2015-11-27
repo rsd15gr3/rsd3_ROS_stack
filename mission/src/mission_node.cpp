@@ -36,6 +36,7 @@ bool navigation_area = true;
 bool active_behavior = false;
 bool automode = true;
 bool should_charge = false;
+bool error = false;
 double voltage = 13;
 double voltage_filled = 14;
 
@@ -51,7 +52,16 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
 
 void doneCbNavigation(const actionlib::SimpleClientGoalState& state,
             const free_navigation::NavigateFreelyResultConstPtr& result)
-{
+{    
+    if(result->state != free_navigation::NavigateFreelyResult::SUCCESS)
+    {
+        error = false;
+        ROS_ERROR_NAMED("mission", "Move base failed to approach target");
+    }
+    else
+    {
+        error = true;
+    }
     active_behavior = false;
     path.pop();
     ROS_INFO("got the cb");
@@ -146,7 +156,7 @@ int main(int argc, char **argv)
 
         //fill up the next order if current is done--------
         //mission must never fill with more than 1 in this system
-        if(automode)
+        if(automode && !error)
         {
 
             if( path.empty() )

@@ -2,6 +2,9 @@
 uint8 behavior_type
 ---
 # Result
+uint8 ERROR = 0
+uint8 SUCCESS = 1
+uint8 FAILED = 2
 uint8 state
 ---
 # Feedback

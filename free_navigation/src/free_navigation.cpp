@@ -68,6 +68,13 @@ void Navigation::goalCb()
 void Navigation::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state,
                         const relative_move_server::RelativeMoveResultConstPtr& result)
 {
+  if(result->end_state != relative_move_server::RelativeMoveResult::GOAL_REACHED)
+  {
+    ROS_ERROR_NAMED(name_, "Relative move failed, and ended in the state: %i", result->end_state);
+    result_.state = free_navigation::NavigateFreelyResult::FAILED;
+    as_.setAborted(result_,"Relative move failed");
+    return;
+  }
   approachGoal();
   current_position = Navigation::free;
 }
@@ -84,7 +91,7 @@ void Navigation::preemtCb()
 
 void Navigation::doneCbLine(const actionlib::SimpleClientGoalState& state,
             const dock_with_tape::DockWithTapeResultConstPtr &result)
-{
+{  
   current_position = Navigation::docked;
   as_.setSucceeded(result_); // first set succeeded in collecting doneCb
 }
@@ -113,6 +120,7 @@ void Navigation::approachGoal()
       default:
           //ac_.cancelAllGoals();
           ROS_ERROR_NAMED(name_,"Unknown behavior type: %i",goal_);
+          result_.state = free_navigation::NavigateFreelyResult::ERROR;
           as_.setAborted(result_, "Unknown behavior type recieved");
           return; // not a navigation command so do not navigate
       }
@@ -131,6 +139,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
   if( move_base_ac_.getState() != actionlib::SimpleClientGoalState::SUCCEEDED)
   {
     ROS_ERROR_NAMED(name_, "Move base failed to approach target");
+    result_.state = free_navigation::NavigateFreelyResult::FAILED;
     as_.setAborted(result_,"Move base failed to approach target");
     return;
   }
