@@ -9,6 +9,7 @@
 
 #include <msgs/IntStamped.h>
 #include <msgs/BoolStamped.h>
+#include <msgs/FloatStamped.h>
 #include "std_msgs/String.h"
 #include "mission/action_states.h"
 #include <test_server/testAction.h>
@@ -71,7 +72,7 @@ void chargeCallback(const msgs::BoolStamped::ConstPtr& msg)
     should_charge = msg->data;
 }
 
-void voltageCallback(const msgs::BoolStamped::ConstPtr& msg)
+void voltageCallback(const msgs::FloatStamped::ConstPtr& msg)
 {
     voltage = msg->data;
 }
