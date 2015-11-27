@@ -25,7 +25,7 @@ class Node():
         self.vel_ang = 0.0
         self.regulation_ratio = [0, 0]
         self.safetyOn = True
-        self.disable = False
+        self.disable = True
 
         # setup subscription topics
         rospy.Subscriber(vel_topic, TwistStamped, self.on_vel_topic)
