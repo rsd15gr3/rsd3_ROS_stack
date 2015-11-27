@@ -77,7 +77,8 @@ void Navigation::preemtCb()
   ROS_INFO_NAMED(name_,"Behavior preemted");
   // cancel all actions
   move_base_ac_.cancelAllGoals();
-
+  relative_move_ac_.cancelAllGoals();
+  dock_with_tape_ac_.cancelAllGoals();
 }
 
 void Navigation::doneCbLine(const actionlib::SimpleClientGoalState& state,
