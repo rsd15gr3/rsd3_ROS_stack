@@ -32,7 +32,7 @@ ros::Subscriber<msgs::IntStamped> sub("arduino_goal", &tipper);
 msgs::IntStamped answer_;
 ros::Publisher answer_pub("arduino_answer", &answer_);
 msgs::BoolStamped deadman_switch_;
-ros::Publisher switch_pub("arduino_switch", &deadman_switch_);
+ros::Publisher switch_pub("/fmSafe/deadman", &deadman_switch_);
 
 void tipper(const msgs::IntStamped& msg){
     switch(msg.data){
