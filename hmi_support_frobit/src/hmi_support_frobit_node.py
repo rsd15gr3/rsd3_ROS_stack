@@ -190,7 +190,7 @@ class Node():
 
     def keep_publishing(self):
         while not rospy.is_shutdown():
-            self.frobit.publish_tp_deadman_message()
+            #self.frobit.publish_tp_deadman_message()
             self.frobit.publish_tp_automode_message()
             self.tipper.publish_tp_automode_message()
             if self.frobit.tp_automode_message.data == 0:
