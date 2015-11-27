@@ -10,12 +10,8 @@
   <node pkg="rviz" type="rviz" name="rviz_sim" args="-d $(find free_navigation)/config/free_navigation.rviz"/> 
   <!-- Map -->
   <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_launch_sim)/world/box_and_surroundings.yaml" /> 
-  <node name="obstacle_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab_hector_edited_obstacle.yaml">
-      <param name="frame_id" value="obstacl_map" />
-    </node>
   <!-- Starting position used to test with exact position-->
   <node pkg="tf" type="static_transform_publisher" name="initial_pose_link_broadcaster" args="4.5 2.3180 0 0 0 0 map odom 100" /> 
-    <node pkg="tf" type="static_transform_publisher" name="obstacle_map_link_broadcaster" args="0 0 0 0 0 0 obstacle_map map 100" /> 
   <!-- free navigation -->
   <include file="$(find free_navigation)/launch/free_navigation.launch" />
   <node name="test_mission" pkg="free_navigation" type="test_mission" output="screen"/>

@@ -3,4 +3,9 @@
   <include file="$(find free_navigation)/launch/move_base_launch.xml" />  
   <rosparam file="$(find free_navigation)/config/navigation_node.yaml" command="load"/>
   <node name="free_navigator" pkg="free_navigation" type="free_navigation_node" output="screen"/>
+<node pkg="tf" type="static_transform_publisher" name="obstacle_map_link_broadcaster" args="0 0 0 0 0 0 map obstacle_map 100" /> 
+<node name="obstacle_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab_hector_edited_obstacle.yaml">
+  <param name="frame_id" value="obstacle_map" />
+  <remap from="map" to="obstacle_map" />
+</node>
 </launch>

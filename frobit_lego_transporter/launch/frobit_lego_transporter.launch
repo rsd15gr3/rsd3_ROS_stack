@@ -66,8 +66,4 @@
         <param name="min_battery_level" value="12.2" />
         <param name="publish_rate" value="5" />
     </node>
-
-    <node name="obstacle_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab_hector_edited_obstacle.yaml">
-        <param name="frame_id" value="obstacle_map" />
-    </node>
 </launch>
