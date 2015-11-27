@@ -61,4 +61,13 @@
         <param name="dock_speed" value="0.1" />
         <param name="ramp_dist" value="0.2" />
     </node>
+
+    <node name="battery_monitor" pkg="battery_monitor" type="battery_monitor_node" >
+        <param name="min_battery_level" value="12.0" />
+        <param name="publish_rate" value="5" />
+    </node>
+
+    <node pkg="rosserial_python" name="rosserial_python" type="serial_node.py" output="screen" args="/dev/ttyACM0" >
+    </node>
+    
 </launch>

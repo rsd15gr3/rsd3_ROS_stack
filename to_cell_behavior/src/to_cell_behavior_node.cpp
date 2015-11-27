@@ -6,11 +6,11 @@
 #include <test_server/testAction.h>
 #include "line_pid/FollowLineAction.h"
 #include "relative_move_server/RelativeMoveAction.h"
-
+#include "msgs/IntStamped.h"
 #include "mission/action_states.h"
 
 int state_counter = 0;
-const int nr_of_states = 10;
+const int nr_of_states = 11;
 bool active_action = false;
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
@@ -44,6 +44,13 @@ relative_move_server::RelativeMoveGoal getRelativeMove(double dx, double dy, dou
 
     return goal;
 }
+
+void arduinoAnswerCb(msgs::IntStampedConstPtr msg)
+{
+  active_action = false;
+  state_counter++;
+}
+
 class testAction
 {
 protected:
@@ -58,6 +65,8 @@ protected:
   actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
   actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> action_free_navigation;
   actionlib::SimpleActionClient<test_server::testAction> action_tipper;
+  ros::Publisher tipper_command_pub;
+  ros::Subscriber tipper_state_sub;
   void state_pick(int cell, bool active);
 
 public:
@@ -84,6 +93,8 @@ public:
     {
         ROS_INFO("succesfully connected");
     }
+    tipper_command_pub = nh_.advertise<msgs::IntStamped>("/arduino_goal", 1);
+    tipper_state_sub = nh_.subscribe<msgs::IntStamped>("/arduino_answer", 1, &arduinoAnswerCb);
   }
 
   ~testAction(void)
@@ -219,22 +230,37 @@ void testAction::state_pick(int cell, bool active)
                 action_line_follow.cancelAllGoals();
             }
         break;
-        //Drop the bricks
+        //Drop the bricks - tip up
         case 3:
             if(active)
             {
-                test_server::testGoal goal;
-                //goal.order = ;
-                action_tipper.sendGoal(goal, &doneCb);
+                msgs::IntStamped goal;
+                goal.data = 0;
+                goal.header.stamp = ros::Time::now();
+                tipper_command_pub.publish(goal);
                 active_action = true;
             }
             else
             {
-                action_tipper.cancelAllGoals();
             }
         break;
-        //Back off from the belt
+        //Drop the bricks - tip down
         case 4:
+            if(active)
+            {
+                msgs::IntStamped goal;
+                goal.data = 2;
+                goal.header.stamp = ros::Time::now();
+                tipper_command_pub.publish(goal);
+                active_action = true;
+            }
+            else
+            {
+            }
+        break;
+
+        //Back off from the belt
+        case 5:
             if(active)
             {
                 relative_move_server::RelativeMoveGoal goal = getRelativeMove(-0.3,0,0);
@@ -247,7 +273,7 @@ void testAction::state_pick(int cell, bool active)
             }
         break;
         //Turn depending of cell
-        case 5:
+        case 6:
             if(active)
             {
                 relative_move_server::RelativeMoveGoal goal;
@@ -278,7 +304,7 @@ void testAction::state_pick(int cell, bool active)
             }
         break;
         //Go to the other line
-        case 6:
+        case 7:
             if(active)
             {
                 relative_move_server::RelativeMoveGoal goal;
@@ -309,7 +335,7 @@ void testAction::state_pick(int cell, bool active)
             }
         break;            
         //Turn depending of cell
-        case 7:
+        case 8:
             if(active)
             {
                 relative_move_server::RelativeMoveGoal goal;
@@ -340,7 +366,7 @@ void testAction::state_pick(int cell, bool active)
             }
         break;
         //Turn depending of cell
-        case 8:
+        case 9:
             if(active)
             {
                 relative_move_server::RelativeMoveGoal goal;
@@ -370,7 +396,7 @@ void testAction::state_pick(int cell, bool active)
                 action_free_navigation.cancelAllGoals();
             }
         break;        //Go to pickup place
-        case 9:
+        case 10:
             if(active)
             {
                 line_pid::FollowLineGoal goal;
