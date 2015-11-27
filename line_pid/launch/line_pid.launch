@@ -36,7 +36,7 @@
 
   <node pkg="safety_speed" name="safety_speed" type="safety_speed_node.py" output="screen">
     <param name="vel_topic" value="/fmCommand/cmd_vel"/>
-    <param name="safe_vel_topic" value="/safe_vel"/>
+    <param name="safe_vel_topic" value="/fmCommand/safe_vel"/>
     <param name="reg_ratio_topic" value="/reg_ratio"/>
     <param name="disable_topic" value="/disable_safety_speed"/>
   </node>

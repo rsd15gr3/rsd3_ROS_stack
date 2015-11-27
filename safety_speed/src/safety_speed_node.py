@@ -16,7 +16,7 @@ class Node():
 
         # get topic names
         vel_topic = rospy.get_param('~vel_topic', '/fmCommand/cmd_vel')
-        safe_vel_topic = rospy.get_param('~safe_vel_topic', '/safe_vel')       # topic name TODO
+        safe_vel_topic = rospy.get_param('~safe_vel_topic', '/fmCommand/safe_vel')       # topic name TODO
         reg_ratio_topic = rospy.get_param('~reg_ratio_topic', '/reg_ratio')     # topic name TODO
         disable_topic = rospy.get_param('~disable_topic', '/disable_safety_speed')
 
@@ -69,7 +69,7 @@ class Node():
         # Publish
         self.safe_vel_msg.header.stamp = rospy.Time.now()
         self.safe_vel_pub.publish(self.safe_vel_msg)
-        
+
     ''' Calls the publish function, based on the update_rate [Hz] '''
     def updater(self):
         while not rospy.is_shutdown():
