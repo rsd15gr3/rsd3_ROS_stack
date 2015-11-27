@@ -3,7 +3,7 @@
 #include <tf/tf.h>
 #include <mission/action_states.h>
 Navigation::Navigation(std::string name)
-    : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("map"),
+    : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("obstacle_map"),
       dock_with_tape_ac_("/docker", true), relative_move_ac_("/relative_move_action", true)
 {
   ROS_INFO("Starting navigation");
@@ -77,6 +77,7 @@ void Navigation::preemtCb()
   ROS_INFO_NAMED(name_,"Behavior preemted");
   // cancel all actions
   move_base_ac_.cancelAllGoals();
+
 }
 
 void Navigation::doneCbLine(const actionlib::SimpleClientGoalState& state,
