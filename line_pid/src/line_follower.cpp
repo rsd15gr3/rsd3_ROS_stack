@@ -107,7 +107,7 @@ void Line_follower::pidCb(const ros::TimerEvent &)
 void Line_follower::lineCb(const line_detection::line::ConstPtr &linePtr)
 {
   angle_error = linePtr->angle;
-  dist_error = linePtr->offset - 0.022;
+  dist_error = linePtr->offset + 0.042;
   // TODO: abort if error is too big
   // as_.setAborted(result_);
 }
@@ -167,7 +167,7 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
     while(!get_qr_client.call(qr_request) && i < 5)
     {
       publishVelCommand(-0.5,0);
-      ros::Duration(0.1).sleep();
+      ros::Duration(0.2).sleep();
       publishVelCommand(0,0);
       ros::Duration(0.5).sleep();
       i++;
