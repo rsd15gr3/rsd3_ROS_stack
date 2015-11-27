@@ -3,7 +3,8 @@
 #Set the update and publish frequency of the costmap
 update_frequency: 5.0
 publish_frequency: 2.0
-
+map_topic: obstacle_map
+global_frame: obstacle_map
 # costmap grid specific parameters
 map_type: costmap # voxel is 3D view
 track_unknown_space: false

@@ -69,5 +69,10 @@
 
     <node pkg="rosserial_python" name="rosserial_python" type="serial_node.py" output="screen" args="/dev/ttyACM0" >
     </node>
+
+    <node name="obstacle_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab_hector_edited_obstacle.yaml">
+    	<param name="frame_id" value="obstacle_map" />
+    </node>
+
     
 </launch>
