@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(deadman_mux)
+
+find_package(catkin REQUIRED COMPONENTS
+  rospy
+  std_msgs
+  msgs
+)
+
+catkin_python_setup()
+
+catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES deadman_mux
+#  CATKIN_DEPENDS rospy std_msgs
+#  DEPENDS system_lib
+)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
