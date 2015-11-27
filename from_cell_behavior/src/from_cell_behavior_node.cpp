@@ -125,6 +125,12 @@ public:
       state_counter = 0;
       //result_.sequence = feedback_.sequence;
       ROS_INFO("%s: Succeeded", action_name_.c_str());
+      // Disable safety speed when entering navigation area
+      msgs::BoolStamped disable_msg;
+      disable_msg.header.stamp = ros::Time::now();
+      disable_msg.data = true;
+      disable_safety_pub.publish(disable_msg);
+
       // set the action state to succeeded
       as_.setSucceeded(result_); //result given to the done callback in the client
     }
