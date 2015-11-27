@@ -164,7 +164,7 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
     publishVelCommand(0,0);
     ros::Duration(0.5).sleep();
     int i = 0;
-    while(!get_qr_client.call(qr_request) && i < 5)
+    while(!get_qr_client.call(qr_request) && i < 3)
     {
       publishVelCommand(-0.5,0);
       ros::Duration(0.2).sleep();
