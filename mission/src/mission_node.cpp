@@ -35,7 +35,7 @@ bool navigation_area = true;
 bool active_behavior = false;
 bool automode = true;
 bool should_charge = false;
-double voltage = false;
+double voltage = 13;
 double voltage_filled = 14;
 
 std::string get_string(int value);
@@ -90,8 +90,8 @@ int main(int argc, char **argv)
 
     mission_subscriber = nodeHandler.subscribe("ui/mes", 5, missionCallback);
     automode_subscriber = nodeHandler.subscribe("fmPlan/automode", 5, automodeCallback);
-    charge_subscriber = nodeHandler.subscribe("too_low_battery", 1, chargeCallback);
-    voltage_subscriber = nodeHandler.subscribe("battery_level", 5, voltageCallback);
+    charge_subscriber = nodeHandler.subscribe("battery_monitor/too_low_battery", 1, chargeCallback);
+    voltage_subscriber = nodeHandler.subscribe("battery_monitor/battery_level", 5, voltageCallback);
 
     actionlib::SimpleActionClient<test_server::testAction> action_test("test_server", true);
     actionlib::SimpleActionClient<free_navigation::NavigateFreelyAction> action_navigation("free_navigator", true);
@@ -190,7 +190,11 @@ int main(int argc, char **argv)
             if(!path.empty() && active_behavior == false)
             {
                 //change plan if in need of charge
-                if(path.getCurrentState() != CHARGE && path.getCurrentState() != CELL_1 && path.getCurrentState() != CELL_2 && path.getCurrentState() != CELL_3 && should_charge == true)
+                if(path.getCurrentState() != CHARGE &&
+                   path.getCurrentState() != CELL_1 &&
+                   path.getCurrentState() != CELL_2 &&
+                   path.getCurrentState() != CELL_3 &&
+                   should_charge == true)
                 {
                     path.goChargeInterupt();
                 }
