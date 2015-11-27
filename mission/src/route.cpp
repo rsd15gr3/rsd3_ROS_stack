@@ -71,6 +71,23 @@ void Route::goCharge()
     }
 }
 
+void Route::goChargeInterupt()
+{
+    vector<unsigned int> temp;
+    //Go to charge
+    temp = graph.WidthSearch(CHARGE, currentState);
+    for(int i=temp.size()-1; i >= 0; i--)
+    {
+        route.push_front(temp[i]);
+    }
+    //Go to charge
+    temp = graph.WidthSearch(currentState, CHARGE);
+    for(int i=temp.size()-1; i >= 0; i--)
+    {
+        route.push_front(temp[i]);
+    }
+}
+
 void Route::pop()
 {
     currentState = route.front();

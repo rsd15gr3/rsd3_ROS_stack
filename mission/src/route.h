@@ -18,6 +18,7 @@ class Route
         void brickOrder(int target);
         void brickDelivery();
         void goCharge();
+        void goChargeInterupt();
         void infoRoute();
         int getCurrentState();
         bool empty();

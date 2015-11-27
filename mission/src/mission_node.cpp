@@ -8,6 +8,7 @@
 #include <actionlib/client/simple_action_client.h>
 
 #include <msgs/IntStamped.h>
+#include <msgs/BoolStamped.h>
 #include "std_msgs/String.h"
 #include "mission/action_states.h"
 #include <test_server/testAction.h>
@@ -24,6 +25,8 @@ ros::Publisher action_publisher;
 //Subscribers
 ros::Subscriber mission_subscriber;
 ros::Subscriber automode_subscriber;
+ros::Subscriber charge_subscriber;
+ros::Subscriber voltage_subscriber;
 
 Route path;
 std::queue<int> mission_queue;
@@ -31,6 +34,9 @@ std::queue<int> mission_queue;
 bool navigation_area = true;
 bool active_behavior = false;
 bool automode = true;
+bool should_charge = false;
+double voltage = false;
+double voltage_filled = 14;
 
 std::string get_string(int value);
 
@@ -60,6 +66,16 @@ void automodeCallback(const msgs::IntStamped::ConstPtr& msg)
     automode = msg->data;
 }
 
+void chargeCallback(const msgs::BoolStamped::ConstPtr& msg)
+{
+    should_charge = msg->data;
+}
+
+void voltageCallback(const msgs::BoolStamped::ConstPtr& msg)
+{
+    voltage = msg->data;
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "mission_node");
@@ -74,6 +90,8 @@ int main(int argc, char **argv)
 
     mission_subscriber = nodeHandler.subscribe("ui/mes", 5, missionCallback);
     automode_subscriber = nodeHandler.subscribe("fmPlan/automode", 5, automodeCallback);
+    charge_subscriber = nodeHandler.subscribe("too_low_battery", 1, chargeCallback);
+    voltage_subscriber = nodeHandler.subscribe("battery_level", 5, voltageCallback);
 
     actionlib::SimpleActionClient<test_server::testAction> action_test("test_server", true);
     actionlib::SimpleActionClient<free_navigation::NavigateFreelyAction> action_navigation("free_navigator", true);
@@ -171,35 +189,44 @@ int main(int argc, char **argv)
             //order next behavior if none is active
             if(!path.empty() && active_behavior == false)
             {
-                if(navigation_area)
+                //change plan if in need of charge
+                if(path.getCurrentState() != CHARGE && path.getCurrentState() != CELL_1 && path.getCurrentState() != CELL_2 && path.getCurrentState() != CELL_3 && should_charge == true)
                 {
-                    if(path.next() == TRANSITION)
-                    {
-                        navigation_area = false;
-                    }
-
-                    free_navigation::NavigateFreelyGoal goal;
-                    goal.behavior_type = path.next();
-                    //goal.order = path.next();
-                    action_navigation.sendGoal(goal, &doneCbNavigation);
-                    active_behavior = true;
+                    path.goChargeInterupt();
                 }
-                else
+                //waits with orders until proberly charged
+                if( !(path.getCurrentState() == CHARGE && voltage < voltage_filled) )
                 {
-                    if(path.next() == TRANSITION)
+                    if(navigation_area)
                     {
-                        navigation_area = true;
-                        test_server::testGoal goal;
-                        goal.order = path.getCurrentState();
-                        action_from_cell.sendGoal(goal, &doneCb);
+                        if(path.next() == TRANSITION)
+                        {
+                            navigation_area = false;
+                        }
+
+                        free_navigation::NavigateFreelyGoal goal;
+                        goal.behavior_type = path.next();
+                        //goal.order = path.next();
+                        action_navigation.sendGoal(goal, &doneCbNavigation);
                         active_behavior = true;
                     }
                     else
                     {
-                        test_server::testGoal goal;
-                        goal.order = path.next();
-                        action_to_cell.sendGoal(goal, &doneCb);
-                        active_behavior = true;
+                        if(path.next() == TRANSITION)
+                        {
+                            navigation_area = true;
+                            test_server::testGoal goal;
+                            goal.order = path.getCurrentState();
+                            action_from_cell.sendGoal(goal, &doneCb);
+                            active_behavior = true;
+                        }
+                        else
+                        {
+                            test_server::testGoal goal;
+                            goal.order = path.next();
+                            action_to_cell.sendGoal(goal, &doneCb);
+                            active_behavior = true;
+                        }
                     }
                 }
             }
