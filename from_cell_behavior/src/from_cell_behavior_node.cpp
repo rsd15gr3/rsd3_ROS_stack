@@ -7,6 +7,7 @@
 #include "line_pid/FollowLineAction.h"
 #include "mission/action_states.h"
 #include "relative_move_server/RelativeMoveAction.h"
+#include "msgs/BoolStamped.h"
 
 int state_counter = 0;
 const int nr_of_states = 5;
@@ -60,6 +61,7 @@ protected:
   test_server::testResult result_;
   actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
   actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> action_free_navigation;
+  ros::Publisher disable_safety_pub;
   void state_pick(int cell, bool active);
 
 public:
@@ -80,6 +82,7 @@ public:
     {
         ROS_INFO("succesfully connected");
     }
+    disable_safety_pub = nh_.advertise<msgs::BoolStamped>("/disable_safety_speed", 1);
   }
 
   ~testAction(void)
@@ -230,6 +233,12 @@ void testAction::state_pick(int cell, bool active)
     case 4:
         if(active)
         {
+            //Enable safety after turning 
+            msgs::BoolStamped disable_msg;
+            disable_msg.header.stamp = ros::Time::now();
+            disable_msg.data = false;
+            disable_safety_pub.publish(disable_msg);
+            
             line_pid::FollowLineGoal goal;
             goal.dist = 0.0;
             goal.qr_tag = "line_out";

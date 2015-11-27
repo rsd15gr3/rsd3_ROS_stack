@@ -7,6 +7,7 @@
 #include "line_pid/FollowLineAction.h"
 #include "relative_move_server/RelativeMoveAction.h"
 #include "msgs/IntStamped.h"
+#include "msgs/BoolStamped.h"
 #include "mission/action_states.h"
 
 int state_counter = 0;
@@ -67,6 +68,7 @@ protected:
   actionlib::SimpleActionClient<test_server::testAction> action_tipper;
   ros::Publisher tipper_command_pub;
   ros::Subscriber tipper_state_sub;
+  ros::Publisher disable_safety_pub;
   void state_pick(int cell, bool active);
 
 public:
@@ -95,6 +97,7 @@ public:
     }
     tipper_command_pub = nh_.advertise<msgs::IntStamped>("/arduino_goal", 1);
     tipper_state_sub = nh_.subscribe<msgs::IntStamped>("/arduino_answer", 1, &arduinoAnswerCb);
+    disable_safety_pub = nh_.advertise<msgs::BoolStamped>("/disable_safety_speed", 1);
   }
 
   ~testAction(void)
@@ -188,6 +191,12 @@ void testAction::state_pick(int cell, bool active)
         case 1:
             if(active)
             {
+                //Disable safety nodes inside workcell
+                msgs::BoolStamped disable_msg;
+                disable_msg.header.stamp = ros::Time::now();
+                disable_msg.data = true;
+                disable_safety_pub.publish(disable_msg);
+
                 relative_move_server::RelativeMoveGoal goal = getRelativeMove(0,0,-1.57);
                 action_free_navigation.sendGoal(goal, &doneCbMove);
                 active_action = true;
