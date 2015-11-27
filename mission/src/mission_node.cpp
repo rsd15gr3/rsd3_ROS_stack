@@ -11,6 +11,7 @@
 #include "std_msgs/String.h"
 #include "mission/action_states.h"
 #include <test_server/testAction.h>
+#include "free_navigation/NavigateFreelyAction.h"
 
 #define BRICK_ORDER_1   1
 #define BRICK_ORDER_2   2
@@ -35,6 +36,14 @@ std::string get_string(int value);
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
             const test_server::testResultConstPtr& result)
+{
+    active_behavior = false;
+    path.pop();
+    ROS_INFO("got the cb");
+}
+
+void doneCbNavigation(const actionlib::SimpleClientGoalState& state,
+            const free_navigation::NavigateFreelyResultConstPtr& result)
 {
     active_behavior = false;
     path.pop();
@@ -67,7 +76,7 @@ int main(int argc, char **argv)
     automode_subscriber = nodeHandler.subscribe("fmPlan/automode", 5, automodeCallback);
 
     actionlib::SimpleActionClient<test_server::testAction> action_test("test_server", true);
-    actionlib::SimpleActionClient<test_server::testAction> action_navigation("action_navigation", true);
+    actionlib::SimpleActionClient<free_navigation::NavigateFreelyAction> action_navigation("free_navigator", true);
     actionlib::SimpleActionClient<test_server::testAction> action_to_cell("action_to_cell", true);
     actionlib::SimpleActionClient<test_server::testAction> action_from_cell("action_from_cell", true);
 
@@ -92,7 +101,7 @@ int main(int argc, char **argv)
     }
 
     //path.brickOrder(CELL_1);
-    //mission_queue.push(BRICK_ORDER_2);
+    mission_queue.push(BRICK_ORDER_2);
     //mission_queue.push(BRICK_DELIVERY);
 
     test_server::testGoal goal;
@@ -169,9 +178,10 @@ int main(int argc, char **argv)
                         navigation_area = false;
                     }
 
-                    test_server::testGoal goal;
-                    goal.order = path.next();
-                    action_navigation.sendGoal(goal, &doneCb);
+                    free_navigation::NavigateFreelyGoal goal;
+                    goal.behavior_type = path.next();
+                    //goal.order = path.next();
+                    action_navigation.sendGoal(goal, &doneCbNavigation);
                     active_behavior = true;
                 }
                 else
