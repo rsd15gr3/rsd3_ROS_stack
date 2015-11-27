@@ -31,7 +31,7 @@
 
   <node pkg="safety_speed" name="obstacle_detector" type="lidar_obstacle_node.py" output="screen">
     <param name="reg_ratio_topic" value="/reg_ratio"/>
-    <param name="scan_topic" value="/external/scan"/>
+    <param name="scan_topic" value="/fmSensors/scan"/>
   </node>
 
   <node pkg="safety_speed" name="safety_speed" type="safety_speed_node.py" output="screen">

@@ -55,7 +55,7 @@ class Node():
     ''' Regulates velocities '''
     def regulate_velocities(self):
         self.safe_vel_msg.twist.linear.x = self.vel_lin*self.regulation_ratio[0]
-        self.safe_vel_msg.twist.angular.z = self.vel_ang*self.regulation_ratio[0]
+        self.safe_vel_msg.twist.angular.z = self.vel_ang*self.regulation_ratio[1]
 
     ''' Regulates and publishes regulated velocities '''
     def publish_safe_vel_message(self):

@@ -17,7 +17,7 @@ class mission_node():
         self.update_rate = 20  # [Hz]
 
         reg_ratio_topic = rospy.get_param("~reg_ratio_topic", "/reg_ratio")
-        scan_topic = rospy.get_param("~scan_topic", "/base_scan")
+        scan_topic = rospy.get_param("~scan_topic", "/fmSensors/scan")
 
         # setup obstacle publish topic
         self.reg = [0, 0]
