@@ -7,7 +7,7 @@ input: linear_velocity, angular_velocity, speed_regulation
 
 import rospy
 from geometry_msgs.msg import TwistStamped
-from msgs.msg import FloatArrayStamped
+from msgs.msg import FloatArrayStamped, BoolStamped
 
 
 class Node():
@@ -18,16 +18,19 @@ class Node():
         vel_topic = rospy.get_param('~vel_topic', '/fmCommand/cmd_vel')
         safe_vel_topic = rospy.get_param('~safe_vel_topic', '/safe_vel')       # topic name TODO
         reg_ratio_topic = rospy.get_param('~reg_ratio_topic', '/reg_ratio')     # topic name TODO
+        disable_topic = rospy.get_param('~disable_topic', '/disable_safety_speed')
 
         # setup variables
         self.vel_lin = 0.0
         self.vel_ang = 0.0
         self.regulation_ratio = [0, 0]
         self.safetyOn = True
+        self.disable = False
 
         # setup subscription topics
         rospy.Subscriber(vel_topic, TwistStamped, self.on_vel_topic)
         rospy.Subscriber(reg_ratio_topic, FloatArrayStamped, self.on_reg_ratio_topic)
+        rospy.Subscriber(disable_topic, BoolStamped, self.disableCB)
 
         # setup publication topics
         self.safe_vel_msg = TwistStamped()
@@ -36,6 +39,9 @@ class Node():
         # frequency of node activity
         self.r = rospy.Rate(self.update_rate)
         self.updater()
+
+    def disableCB (self, msg):
+        self.disable = msg.data
 
     ''' Reads unregulated velocities '''
     def on_vel_topic(self, msg):
@@ -54,12 +60,16 @@ class Node():
     ''' Regulates and publishes regulated velocities '''
     def publish_safe_vel_message(self):
         # The regulation is here
-        self.regulate_velocities()
+        if self.disable == False:
+            self.regulate_velocities()
+        else:
+            self.safe_vel_msg.twist.linear.x = self.vel_lin
+            self.safe_vel_msg.twist.angular.z = self.vel_ang
 
         # Publish
         self.safe_vel_msg.header.stamp = rospy.Time.now()
         self.safe_vel_pub.publish(self.safe_vel_msg)
-
+        
     ''' Calls the publish function, based on the update_rate [Hz] '''
     def updater(self):
         while not rospy.is_shutdown():
