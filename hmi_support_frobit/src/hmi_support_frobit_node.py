@@ -62,6 +62,7 @@ class Frobit():
 
     def decode_control(self, data):
         if data[1] == 'joystick':
+            self.tp_automode_message.data = 0
             positions = data[2].split(';')
             self.js_x0 = float(positions[0])
             self.js_y0 = float(positions[1])
@@ -193,7 +194,7 @@ class Node():
 
     def on_topic_ui_str_control(self, msg):
         data = msg.data.split('_')
-        if data[0] == 'mr':
+        if data[0] == 'frobit':
             self.frobit.decode_control(data=data)
         elif data[0] == 'tipper':
             self.tipper.decode_control(data=data)
