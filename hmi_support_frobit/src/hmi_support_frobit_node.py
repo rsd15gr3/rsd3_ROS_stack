@@ -121,8 +121,9 @@ class Tipper():
 
         ''' Read parameters from launchfile '''
         self.tp_automode = rospy.get_param('~tipper_tp_automode', '/ui/tipper_automode')
-        self.tp_position = rospy.get_param('~tipper_tp_position', '/ui/tipper_position')
-        self.position_top = rospy.get_param('~tipper_position_top', 1.0)
+        self.tp_answer = rospy.get_param('~tipper_tp_answer', '/arduino_answer')
+        self.tp_goal = rospy.get_param('~tipper_tp_goal', '/arduino_goal')
+        self.position_top = rospy.get_param('~tipper_position_top', 2)
         self.position_bottom = rospy.get_param('~tipper_position_bottom', 0)
         self.position_step = rospy.get_param('~tipper_position_step', 2)
 
@@ -133,31 +134,39 @@ class Tipper():
         self.tp_automode_publisher = rospy.Publisher(self.tp_automode, BoolStamped, queue_size=1)
 
         # Setup Tipper position publish topic
-        self.tp_position_message = IntStamped()
-        self.tp_position_message.data = self.position_bottom
-        self.tp_position_publisher = rospy.Publisher(self.tp_position, IntStamped, queue_size=1)
+        self.tp_goal_message = IntStamped()
+        self.tp_goal_message.data = self.position_bottom
+        self.tp_goal_publisher = rospy.Publisher(self.tp_goal, IntStamped, queue_size=1)
+
+        # Setup Tipper position subscribe topic
+        rospy.Subscriber(self.tp_answer, IntStamped, self.on_topic_answer)
+
+        ''' Variables '''
+        self.current_position = self.position_bottom
 
     def decode_control(self, data):
         if data[1] == 'move':
             if data[2] == 'up':
-                self.tp_position_message.data = min(self.tp_position_message.data+self.position_step, self.position_top)
+                self.tp_goal_message.data = min(self.current_position+self.position_step, self.position_top)
             elif data[2] == 'down':
-                self.tp_position_message.data = max(self.tp_position_message.data-self.position_step, self.position_bottom)
-            self.publish_tp_position_message()
+                self.tp_goal_message.data = max(self.current_position-self.position_step, self.position_bottom)
+            self.publish_tp_goal_message()
         elif data[1] == 'mode':
             if data[2] == 'auto':
                 self.tp_automode_message.data = True
             elif data[2] == 'manual':
-                self.tp_position_message.data = 0.0
                 self.tp_automode_message.data = False
+
+    def on_topic_answer(self, msg):
+        self.current_position = msg.data
 
     def publish_tp_automode_message(self):
         self.tp_automode_message.header.stamp = rospy.get_rostime()
         self.tp_automode_publisher.publish (self.tp_automode_message)
 
-    def publish_tp_position_message(self):
-        self.tp_position_message.header.stamp = rospy.get_rostime()
-        self.tp_position_publisher.publish (self.tp_position_message)
+    def publish_tp_goal_message(self):
+        self.tp_goal_message.header.stamp = rospy.get_rostime()
+        self.tp_goal_publisher.publish (self.tp_goal_message)
 
 
 class Node():
