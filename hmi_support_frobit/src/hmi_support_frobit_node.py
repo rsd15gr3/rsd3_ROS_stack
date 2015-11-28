@@ -30,7 +30,7 @@ class Frobit():
 
         ''' Read parameters from launchfile '''
         self.tp_automode = rospy.get_param('~mr_tp_automode', '/fmPlan/automode')
-        #self.tp_deadman = rospy.get_param('~mr_tp_deadman', '/fmSafe/deadman')
+        self.tp_deadman = rospy.get_param('~mr_tp_deadman', '/fmSafe/deadman')
         self.tp_cmd_vel = rospy.get_param('~mr_tp_cmd_vel', '/fmCommand/cmd_vel')
         self.vel_lin_max = rospy.get_param('~mr_max_linear_velocity', 1)                    # [m/s]     TODO: tune max velocities
         self.vel_ang_max = rospy.get_param('~mr_max_angular_velocity', 1)                   # [rad/s]
@@ -41,12 +41,10 @@ class Frobit():
         self.tp_automode_message.data = 0
         self.tp_automode_publisher = rospy.Publisher(self.tp_automode, IntStamped, queue_size=1)
 
-        '''
         # Setup Mobile Robot deadman publish topic
         self.tp_deadman_message = BoolStamped()
         self.tp_deadman_message.data = True
         self.tp_deadman_publisher = rospy.Publisher(self.tp_deadman, BoolStamped, queue_size=1)
-        '''
 
         # Setup Mobile Robot manual velocity topic
         self.tp_cmd_vel_message = TwistStamped()
@@ -98,11 +96,9 @@ class Frobit():
         self.tp_automode_message.header.stamp = rospy.get_rostime()
         self.tp_automode_publisher.publish (self.tp_automode_message)
 
-    '''
     def publish_tp_deadman_message(self):
         self.tp_deadman_message.header.stamp = rospy.get_rostime()
         self.tp_deadman_publisher.publish(self.tp_deadman_message)
-    '''
 
     def publish_tp_cmd_vel_message(self):
         self.tp_cmd_vel_message.header.stamp = rospy.Time.now()
@@ -144,25 +140,24 @@ class Tipper():
     def decode_control(self, data):
         if data[1] == 'move':
             if data[2] == 'up':
-                #self.tp_position_message.data = min(self.tp_position_message.data+self.position_step, self.position_top)
-                self.tp_position_message.data = 2
+                self.tp_position_message.data = min(self.tp_position_message.data+self.position_step, self.position_top)
             elif data[2] == 'down':
-                #self.tp_position_message.data = max(self.tp_position_message.data-self.position_step, self.position_bottom)
-                self.tp_position_message.data = 0
+                self.tp_position_message.data = max(self.tp_position_message.data-self.position_step, self.position_bottom)
             self.publish_tp_position_message()
         elif data[1] == 'mode':
             if data[2] == 'auto':
                 self.tp_automode_message.data = True
             elif data[2] == 'manual':
+                self.tp_position_message.data = 0.0
                 self.tp_automode_message.data = False
 
     def publish_tp_automode_message(self):
         self.tp_automode_message.header.stamp = rospy.get_rostime()
-        self.tp_automode_publisher.publish(self.tp_automode_message)
+        self.tp_automode_publisher.publish (self.tp_automode_message)
 
     def publish_tp_position_message(self):
         self.tp_position_message.header.stamp = rospy.get_rostime()
-        self.tp_position_publisher.publish(self.tp_position_message)
+        self.tp_position_publisher.publish (self.tp_position_message)
 
 
 class Node():
