@@ -13,9 +13,9 @@
         <param name="tipper_tp_automode" value="/ui/tipper_automode" />
         <param name="tipper_tp_answer" value="/arduino_answer" />
         <param name="tipper_tp_goal" value="/arduino_goal" />
-        <param name="tipper_position_top" value="2" />
-        <param name="tipper_position_bottom" value="0" />
-        <param name="tipper_position_step" value="2" />
+        <param name="tipper_position_tipping" value="0" />
+        <param name="tipper_position_idle" value="2" />
+        <param name="tipper_position_step" value="2" /> <!-- Set this to 1 to enable DarthVader -->
         
         <!-- HMI control topic for Frobit -->
         <param name="tp_ui_str_control" value="/ui/str_control_frobit" />

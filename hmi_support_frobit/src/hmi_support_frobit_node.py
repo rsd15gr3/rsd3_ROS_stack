@@ -123,9 +123,12 @@ class Tipper():
         self.tp_automode = rospy.get_param('~tipper_tp_automode', '/ui/tipper_automode')
         self.tp_answer = rospy.get_param('~tipper_tp_answer', '/arduino_answer')
         self.tp_goal = rospy.get_param('~tipper_tp_goal', '/arduino_goal')
-        self.position_top = rospy.get_param('~tipper_position_top', 2)
-        self.position_bottom = rospy.get_param('~tipper_position_bottom', 0)
-        self.position_step = rospy.get_param('~tipper_position_step', 2)
+        self.position_tipping = rospy.get_param('~tipper_position_tipping', 0)
+        self.position_idle = rospy.get_param('~tipper_position_idle', 2)
+        self.position_step = rospy.get_param('~tipper_position_step', 2)    # Set to 1 in launchfile if you want to enable DarthVader
+
+        ''' Variables '''
+        self.current_position = self.position_idle
 
         ''' Setup topics '''
         # Setup Tipper automode publish topic
@@ -135,21 +138,19 @@ class Tipper():
 
         # Setup Tipper position publish topic
         self.tp_goal_message = IntStamped()
-        self.tp_goal_message.data = self.position_bottom
+        self.tp_goal_message.data = self.current_position
         self.tp_goal_publisher = rospy.Publisher(self.tp_goal, IntStamped, queue_size=1)
 
         # Setup Tipper position subscribe topic
         rospy.Subscriber(self.tp_answer, IntStamped, self.on_topic_answer)
 
-        ''' Variables '''
-        self.current_position = self.position_bottom
-
     def decode_control(self, data):
         if data[1] == 'move':
-            if data[2] == 'up':
-                self.tp_goal_message.data = min(self.current_position+self.position_step, self.position_top)
-            elif data[2] == 'down':
-                self.tp_goal_message.data = max(self.current_position-self.position_step, self.position_bottom)
+            self.tp_automode_message.data = False
+            if data[2] == 'tipping':
+                self.tp_goal_message.data = max(self.current_position-self.position_step, self.position_tipping)
+            elif data[2] == 'idle':
+                self.tp_goal_message.data = min(self.current_position+self.position_step, self.position_idle)
             self.publish_tp_goal_message()
         elif data[1] == 'mode':
             if data[2] == 'auto':
