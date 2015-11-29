@@ -20,7 +20,7 @@ from geometry_msgs.msg import TwistStamped
 from msgs.msg import BoolStamped, IntStamped
 
 
-class Frobit():
+class FrobitHMI():
 
     def __init__(self, node):
         """ Frobit Instance Initialization """
@@ -116,7 +116,7 @@ class Frobit():
         self.vel_lin = 0.0
 
 
-class Tipper():
+class TipperHMI():
 
     def __init__(self, node):
         """ Tipper Instance Initialization """
@@ -181,10 +181,10 @@ class Node():
         """ Node Instance Initialization """
 
         ''' Init Frobit's functionalities '''
-        self.frobit = Frobit(node=self)
+        self.frobit = FrobitHMI(node=self)
 
         ''' Init Tipper's functionalities '''
-        self.tipper = Tipper(node=self)
+        self.tipper = TipperHMI(node=self)
 
         ''' Init /ui/str_control_frobit topic '''
         self.tp_ui_str_control = rospy.get_param('~tp_ui_str_control', '/ui/str_control_frobit')
