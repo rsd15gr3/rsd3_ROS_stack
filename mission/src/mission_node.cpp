@@ -133,15 +133,9 @@ int main(int argc, char **argv)
     charge_subscriber = nodeHandler.subscribe("battery_monitor/too_low_battery", 1, chargeCallback);
     voltage_subscriber = nodeHandler.subscribe("battery_monitor/battery_level", 5, voltageCallback);
 
-    actionlib::SimpleActionClient<test_server::testAction> action_test("test_server", true);
     actionlib::SimpleActionClient<free_navigation::NavigateFreelyAction> action_navigation("free_navigator", true);
     actionlib::SimpleActionClient<test_server::testAction> action_to_cell("action_to_cell", true);
     actionlib::SimpleActionClient<test_server::testAction> action_from_cell("action_from_cell", true);
-
-    if(action_test.waitForServer(ros::Duration(1)) )
-    {
-        ROS_INFO("succesfully connected");
-    }
 
     if(action_navigation.waitForServer() )
     {
@@ -161,11 +155,6 @@ int main(int argc, char **argv)
     //path.brickOrder(CELL_1);
     //mission_queue.push(BRICK_ORDER_2);
     //mission_queue.push(BRICK_DELIVERY);
-
-    test_server::testGoal goal;
-    action_test.sendGoal(goal );
-    //action_test.sendGoal(goal, &doneCb );
-    action_test.waitForResult(ros::Duration(10)); //default 0, which should mean blocking
 
     while(ros::ok())
 	{

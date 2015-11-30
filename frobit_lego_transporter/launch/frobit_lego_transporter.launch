@@ -11,11 +11,6 @@
         <param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
     </node>
 
-    <!-- test mission -->
-    <node name="test_server" pkg="test_server" type="test_server_node" output="screen" >
-        <param name="node_name" value="test_server" />
-    </node>
-
     <node name="action_navigation" pkg="test_server" type="test_server_node" output="screen" >
         <param name="node_name" value="action_navigation" />
     </node>
