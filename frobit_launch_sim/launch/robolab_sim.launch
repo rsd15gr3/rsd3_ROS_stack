@@ -5,6 +5,9 @@
   <node pkg="stage_ros" type="stageros" name="simulator" args="$(find frobit_launch_sim)/world/box_and_surroundings.world">
       <param name="base_watchdog_timeout" value="0.2"/>
   </node>
+  
+  <!--<node pkg="load_pos" type="load_pos_node.py" name="load_pos_node">
+  </node>-->
 
     <group ns="fmSafety">
         <node pkg="basic_incident_handler" name="incident_handler" type="basic_incident_handler_node.py" output="screen">
