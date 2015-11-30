@@ -9,6 +9,7 @@
 
 #include "angles/angles.h"
 
+#include <cmath>
 
 //Nacho: cmd_vel messages changed from twis to twistStamped for real robot tests
 //Changed both topics to connect to real frobit
@@ -68,7 +69,7 @@ private:
     bool testQuaternion(geometry_msgs::Quaternion quaternion){
         double total;
         total = quaternion.x + quaternion.y + quaternion.z + quaternion.w;
-        if(fabs(total-1) > 0.01){
+        if(std::abs(total-1) > 0.01){
             return true;
         }
         else{
@@ -93,12 +94,12 @@ private:
     }
 
     bool checkGoal(relative_move_server::RelativeMoveGoal& goal){
-        if(fabs(goal.target_pose.pose.position.x)>1e-4 || fabs(goal.target_pose.pose.position.y)>1e-4 || fabs(tf::getYaw(goal.target_pose.pose.orientation))>1e-4 || fabs(goal.target_yaw)>1e-4){
-            if(fabs(goal.target_yaw)>1e-4){
+        if(std::abs(goal.target_pose.pose.position.x)>1e-4 || std::abs(goal.target_pose.pose.position.y)>1e-4 || std::abs(tf::getYaw(goal.target_pose.pose.orientation))>1e-4 || std::abs(goal.target_yaw)>1e-4){
+            if(std::abs(goal.target_yaw)>1e-4){
                 goal.target_pose.pose.orientation = tf::createQuaternionMsgFromYaw(goal.target_yaw);
             }
 
-            if (fabs(	goal.target_pose.pose.orientation.x*goal.target_pose.pose.orientation.x +
+            if (std::abs(	goal.target_pose.pose.orientation.x*goal.target_pose.pose.orientation.x +
                         goal.target_pose.pose.orientation.y*goal.target_pose.pose.orientation.y +
                         goal.target_pose.pose.orientation.z*goal.target_pose.pose.orientation.z +
                         goal.target_pose.pose.orientation.w*goal.target_pose.pose.orientation.w - 1) > 0.01)
@@ -124,7 +125,7 @@ private:
             double dx = relative_move_pose_.pose.position.x - base_odom_.pose.pose.position.x;
             double dy = relative_move_pose_.pose.position.y - base_odom_.pose.pose.position.y;
             double yaw = tf::getYaw(base_odom_.pose.pose.orientation);
-            double dist = sqrt(pow(dx, 2) + pow(dy, 2));
+            double dist = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
 
             if(dist < 0.02){
                 pure_rotation_ = true;
@@ -133,7 +134,7 @@ private:
                 pure_rotation_ = false;
             }
 
-            double dot = dx*cos(yaw) + dy*sin(yaw);
+            double dot = dx*std::cos(yaw) + dy*std::sin(yaw);
 
             if(dot < 0){
                 forward_ = false;
@@ -161,38 +162,38 @@ private:
 
         double lin = 0;
         double rot = 0;
-        double dt = fmax(0.1, (time_stamp - last_update).toSec());
+        double dt = std::max(0.1, (time_stamp - last_update).toSec());
 
         double dx = relative_move_pose_.pose.position.x - base_odom_.pose.pose.position.x;
         double dy = relative_move_pose_.pose.position.y - base_odom_.pose.pose.position.y;
         double yaw = tf::getYaw(base_odom_.pose.pose.orientation);
         double goal_yaw = tf::getYaw(relative_move_pose_.pose.orientation);
         double dTh = angles::shortest_angular_distance(yaw, goal_yaw);
-        double dist = sqrt(pow(dx, 2) + pow(dy, 2));
+        double dist = std::sqrt(std::pow(dx, 2) + std::pow(dy, 2));
 
         sendFeedback(dx, dy, dTh);
 
-        double dot = dx*cos(yaw)+dy*sin(yaw);
+        double dot = dx*std::cos(yaw)+dy*std::sin(yaw);
 
         bool past_goal = false;
 
         if(!pure_rotation_){
             double x0 = relative_move_pose_.pose.position.x;
             double y0 = relative_move_pose_.pose.position.y;
-            double x1 = relative_move_pose_.pose.position.x + cos(goal_yaw);
-            double y1 = relative_move_pose_.pose.position.y + sin(goal_yaw);
+            double x1 = relative_move_pose_.pose.position.x + std::cos(goal_yaw);
+            double y1 = relative_move_pose_.pose.position.y + std::sin(goal_yaw);
 
             double pid_offset = pid_dist_offset_;
             if(!forward_){
                 pid_offset = -pid_offset;
             }
 
-            double xR = base_odom_.pose.pose.position.x + cos(yaw)*pid_offset;
-            double yR = base_odom_.pose.pose.position.y + sin(yaw)*pid_offset;
+            double xR = base_odom_.pose.pose.position.x + std::cos(yaw)*pid_offset;
+            double yR = base_odom_.pose.pose.position.y + std::sin(yaw)*pid_offset;
 
-            double crosstrack_error = ((y1-y0)*xR - (x1-x0)*yR + x1*y0 - y1*x0)/(sqrt(pow(y1-y0, 2) + pow(x1-x0, 2)));
+            double crosstrack_error = ((y1-y0)*xR - (x1-x0)*yR + x1*y0 - y1*x0)/(std::sqrt(std::pow(y1-y0, 2) + std::pow(x1-x0, 2)));
 
-            double velocity = fmin(max_lin_, fmax(0.1, dist));
+            double velocity = std::min(max_lin_, std::max(0.1, dist));
 
             if(last_crosstrack_error > 1e8){
                 last_crosstrack_error = crosstrack_error;
@@ -214,14 +215,14 @@ private:
                 rot = -control;
             }
 
-            if(fabs(control)>max_rot_){
-                lin /= fabs(control)/max_rot_;
-                rot /= fabs(control)/max_rot_;
+            if(std::abs(control)>max_rot_){
+                lin /= std::abs(control)/max_rot_;
+                rot /= std::abs(control)/max_rot_;
             }
             ROS_INFO_STREAM("Error: " << crosstrack_error << std::endl << " dx: " << dx << " dy: " << dy << " dTh: " << dTh << " Dist: " << dist << std::endl << "Lin: " << lin << " Ang: " << rot);
         }
         else{
-            double v_theta = dTh > 0 ? fmin(max_rot_, fmax(0.1, dTh)) : fmax(-1.0*max_rot_, fmin(-0.1, dTh));
+            double v_theta = dTh > 0 ? std::min(max_rot_, std::max(0.1, dTh)) : std::max(-1.0*max_rot_, std::min(-0.1, dTh));
             rot = v_theta;
             ROS_INFO_STREAM("Pure rotation. Vth: " << v_theta);
         }
@@ -243,13 +244,13 @@ private:
             lin = 0;
             rot = 0;
         }
-        else if((fabs(dTh) < 3*M_PI/180.0) && (dist < 0.02 || pure_rotation_)){
+        else if((std::abs(dTh) < 3*M_PI/180.0) && (dist < 0.02 || pure_rotation_)){
             double dtm = dt;
             bool keep_driving = false;
             if(lin != 0){
-                double nextdx = relative_move_pose_.pose.position.x - (base_odom_.pose.pose.position.x + cos(yaw) * lin * dtm);
-                double nextdy = relative_move_pose_.pose.position.y - (base_odom_.pose.pose.position.y + sin(yaw) * lin * dtm);
-                double newdist = sqrt(pow(nextdx, 2) + pow(nextdy, 2));
+                double nextdx = relative_move_pose_.pose.position.x - (base_odom_.pose.pose.position.x + std::cos(yaw) * lin * dtm);
+                double nextdy = relative_move_pose_.pose.position.y - (base_odom_.pose.pose.position.y + std::sin(yaw) * lin * dtm);
+                double newdist = std::sqrt(std::pow(nextdx, 2) + std::pow(nextdy, 2));
                 if(newdist < dist){
                     keep_driving = true;
                 }
@@ -259,11 +260,11 @@ private:
             }
 
             bool keep_turning = false;
-            if(!keep_driving && fabs(rot) < 0.1){
+            if(!keep_driving && std::abs(rot) < 0.1){
                 rot = copysign(0.1, rot);
             }
             double newyaw = yaw + rot*dtm;
-            if(fabs(angles::shortest_angular_distance(newyaw, goal_yaw))<fabs(dTh)){
+            if(std::abs(angles::shortest_angular_distance(newyaw, goal_yaw))<std::abs(dTh)){
                 keep_turning = true;
             }
             else{
