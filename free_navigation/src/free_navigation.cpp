@@ -99,6 +99,7 @@ void Navigation::preemtCb()
   move_base_ac_.cancelAllGoals();
   relative_move_ac_.cancelAllGoals();
   dock_with_tape_ac_.cancelAllGoals();
+  collect_bricks_ac_.cancelAllGoals();
 }
 
 void Navigation::doneCbLine(const actionlib::SimpleClientGoalState& state,
