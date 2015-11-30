@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   dock_with_tape
   relative_move_server
+  collect_bricks_pos
 )
 
 catkin_python_setup()

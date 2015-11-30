@@ -4,7 +4,8 @@
 #include <mission/action_states.h>
 Navigation::Navigation(std::string name)
     : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("obstacle_map"),
-      dock_with_tape_ac_("/docker", true), relative_move_ac_("/relative_move_action", true)
+      dock_with_tape_ac_("/docker", true), relative_move_ac_("/relative_move_action", true),
+      collect_bricks_ac_("/collect_bricks_pos_node", true)
 {
   ROS_INFO_NAMED(name_,"Starting navigation");
   // setup action server
@@ -37,6 +38,10 @@ Navigation::Navigation(std::string name)
   {
       ROS_INFO_NAMED(name_,"Waiting for the relative move server to come up");
   }
+  while(!collect_bricks_ac_.waitForServer(ros::Duration(5.0)) && ros::ok())
+  {
+      ROS_INFO_NAMED(name_,"Waiting for the collect bricks pos server to come up");
+  }
   nh_.param<double>("stop_dist_to_wall", stop_dist_to_wall, 0.1);
   dock_goal.dist = stop_dist_to_wall;
   current_position = Navigation::free;
@@ -55,7 +60,7 @@ void Navigation::goalCb()
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
   case Navigation::under_dispenser:
-      goal = getRelativeMove(0,0,3.14);
+      goal = getRelativeMove(-0.2,0,2.5);
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
   case Navigation::at_transition:
@@ -144,6 +149,12 @@ void Navigation::sendMoveBaseGoal(move_base_msgs::MoveBaseGoal& goal_msg)
                boost::bind(&Navigation::feedbackCb, this, _1) );
 }
 
+void Navigation::doneCollectBricksCv(const actionlib::SimpleClientGoalState& state, const collect_bricks_pos::collect_bricks_posResultConstPtr& result)
+{
+  current_position = Navigation::under_dispenser;
+  as_.setSucceeded(result_);
+}
+
 void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
                         const move_base_msgs::MoveBaseResultConstPtr& result)
 {
@@ -168,7 +179,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
   }
   else
   {
-    //ROS_INFO_NAMED(name_,"Finished in state: %s", state.getText().c_str());
+    //ROS_INFO_NAMED(name_,"Finished in state: %s", state.getText().c_str());    
     switch (goal_) {
     case CHARGE:
         ROS_INFO_NAMED(name_,"Docking in CHARGER: %i", BOX_CHARGE);
@@ -177,10 +188,13 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
     case BRICK:
         ROS_INFO_NAMED(name_,"going in to collect bricks: %i", BRICK);
         as_.setSucceeded(result_); // first set succeeded in collecting doneCb
-        current_position = Navigation::free;
+        {
+          collect_bricks_pos::collect_bricks_posGoal collect_bricks_goal;
+          collect_bricks_ac_.sendGoal(collect_bricks_goal, boost::bind(&Navigation::doneCollectBricksCv,this,_1,_2));
+        }
         break;
     case DELIVERY:
-        ROS_INFO_NAMED(name_,"Tipping of at DELIVERY: %i", DELIVERY);
+        ROS_INFO_NAMED(name_,"Tipping of at DELIVERY: %i", DELIVERY);        
         as_.setSucceeded(result_);
         current_position = Navigation::free;
         break;

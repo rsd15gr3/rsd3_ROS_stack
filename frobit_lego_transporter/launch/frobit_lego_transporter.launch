@@ -64,4 +64,6 @@
 
     <!-- Serial comm with Arduino -->
     <node pkg="rosserial_python" name="rosserial_python" type="serial_node.py" output="screen" args="/dev/ttyACM0" /> <!-- TODO udev symlink -->
+
+    <node pkg="collect_bricks_pos" type="collect_bricks_pos_node.py" name="collect_bricks_pos_node" />
 </launch>

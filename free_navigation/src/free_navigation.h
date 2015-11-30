@@ -10,7 +10,7 @@
 #include "free_navigation/NavigateFreelyAction.h"
 #include "dock_with_tape/DockWithTapeAction.h"
 #include <relative_move_server/RelativeMoveAction.h>
-
+#include <collect_bricks_pos/collect_bricks_posAction.h>
 using std::string;
 using std::vector;
 using geometry_msgs::Pose;
@@ -57,5 +57,8 @@ private:
     relative_move_server::RelativeMoveGoal getRelativeMove(double dx, double dy, double dth);
     double undock_relative_move;
     bool in_recovery_mode;
+    // collect client
+    actionlib::SimpleActionClient<collect_bricks_pos::collect_bricks_posAction> collect_bricks_ac_;
+    void doneCollectBricksCv(const actionlib::SimpleClientGoalState& state, const collect_bricks_pos::collect_bricks_posResultConstPtr& result);
 };
 #endif // Navigation_H
