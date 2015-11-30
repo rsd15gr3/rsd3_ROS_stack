@@ -5,9 +5,9 @@
   <node name="action_line_follow" pkg="line_pid" type="line_pid_node" output="screen" > 
     <param name="update_rate" value="10"/>
     <param name="drive_kp" value="1.0"/>
-    <param name="drive_ki" value="0.1"/>
+    <param name="drive_ki" value="0.2"/>
     <param name="drive_kd" value="0.7"/>
-    <param name="drive_max_i" value="1" />
+    <param name="drive_max_i" value="0.5" />
     <param name="drive_feed_forward" value="0.00"/>
     <param name="drive_max_output" value="1.0"/>
     <param name="forward_speed" value="0.3" />
@@ -15,8 +15,8 @@
     <param name="odom_sub" value="/fmProcessors/odometry/filtered/local" /> 
     <param name="command_pub" value="/fmCommand/cmd_vel" />     
     <param name="ramp_dist" value="0.1" />
-    <param name="stop_point_tolerance" value="0.05" />                  
-
+    <param name="stop_point_tolerance" value="0.05" />    
+    <param name="target_dist" value="0.3" />              
     <param name="pid_debug_pub" value="/fmInformation/pid" />
   </node>
 
