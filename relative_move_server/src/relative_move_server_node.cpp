@@ -219,25 +219,25 @@ private:
                 lin /= std::abs(control)/max_rot_;
                 rot /= std::abs(control)/max_rot_;
             }
-            ROS_INFO_STREAM("Error: " << crosstrack_error << std::endl << " dx: " << dx << " dy: " << dy << " dTh: " << dTh << " Dist: " << dist << std::endl << "Lin: " << lin << " Ang: " << rot);
+            ROS_DEBUG_STREAM("Error: " << crosstrack_error << std::endl << " dx: " << dx << " dy: " << dy << " dTh: " << dTh << " Dist: " << dist << std::endl << "Lin: " << lin << " Ang: " << rot);
         }
         else{
             double v_theta = dTh > 0 ? std::min(max_rot_, std::max(0.1, dTh)) : std::max(-1.0*max_rot_, std::min(-0.1, dTh));
             rot = v_theta;
-            ROS_INFO_STREAM("Pure rotation. Vth: " << v_theta);
+            ROS_DEBUG_STREAM("Pure rotation. Vth: " << v_theta);
         }
 
         if(forward_ && dot<0){
-            ROS_INFO("Moved forward past goal.");
+            ROS_DEBUG("Moved forward past goal.");
             past_goal = true;
         }
         if(!forward_ && dot>0){
-            ROS_INFO("Moved backwards past goal.");
+            ROS_DEBUG("Moved backwards past goal.");
             past_goal = true;
         }
 
         if(past_goal && !pure_rotation_){
-            ROS_INFO_STREAM("Drived past goal.");
+            ROS_DEBUG_STREAM("Drived past goal.");
             moving_ = false;
             pure_rotation_ = false;
             done_ = true;
@@ -272,10 +272,10 @@ private:
             }
 
             if(keep_driving || keep_turning){
-                ROS_INFO_STREAM("Close to goal but continuing.");
+                ROS_DEBUG_STREAM("Close to goal but continuing.");
             }
             else{
-                ROS_INFO_STREAM("Goal reached. Dist: " << dist << " Th: " << dTh);
+                ROS_DEBUG_STREAM("Goal reached. Dist: " << dist << " Th: " << dTh);
                 moving_ = false;
                 pure_rotation_ = false;
                 done_ = true;
@@ -314,7 +314,7 @@ private:
                         return ;
                     }
                     else{
-                        ROS_INFO("Preempting the current goal");
+                        ROS_DEBUG("Preempting the current goal");
                         as_.setPreempted();
                         moving_ = false;
                         publishCmdVel(0, 0);
