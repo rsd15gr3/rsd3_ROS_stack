@@ -35,7 +35,7 @@ private:
     uint8_t prev_action_state_ = 255;
     // Move base client
     Pose line_to_manipulator_pose_, delivery_pose_, charge_pose_;
-    Pose load_bricks_pose_, stageing_;
+    Pose load_bricks_pose_, recovery_;
     string static_frame_id;
     MoveBaseClient move_base_ac_;
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);    
