@@ -38,9 +38,10 @@ void Pid_controller::reset()
 double Pid_controller::update(double error)
 {
     this->error = error;
+
     // proportional
     p = kp * error;
-    ROS_INFO("T = %f", T);
+
     // integral
     i += ki * error * T;
 

@@ -37,7 +37,6 @@ int main(int argc, char** argv)
 
 void filteredPoseCb(const geometry_msgs::PoseWithCovarianceStamped  &filtered_pose)
 {
-  ROS_INFO("Filtered msg recieved");
   filtered_position_file
     << filtered_pose.header.stamp << ","
     << filtered_pose.pose.pose.position.x << ","
@@ -46,7 +45,6 @@ void filteredPoseCb(const geometry_msgs::PoseWithCovarianceStamped  &filtered_po
 
 void odomPoseCb(const nav_msgs::Odometry &odom_pose)
 {
-  ROS_INFO("Odom msg recieved");
   odom_position_file
     << odom_pose.header.stamp << ","
     << odom_pose.pose.pose.position.x << ","

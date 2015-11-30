@@ -12,7 +12,6 @@ int main(int argc, char **argv)
 
   ros::Rate loop_rate(0.05);
 
-  int count = 0;
   while (ros::ok())
   {
 
@@ -22,15 +21,11 @@ int main(int argc, char **argv)
     unload << "unload";
     msg.data = unload.str();
 
-    ROS_INFO("%s", msg.data.c_str());
-
     unload_pub.publish(msg);
 
     ros::spinOnce();
 
     loop_rate.sleep();
-
-    ++count;
   }
 
 

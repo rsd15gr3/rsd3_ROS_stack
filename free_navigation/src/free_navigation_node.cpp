@@ -9,10 +9,6 @@ using std::vector;
 using std::string;
 using geometry_msgs::Pose;
 
-void actionCb(const msgs::IntStamped& cmd)
-{
-    ROS_INFO("Action: %i recieved", cmd.data);
-}
 
 int main(int argc, char** argv){
 #if ROSCONSOLE_MIN_SEVERITY == ROSCONSOLE_SEVERITY_DEBUG

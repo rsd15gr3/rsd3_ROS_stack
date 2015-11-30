@@ -49,7 +49,6 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
 {
     active_behavior = false;
     path.pop();
-    ROS_INFO("got the cb");
 }
 
 void doneCbFrom(const actionlib::SimpleClientGoalState& state,
@@ -57,7 +56,6 @@ void doneCbFrom(const actionlib::SimpleClientGoalState& state,
 {
     active_behavior = false;
     path.pop();
-    ROS_INFO("got the cb");
 
     //update navigation pose
     geometry_msgs::PoseWithCovarianceStamped msg;
@@ -83,7 +81,7 @@ void doneCbFrom(const actionlib::SimpleClientGoalState& state,
 
 void doneCbNavigation(const actionlib::SimpleClientGoalState& state,
             const free_navigation::NavigateFreelyResultConstPtr& result)
-{    
+{
     if(result->state != free_navigation::NavigateFreelyResult::SUCCESS)
     {
         error = false;
@@ -95,7 +93,6 @@ void doneCbNavigation(const actionlib::SimpleClientGoalState& state,
     }
     active_behavior = false;
     path.pop();
-    ROS_INFO("got the cb");
 }
 
 void missionCallback(const msgs::IntStamped::ConstPtr& msg)
@@ -280,7 +277,7 @@ int main(int argc, char **argv)
             //--------------------------------------------------------
 
 
-            path.infoRoute();
+            //path.infoRoute();
             //send message for gui
             std_msgs::String gui_message;
             //gui_message.header.stamp = ros::Time::now();

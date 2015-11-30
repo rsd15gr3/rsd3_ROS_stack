@@ -6,7 +6,7 @@ Navigation::Navigation(std::string name)
     : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("obstacle_map"),
       dock_with_tape_ac_("/docker", true), relative_move_ac_("/relative_move_action", true)
 {
-  ROS_INFO("Starting navigation");
+  ROS_INFO_NAMED(name_,"Starting navigation");
   // setup action server
   as_.registerGoalCallback(boost::bind(&Navigation::goalCb, this) );
   as_.registerPreemptCallback(boost::bind(&Navigation::preemtCb, this) );
@@ -27,15 +27,15 @@ Navigation::Navigation(std::string name)
   }
   //ros::Subscriber sub = n.subscribe(action_topic, 1, &actionCb);
   while(!move_base_ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
-      ROS_INFO("Waiting for the move_base action server to come up");
+      ROS_INFO_NAMED(name_,"Waiting for the move_base action server to come up");
   }
   while(!dock_with_tape_ac_.waitForServer(ros::Duration(5.0)) && ros::ok())
   {
-      ROS_INFO("Waiting for the dock with tape server to come up");
-  }  
+      ROS_INFO_NAMED(name_,"Waiting for the dock with tape server to come up");
+  }
   while(!relative_move_ac_.waitForServer(ros::Duration(5.0)) && ros::ok())
   {
-      ROS_INFO("Waiting for the relative move server to come up");
+      ROS_INFO_NAMED(name_,"Waiting for the relative move server to come up");
   }
   nh_.param<double>("stop_dist_to_wall", stop_dist_to_wall, 0.1);
   dock_goal.dist = stop_dist_to_wall;
@@ -94,7 +94,7 @@ void Navigation::preemtCb()
 
 void Navigation::doneCbLine(const actionlib::SimpleClientGoalState& state,
             const dock_with_tape::DockWithTapeResultConstPtr &result)
-{  
+{
   current_position = Navigation::docked;
   as_.setSucceeded(result_); // first set succeeded in collecting doneCb
 }
@@ -105,19 +105,19 @@ void Navigation::approachGoal()
       move_base_msgs::MoveBaseGoal goal_msg;
       switch (goal_) {
       case CHARGE:
-          ROS_INFO("GOING TO CHARGER: %i", BOX_CHARGE);
+          ROS_INFO_NAMED(name_,"GOING TO CHARGER: %i", BOX_CHARGE);
           goal_msg.target_pose.pose = charge_pose_;
           break;
       case BRICK:
-          ROS_INFO("GOING TO collect bricks: %i", BRICK);
+          ROS_INFO_NAMED(name_,"GOING TO collect bricks: %i", BRICK);
           goal_msg.target_pose.pose = load_bricks_pose_;
           break;
       case DELIVERY:
-          ROS_INFO("GOING TO DELIVERY: %i", DELIVERY);
+          ROS_INFO_NAMED(name_,"GOING TO DELIVERY: %i", DELIVERY);
           goal_msg.target_pose.pose = delivery_pose_;
           break;
       case TRANSITION:
-          ROS_INFO("GOING TO line to manipulators: %i", TRANSITION);
+          ROS_INFO_NAMED(name_,"GOING TO line to manipulators: %i", TRANSITION);
           goal_msg.target_pose.pose = line_to_manipulator_pose_;
           break;
       default:
@@ -132,7 +132,7 @@ void Navigation::approachGoal()
 
 void Navigation::sendMoveBaseGoal(move_base_msgs::MoveBaseGoal& goal_msg)
 {
-  //ROS_INFO("(%f, %f)",goal_msg.target_pose.pose.position.x, goal_msg.target_pose.pose.position.y);
+  //ROS_INFO_NAMED(name_,"(%f, %f)",goal_msg.target_pose.pose.position.x, goal_msg.target_pose.pose.position.y);
   goal_msg.target_pose.header.frame_id = static_frame_id;
   goal_msg.target_pose.header.stamp = ros::Time::now();
   move_base_ac_.sendGoal(goal_msg, boost::bind(&Navigation::doneCb,this,_1, _2),
@@ -142,13 +142,13 @@ void Navigation::sendMoveBaseGoal(move_base_msgs::MoveBaseGoal& goal_msg)
 
 void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
                         const move_base_msgs::MoveBaseResultConstPtr& result)
-{  
+{
   if( move_base_ac_.getState() != actionlib::SimpleClientGoalState::SUCCEEDED)
   {
     ROS_WARN_NAMED(name_, "Move base failed to approach target");
     move_base_ac_.cancelAllGoals();
     move_base_msgs::MoveBaseGoal goal_msg;
-    ROS_INFO("GOING TO recovery pose: %i", BOX_CHARGE);
+    ROS_INFO_NAMED(name_,"GOING TO recovery pose: %i", BOX_CHARGE);
     goal_msg.target_pose.pose = recovery_;
     sendMoveBaseGoal(goal_msg);
     in_recovery_mode = true;
@@ -164,24 +164,24 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
   }
   else
   {
-    //ROS_INFO("Finished in state: %s", state.getText().c_str());
+    //ROS_INFO_NAMED(name_,"Finished in state: %s", state.getText().c_str());
     switch (goal_) {
     case CHARGE:
-        ROS_INFO("Docking in CHARGER: %i", BOX_CHARGE);
+        ROS_INFO_NAMED(name_,"Docking in CHARGER: %i", BOX_CHARGE);
         dock_with_tape_ac_.sendGoal(dock_goal, boost::bind(&Navigation::doneCbLine,this,_1,_2));
         break;
     case BRICK:
-        ROS_INFO("going in to collect bricks: %i", BRICK);
+        ROS_INFO_NAMED(name_,"going in to collect bricks: %i", BRICK);
         as_.setSucceeded(result_); // first set succeeded in collecting doneCb
         current_position = Navigation::free;
         break;
     case DELIVERY:
-        ROS_INFO("Tipping of at DELIVERY: %i", DELIVERY);
+        ROS_INFO_NAMED(name_,"Tipping of at DELIVERY: %i", DELIVERY);
         as_.setSucceeded(result_);
         current_position = Navigation::free;
         break;
     case TRANSITION:
-        ROS_INFO("At transition: %i", TRANSITION);
+        ROS_INFO_NAMED(name_,"At transition: %i", TRANSITION);
         as_.setSucceeded(result_);
         current_position = Navigation::free;
         break;
@@ -193,12 +193,12 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
 }
 void Navigation::activeCb()
 {
-    //ROS_INFO("Start executing Navigation command");
+    //ROS_INFO_NAMED(name_,"Start executing Navigation command");
 }
 
 void Navigation::feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback)
 {
-    //ROS_INFO("Feedback update:");
+    //ROS_INFO_NAMED(name_,"Feedback update:");
     // Possible to Monitor position on feedback->base_position
 }
 
