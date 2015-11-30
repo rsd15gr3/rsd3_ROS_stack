@@ -21,7 +21,6 @@ using namespace std;
 using namespace zbar;
 using namespace cv;
 
-#define ROSCONSOLE_MIN_SEVERITY ROSCONSOLE_SEVERITY_DEBUG //ROSCONSOLE_SEVERITY_INFO, ROSCONSOLE_SEVERITY_DEBUG
 const string node_name("zbar_decoder_node");
 string frame_id("camera_link");
 const double min_white_area = 60000;
@@ -64,14 +63,8 @@ unsigned getLargestContourROI(const Mat &im, Mat &mask, double min_area);
 bool imHasQRTag(const Mat &im);
 
 int main(int argc, char **argv){
-  // Print debug msgs
-#if ROSCONSOLE_MIN_SEVERITY == ROSCONSOLE_SEVERITY_DEBUG
-  if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
-     ros::console::notifyLoggerLevelsChanged();
-  }
-#endif
   ros::init(argc, argv, node_name);
-  ros::NodeHandle n("~");  
+  ros::NodeHandle n("~");
   prev_tag_found = false;
   pub = n.advertise<msgs::BoolStamped>("/tag_found", 1);
   n.param<double>("tag_scale_factor",scale_factor, 0.5);
