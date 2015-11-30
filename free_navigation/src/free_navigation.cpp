@@ -22,6 +22,8 @@ Navigation::Navigation(std::string name)
       load_bricks_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
       nh_.param<vector<double>>("charge", tmp_in_plane_pose, vector<double>{0,0,0});
       charge_pose_ = Navigation::convertVecToPose(tmp_in_plane_pose);
+      nh_.param<vector<double>>("recovery_pose", tmp_in_plane_pose, vector<double>{0,0,0});
+      recovery_ = Navigation::convertVecToPose(tmp_in_plane_pose);
   }
   //ros::Subscriber sub = n.subscribe(action_topic, 1, &actionCb);
   while(!move_base_ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
@@ -63,6 +65,7 @@ void Navigation::goalCb()
     break;
   }
   ROS_INFO_NAMED(name_,"New behavior accepted");
+  in_recovery_mode = false;
 }
 
 void Navigation::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state,
@@ -124,49 +127,68 @@ void Navigation::approachGoal()
           as_.setAborted(result_, "Unknown behavior type recieved");
           return; // not a navigation command so do not navigate
       }
-      ROS_INFO("(%f, %f)",goal_msg.target_pose.pose.position.x, goal_msg.target_pose.pose.position.y);
-      goal_msg.target_pose.header.frame_id = static_frame_id;
-      goal_msg.target_pose.header.stamp = ros::Time::now();
-      move_base_ac_.sendGoal(goal_msg, boost::bind(&Navigation::doneCb,this,_1, _2),
-                   boost::bind(&Navigation::activeCb, this),
-                   boost::bind(&Navigation::feedbackCb, this, _1) );
+      sendMoveBaseGoal(goal_msg);
 }
 
+void Navigation::sendMoveBaseGoal(const move_base_msgs::MoveBaseGoal& goal_msg)
+{
+  //ROS_INFO("(%f, %f)",goal_msg.target_pose.pose.position.x, goal_msg.target_pose.pose.position.y);
+  goal_msg.target_pose.header.frame_id = static_frame_id;
+  goal_msg.target_pose.header.stamp = ros::Time::now();
+  move_base_ac_.sendGoal(goal_msg, boost::bind(&Navigation::doneCb,this,_1, _2),
+               boost::bind(&Navigation::activeCb, this),
+               boost::bind(&Navigation::feedbackCb, this, _1) );
+}
 
 void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
                         const move_base_msgs::MoveBaseResultConstPtr& result)
-{
+{  
   if( move_base_ac_.getState() != actionlib::SimpleClientGoalState::SUCCEEDED)
   {
-    ROS_ERROR_NAMED(name_, "Move base failed to approach target");
-    result_.state = free_navigation::NavigateFreelyResult::FAILED;
-    as_.setAborted(result_,"Move base failed to approach target");
+    ROS_WARN_NAMED(name_, "Move base failed to approach target");
+    move_base_ac_.cancelAllGoals();
+    move_base_msgs::MoveBaseGoal goal_msg;
+    ROS_INFO("GOING TO recovery pose: %i", BOX_CHARGE);
+    goal_msg.target_pose.pose = recovery_;
+    sendMoveBaseGoal(goal_msg);
+    in_recovery_mode = true;
+    //result_.state = free_navigation::NavigateFreelyResult::FAILED;
+    //as_.setAborted(result_,"Move base failed to approach target");
     return;
   }
-  //ROS_INFO("Finished in state: %s", state.getText().c_str());
-  switch (goal_) {
-  case CHARGE:
-      ROS_INFO("Docking in CHARGER: %i", BOX_CHARGE);
-      dock_with_tape_ac_.sendGoal(dock_goal, boost::bind(&Navigation::doneCbLine,this,_1,_2));
-      break;
-  case BRICK:
-      ROS_INFO("going in to collect bricks: %i", BRICK);
-      as_.setSucceeded(result_); // first set succeeded in collecting doneCb
-      current_position = Navigation::free;
-      break;
-  case DELIVERY:
-      ROS_INFO("Tipping of at DELIVERY: %i", DELIVERY);
-      as_.setSucceeded(result_);
-      current_position = Navigation::free;
-      break;
-  case TRANSITION:
-      ROS_INFO("At transition: %i", TRANSITION);
-      as_.setSucceeded(result_);
-      current_position = Navigation::free;
-      break;
-  default:
-      //ac_.cancelAllGoals();
-      return; // not a navigation command so do not navigate
+  // if at staging area then approach previous goal again
+  if(in_recovery_mode)
+  {
+    in_recovery_mode = false;
+    approachGoal();
+  }
+  else
+  {
+    //ROS_INFO("Finished in state: %s", state.getText().c_str());
+    switch (goal_) {
+    case CHARGE:
+        ROS_INFO("Docking in CHARGER: %i", BOX_CHARGE);
+        dock_with_tape_ac_.sendGoal(dock_goal, boost::bind(&Navigation::doneCbLine,this,_1,_2));
+        break;
+    case BRICK:
+        ROS_INFO("going in to collect bricks: %i", BRICK);
+        as_.setSucceeded(result_); // first set succeeded in collecting doneCb
+        current_position = Navigation::free;
+        break;
+    case DELIVERY:
+        ROS_INFO("Tipping of at DELIVERY: %i", DELIVERY);
+        as_.setSucceeded(result_);
+        current_position = Navigation::free;
+        break;
+    case TRANSITION:
+        ROS_INFO("At transition: %i", TRANSITION);
+        as_.setSucceeded(result_);
+        current_position = Navigation::free;
+        break;
+    default:
+        //ac_.cancelAllGoals();
+        return; // not a navigation command so do not navigate
+    }
   }
 }
 void Navigation::activeCb()

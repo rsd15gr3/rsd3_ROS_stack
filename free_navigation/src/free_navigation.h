@@ -34,10 +34,8 @@ private:
     uint8_t goal_;
     uint8_t prev_action_state_ = 255;
     // Move base client
-    Pose line_to_manipulator_pose_;
-    Pose delivery_pose_;
-    Pose charge_pose_;
-    Pose load_bricks_pose_;
+    Pose line_to_manipulator_pose_, delivery_pose_, charge_pose_;
+    Pose load_bricks_pose_, stageing_;
     string static_frame_id;
     MoveBaseClient move_base_ac_;
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);    
@@ -46,6 +44,7 @@ private:
     void activeCb();
     void feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback);
     static Pose convertVecToPose(const vector<double>& poses);
+    void sendMoveBaseGoal(const move_base_msgs::MoveBaseGoal& goal_msg);
     // Docking client
     actionlib::SimpleActionClient<dock_with_tape::DockWithTapeAction> dock_with_tape_ac_;
     void doneCbLine(const actionlib::SimpleClientGoalState& state,
@@ -57,5 +56,6 @@ private:
     actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> relative_move_ac_;
     relative_move_server::RelativeMoveGoal getRelativeMove(double dx, double dy, double dth);
     double undock_relative_move;
+    bool in_recovery_mode;
 };
 #endif // Navigation_H
