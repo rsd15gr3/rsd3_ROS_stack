@@ -10,6 +10,7 @@
 #include <msgs/IntStamped.h>
 #include <msgs/BoolStamped.h>
 #include <msgs/FloatStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include "std_msgs/String.h"
 #include "mission/action_states.h"
 #include <test_server/testAction.h>
@@ -22,6 +23,7 @@
 
 //Publishers
 ros::Publisher action_publisher;
+ros::Publisher pose_publisher;
 
 //Subscribers
 ros::Subscriber mission_subscriber;
@@ -48,6 +50,35 @@ void doneCb(const actionlib::SimpleClientGoalState& state,
     active_behavior = false;
     path.pop();
     ROS_INFO("got the cb");
+}
+
+void doneCbFrom(const actionlib::SimpleClientGoalState& state,
+                const test_server::testResultConstPtr& result)
+{
+    active_behavior = false;
+    path.pop();
+    ROS_INFO("got the cb");
+
+    //update navigation pose
+    geometry_msgs::PoseWithCovarianceStamped msg;
+    msg.header.stamp = ros::Time::now();
+    msg.header.frame_id = "markerlocator";
+    msg.pose.pose.orientation.w = 0.458046469719;
+    msg.pose.pose.orientation.x = 0;
+    msg.pose.pose.orientation.y = 0;
+    msg.pose.pose.orientation.z = 0.888928248835;
+    msg.pose.pose.position.x = 5.23196131368;
+    msg.pose.pose.position.y = 0.838434089243;
+    msg.pose.pose.position.z = 0.0;
+    const double covariance = 0.1;
+    msg.pose.covariance[0] = covariance;
+    msg.pose.covariance[7] = covariance;
+    msg.pose.covariance[35] = covariance;
+    pose_publisher.publish(msg);
+    /*for(int i=0; i<std::sqrt(msg.pose.covariance.size()); i++)
+    {
+      msg.pose.covariance.at(i+i*std::sqrt(msg.pose.covariance.size())) = 0.1;
+    }*/
 }
 
 void doneCbNavigation(const actionlib::SimpleClientGoalState& state,
@@ -98,6 +129,7 @@ int main(int argc, char **argv)
 
 	//init publishers
     action_publisher = nodeHandler.advertise<std_msgs::String>("mission/next_mission",1);
+    pose_publisher = nodeHandler.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose",1);
 
     mission_subscriber = nodeHandler.subscribe("ui/mes", 5, missionCallback);
     automode_subscriber = nodeHandler.subscribe("fmPlan/automode", 5, automodeCallback);
@@ -232,7 +264,7 @@ int main(int argc, char **argv)
                             navigation_area = true;
                             test_server::testGoal goal;
                             goal.order = path.getCurrentState();
-                            action_from_cell.sendGoal(goal, &doneCb);
+                            action_from_cell.sendGoal(goal, &doneCbFrom);
                             active_behavior = true;
                         }
                         else
