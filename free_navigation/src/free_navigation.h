@@ -23,7 +23,7 @@ public:
 private:
     enum position_state
     {
-      docked, under_dispenser, free
+      docked, under_dispenser, free, at_transition
     } current_position;
     void approachGoal();
     string name_;

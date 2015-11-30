@@ -58,6 +58,10 @@ void Navigation::goalCb()
       goal = getRelativeMove(0,0,3.14);
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
+  case Navigation::at_transition:
+      goal = getRelativeMove(0,0, 2.0*M_PI);
+      relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
+    break;
   case Navigation::free:
       approachGoal();
     break;
@@ -183,7 +187,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
     case TRANSITION:
         ROS_INFO_NAMED(name_,"At transition: %i", TRANSITION);
         as_.setSucceeded(result_);
-        current_position = Navigation::free;
+        current_position = Navigation::at_transition;
         break;
     default:
         //ac_.cancelAllGoals();
