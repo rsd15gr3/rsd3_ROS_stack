@@ -178,7 +178,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(arduinoTalker src/arduinoTalker.cpp)
 target_link_libraries(arduinoTalker ${catkin_LIBRARIES})
-add_dependencies(arduinoTalker arduino_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+add_dependencies(arduinoTalker arduino_gencpp ${catkin_EXPORTED_TARGETS})
 
 rosserial_add_client_target(firmware communication ALL)
 rosserial_add_client_target(firmware communication-upload)
