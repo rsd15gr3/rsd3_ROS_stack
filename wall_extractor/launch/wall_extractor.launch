@@ -1,7 +1,0 @@
-<launch>
-    <node pkg="wall_extractor" name="wall_extractor" type="wall_extractor_node.py" output="screen">
-        <param name="laser_scan_sub" value="/scan"/>
-        <param name="ransac_debug_marker" value="/ransac_debug_marker" />
-        <param name="walls" value="/walls" />
-    </node>
-</launch>
