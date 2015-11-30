@@ -240,17 +240,17 @@ void imageCb(const sensor_msgs::ImageConstPtr& msg)
         ROS_DEBUG("No valid line found, T_top %f, T_bot %f", threshold_top, threshold_bot);
         angle=0;
         offset=0;
-    }    
+    }
+    // Publish line pose
+    line_detection::line line_msg;
+    line_msg.header.stamp = ros::Time::now();
+    line_msg.header.frame_id = ""; // TODO:
+    line_msg.angle = angle;
+    line_msg.offset = offset;
+    line_pub.publish(line_msg);    
+    
     if(show_line_enb)
     {
-        // Publish line pose
-        line_detection::line line_msg;
-        line_msg.header.stamp = ros::Time::now();
-        line_msg.header.frame_id = ""; // TODO:
-        line_msg.angle = angle;
-        line_msg.offset = offset;
-        line_pub.publish(line_msg);
-
         // Debug plot ( TODO: move debug plot to other node )
         Mat line_img;
         cv::line(line_img, Point(midOfTop, top_scanline), Point(midOfBot, bot_scanline), 255, 2);
