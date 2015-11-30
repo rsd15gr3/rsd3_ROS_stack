@@ -130,7 +130,7 @@ void Navigation::approachGoal()
       sendMoveBaseGoal(goal_msg);
 }
 
-void Navigation::sendMoveBaseGoal(const move_base_msgs::MoveBaseGoal& goal_msg)
+void Navigation::sendMoveBaseGoal(move_base_msgs::MoveBaseGoal& goal_msg)
 {
   //ROS_INFO("(%f, %f)",goal_msg.target_pose.pose.position.x, goal_msg.target_pose.pose.position.y);
   goal_msg.target_pose.header.frame_id = static_frame_id;

@@ -44,7 +44,7 @@ private:
     void activeCb();
     void feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback);
     static Pose convertVecToPose(const vector<double>& poses);
-    void sendMoveBaseGoal(const move_base_msgs::MoveBaseGoal& goal_msg);
+    void sendMoveBaseGoal(move_base_msgs::MoveBaseGoal& goal_msg);
     // Docking client
     actionlib::SimpleActionClient<dock_with_tape::DockWithTapeAction> dock_with_tape_ac_;
     void doneCbLine(const actionlib::SimpleClientGoalState& state,
