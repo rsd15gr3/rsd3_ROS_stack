@@ -14,7 +14,7 @@ class Node():
         """ Node Instance Initialization """
 
         ''' Topics '''
-        self.tp_scan = '/base_scan'
+        self.tp_scan = '/fmSensors/scan'
         self.tp_frobit_automode = '/fmPlan/automode'
         self.tp_cmd_vel = '/fmCommand/cmd_vel'
 
@@ -75,7 +75,7 @@ class Node():
             except IndexError:
                 pass
 
-        if 0.4 < self.front_left_wall < 0.5 and 0.4 < self.front_right_wall < 0.5:
+        if 0.4 < self.front_left_wall < 0.6 and 0.4 < self.front_right_wall < 0.6:
             print 'front wall seen', self.front_left_wall, self.front_right_wall
             self.vel_lin = 0.0
             self.vel_ang = 0.0
@@ -95,8 +95,9 @@ class Node():
                 print 'right wall far away, turning right', self.right_wall
             else:
                 self.vel_ang = 0.0
+        #print 'front distance:', self.front_left_wall, self.front_right_wall
 
-        #self.publish_tp_cmd_vel_message()
+        self.publish_tp_cmd_vel_message()
 
     def stop_frobit(self):
         self.vel_ang = 0.0
