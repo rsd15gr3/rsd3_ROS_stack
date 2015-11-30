@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>load_pos</name>
+  <name>collect_bricks_pos</name>
   <version>1.0.0</version>
   <description>Testing methods of getting the position for loading bricks</description>
 
@@ -18,4 +18,14 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>msgs</run_depend>
+  
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  
+  <run_depend>actionlib</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
 </package>
