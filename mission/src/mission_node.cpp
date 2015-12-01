@@ -36,7 +36,7 @@ std::queue<int> mission_queue;
 
 bool navigation_area = true;
 bool active_behavior = false;
-bool automode = true;
+bool automode = false;
 bool should_charge = false;
 bool error = false;
 double voltage = 13;
