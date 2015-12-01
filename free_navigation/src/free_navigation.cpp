@@ -6,6 +6,7 @@ Navigation::Navigation(std::string name)
     : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("obstacle_map"),
       dock_with_tape_ac_("/docker", true), relative_move_ac_("/relative_move_action", true),
       collect_bricks_ac_("/collect_bricks_pos_node", true)
+
 {
   ROS_INFO_NAMED(name_,"Starting navigation");
   // setup action server
@@ -80,13 +81,15 @@ void Navigation::goalCb()
 void Navigation::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state,
                         const relative_move_server::RelativeMoveResultConstPtr& result)
 {
+  /* relative move returns failed even when it reaches a reasonable pose??
   if(result->end_state != relative_move_server::RelativeMoveResult::GOAL_REACHED)
   {
-    ROS_ERROR_NAMED(name_, "Relative move failed, and ended in the state: %i", result->end_state);
+    ROS_ERROR_NAMED(name_, "Relative move failed, and ended in the state: %i", result->end_state);    
     result_.state = free_navigation::NavigateFreelyResult::FAILED;
     as_.setAborted(result_,"Relative move failed");
     return;
   }
+  */
   approachGoal();
   current_position = Navigation::free;
 }
