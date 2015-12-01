@@ -5,7 +5,7 @@
 
 Route::Route(bool load)
 {
-    currentState = CHARGE;
+    currentState = DELIVERY;
 
     if(!load)
     {
