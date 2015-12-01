@@ -179,6 +179,7 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
       back_up_goal.target_pose.header.stamp = ros::Time::now();
       relative_move_ac_.sendGoal(back_up_goal);
       relative_move_ac_.waitForResult(); // block wait for result
+      ros::Duration(0.5).sleep();
       /*
       publishVelCommand(-0.5,0);
       ros::Duration(0.2).sleep();
