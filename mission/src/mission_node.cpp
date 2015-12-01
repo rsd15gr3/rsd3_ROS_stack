@@ -40,7 +40,7 @@ bool automode = false;
 bool should_charge = false;
 bool error = false;
 double voltage = 13;
-double voltage_filled = 14;
+double voltage_filled = 13.3;
 
 std::string get_string(int value);
 
