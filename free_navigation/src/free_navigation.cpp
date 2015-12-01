@@ -61,7 +61,7 @@ void Navigation::goalCb()
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
   case Navigation::under_dispenser:
-      goal = getRelativeMove(-0.2,0,2.5);
+      goal = getRelativeMove(-0.4,0,2.5);
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
   case Navigation::at_transition:
