@@ -219,14 +219,14 @@ int main(int argc, char **argv)
             if(!path.empty() && active_behavior == false)
             {
                 //change plan if in need of charge
-                if(path.getCurrentState() != CHARGE &&
+                /*if(path.getCurrentState() != CHARGE &&
                    path.getCurrentState() != CELL_1 &&
                    path.getCurrentState() != CELL_2 &&
                    path.getCurrentState() != CELL_3 &&
                    should_charge == true)
                 {
                     path.goChargeInterupt();
-                }
+                }*/
                 //waits with orders until proberly charged
                 if( path.getCurrentState() != CHARGE || voltage > voltage_filled )
                 {
