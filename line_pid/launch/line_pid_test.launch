@@ -52,7 +52,7 @@
     <!-- Frobit interface node -->
     <node pkg="sdu_frobit_v2" name="frobit" type="frobit_interface_node.py" output="screen" >
         <param name="actuation_enable_sub" value="/fmSafe/actuation_enable" />
-        <param name="cmd_vel_sub" value="/safe_vel" />
+        <param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
         <param name="enc_left_pub" value="/fmInformation/encoder_left" />
         <param name="enc_right_pub" value="/fmInformation/encoder_right" />
         <param name="wheel_status_left_pub" value="/fmInformation/wheel_status_left" />
