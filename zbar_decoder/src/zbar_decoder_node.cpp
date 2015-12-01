@@ -16,6 +16,7 @@
 #include <zbar_decoder/decode_qr.h>
 #include "qr_tag_pose_estimator.h"
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Point.h>
 #include <tf/tf.h>
 using namespace std;
 using namespace zbar;
@@ -30,6 +31,7 @@ ImageScanner scanner;
 bool prev_tag_found;
 cv_bridge::CvImageConstPtr cv_ptr; // http://docs.ros.org/api/sensor_msgs/html/msg/Image.html
 ros::Publisher pub;
+ros::Publisher point_pub;
 int debounce_size;
 double scale_factor;
 QrTagPoseEstimator tag_pose_estimator;
@@ -60,13 +62,14 @@ bool decodePrTag(const cv_bridge::CvImageConstPtr &cv_ptr, string & value);
 void camCallback(const sensor_msgs::Image::ConstPtr& img );
 bool getQrIdCallback(zbar_decoder::decode_qr::Response &req, zbar_decoder::decode_qr::Response &res);
 unsigned getLargestContourROI(const Mat &im, Mat &mask, double min_area);
-bool imHasQRTag(const Mat &im);
+bool imHasQRTag(const Mat &im, Point &p);
 
 int main(int argc, char **argv){
   ros::init(argc, argv, node_name);
   ros::NodeHandle n("~");
   prev_tag_found = false;
   pub = n.advertise<msgs::BoolStamped>("/tag_found", 1);
+  pub = n.advertise<geometry_msgs::Point>("/tag_position", 1);
   n.param<double>("tag_scale_factor",scale_factor, 0.5);
   n.param<int>("debounce_size", debounce_size, 3);
   n.param<int>("threshold", threshold_value, 210);
@@ -97,7 +100,7 @@ int main(int argc, char **argv){
   ros::spin();
 }
 
-bool imHasQRTag(const Mat &im)
+bool imHasQRTag(const Mat &im, Point &p)
 {
   Mat binary_im;
   threshold( im, binary_im, threshold_value, 255, CV_THRESH_BINARY );
@@ -108,6 +111,8 @@ bool imHasQRTag(const Mat &im)
     Mat roi;
     bitwise_not(binary_im, roi, mask);
     unsigned tag_area = countNonZero(roi);
+    Moments m = moments(binary_im, false);
+    p = Point(m.m10/m.m00-im.cols/2, m.m01/m.m00-im.rows/2);
     if(tag_area > min_tag_area)
     {
       return true;
@@ -242,7 +247,8 @@ void camCallback(const sensor_msgs::Image::ConstPtr& img )
     ROS_ERROR("cv_bridge exception: %s", e.what());
     return;
   }
-  bool current_tag_found = imHasQRTag(cv_ptr->image);
+  Point center;
+  bool current_tag_found = imHasQRTag(cv_ptr->image, center);
   bool tag_found = debouncer.update(current_tag_found);
   //if(tag_found)
     //ROS_INFO("Tag found");
@@ -253,6 +259,12 @@ void camCallback(const sensor_msgs::Image::ConstPtr& img )
     //ROS_DEBUG("Tag found");
     // first found tag is used
     //ROS_DEBUG_COND(qr_tag_found, "qr tag not found by zbar");
+    geometry_msgs::Point point_msg;
+    point_msg.z = 0;
+    point_msg.x = center.x;
+    point_msg.y = center.y;
+    point_pub.publish(point_msg);
+
     msgs::BoolStamped msgs;
     msgs.header.stamp = ros::Time::now();
     msgs.header.frame_id = frame_id.c_str();
