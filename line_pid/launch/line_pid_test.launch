@@ -217,5 +217,5 @@
         <param name="publish_frequency" value="100"/>
     </node>
 
-    <rosparam file="$(find line_pid)/launch/line_pid.launch" />
+    <include file="$(find line_pid)/launch/line_pid.launch" />
 </launch>
