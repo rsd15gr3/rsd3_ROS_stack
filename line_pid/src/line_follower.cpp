@@ -176,7 +176,8 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
     int i = 0;
     while(!get_qr_client.call(qr_request) && i < 2)
     {      
-      relative_move_ac_.sendGoal(back_up_goal, boost::bind(&Line_follower::doneRelativeMoveCb, this, _1, _2));
+      back_up_goal.target_pose.header.stamp = ros::Time::now();
+      relative_move_ac_.sendGoal(back_up_goal);
       relative_move_ac_.waitForResult(); // block wait for result
       /*
       publishVelCommand(-0.5,0);
@@ -225,16 +226,4 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
     //publishVelCommand(0,0);
     //line_follow_enabled = false;
   }
-}
-
-void Line_follower::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state,
-                        const relative_move_server::RelativeMoveResultConstPtr& result)
-{
-  if(result->end_state != relative_move_server::RelativeMoveResult::GOAL_REACHED)
-  {
-    ROS_ERROR_NAMED(name_, "Relative move failed, and ended in the state: %i", result->end_state);
-    as_.setAborted(result_,"Relative move failed");
-    return;
-  }
-
 }

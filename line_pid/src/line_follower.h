@@ -47,7 +47,6 @@ public:
   void goalCb();
   void preemtCb();
   // relative move
-  void doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state, const relative_move_server::RelativeMoveResultConstPtr& result);
   actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> relative_move_ac_;
   relative_move_server::RelativeMoveGoal back_up_goal;
 };
