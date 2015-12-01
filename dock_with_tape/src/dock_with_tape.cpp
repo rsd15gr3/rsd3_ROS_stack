@@ -97,7 +97,7 @@ void Line_follower::pidCb(const ros::TimerEvent &)
       //const double ramp_p = forward_speed/ramp_distance;
       //ramp_speed = ramp_p * distance_to_dock;
       ramp_speed = dock_speed;
-      publishVelCommand(ramp_speed, heading_controller.update(movingGoalTargetAngle));
+      publishVelCommand(ramp_speed, 0);
     }
     else
     {
