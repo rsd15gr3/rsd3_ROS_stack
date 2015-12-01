@@ -46,7 +46,7 @@ class LoadPosActionNode():
         ''' ActionServer '''
         self.finished = False
         self.success = True
-        self.action_name = 'collect_bricks_pos_server'
+        self.action_name = 'collect_bricks_pos_node'
         self.action_server = actionlib.SimpleActionServer(self.action_name, collect_bricks_posAction, execute_cb=self.run_action, auto_start=False)
         self.action_server.start()
 
