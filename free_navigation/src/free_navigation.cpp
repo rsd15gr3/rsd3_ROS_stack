@@ -191,7 +191,6 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
         break;
     case BRICK:
         ROS_INFO_NAMED(name_,"going in to collect bricks: %i", BRICK);
-        as_.setSucceeded(result_); // first set succeeded in collecting doneCb
         {
           collect_bricks_pos::collect_bricks_posGoal collect_bricks_goal;
           collect_bricks_ac_.sendGoal(collect_bricks_goal, boost::bind(&Navigation::doneCollectBricksCv,this,_1,_2));
