@@ -228,7 +228,7 @@ int main(int argc, char **argv)
                     path.goChargeInterupt();
                 }
                 //waits with orders until proberly charged
-                if( !(path.getCurrentState() == CHARGE && voltage < voltage_filled) )
+                if( path.getCurrentState() != CHARGE || voltage > voltage_filled )
                 {
                     if(navigation_area)
                     {
