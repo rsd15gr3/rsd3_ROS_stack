@@ -1,12 +1,15 @@
 #ifndef LINE_FOLLOWER_H
 #define LINE_FOLLOWER_H
 #include "pid_controller.h"
+
 #include <ros/ros.h>
 #include <msgs/BoolStamped.h>
 #include <line_detection/line.h>
 #include <nav_msgs/Odometry.h>
 #include <actionlib/server/simple_action_server.h>
+#include <actionlib/client/simple_action_client.h>
 #include <line_pid/FollowLineAction.h>
+#include <relative_move_server/RelativeMoveAction.h>
 class Line_follower
 {
 public:
@@ -43,6 +46,10 @@ public:
   double getMovingGoalTargetAngle();
   void goalCb();
   void preemtCb();
+  // relative move
+  void doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state, const relative_move_server::RelativeMoveResultConstPtr& result);
+  actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> relative_move_ac_;
+  relative_move_server::RelativeMoveGoal back_up_goal;
 };
 
 #endif // LINE_FOLLOWER_H

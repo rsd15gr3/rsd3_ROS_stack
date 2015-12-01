@@ -17,7 +17,7 @@
 using std::string;
 
 Line_follower::Line_follower(string name)
-  : nh("~"), as_(nh, name, false), name_(name)
+  : nh("~"), as_(nh, name, false), name_(name), relative_move_ac_("/relative_move_action", true)
 {
   ROS_DEBUG("Starting line follower");
   // setup line follower pid
@@ -54,7 +54,17 @@ Line_follower::Line_follower(string name)
   qr_tag_detect_sub = nh.subscribe(tag_found_sub, 1, &Line_follower::qrTagDetectCb, this);
   nh.param<string>("odom_sub", odom_sub, "odometry/filtered/local");
   odometry_sub = nh.subscribe(odom_sub, 1, &Line_follower::odometryCb, this);
-  get_qr_client = nh.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");
+  get_qr_client = nh.serviceClient<zbar_decoder::decode_qr>("/get_qr_id");  
+  // relative move
+  while(!relative_move_ac_.waitForServer(ros::Duration(5.0)) && ros::ok())
+  {
+      ROS_INFO_NAMED(name_,"Waiting for the relative move server to come up");
+  }
+  back_up_goal.target_pose.header.frame_id = "base_link";
+  back_up_goal.target_pose.header.stamp = ros::Time::now();
+  back_up_goal.target_pose.pose.position.x = 0.5;
+  back_up_goal.target_pose.pose.position.y = 0;
+  back_up_goal.target_yaw = 0;
   // setup action server
   as_.registerGoalCallback(boost::bind(&Line_follower::goalCb, this) );
   as_.registerPreemptCallback(boost::bind(&Line_follower::preemtCb, this) );
@@ -164,12 +174,16 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
     publishVelCommand(0,0);
     ros::Duration(0.5).sleep();
     int i = 0;
-    while(!get_qr_client.call(qr_request) && i < 3)
-    {
+    while(!get_qr_client.call(qr_request) && i < 2)
+    {      
+      relative_move_ac_.sendGoal(back_up_goal, boost::bind(&Line_follower::doneRelativeMoveCb, this, _1, _2));
+      relative_move_ac_.waitForResult(); // block wait for result
+      /*
       publishVelCommand(-0.5,0);
       ros::Duration(0.2).sleep();
       publishVelCommand(0,0);
       ros::Duration(0.5).sleep();
+      */
       i++;
     }
     if(get_qr_client.call(qr_request))
@@ -213,3 +227,14 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
   }
 }
 
+void Line_follower::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state,
+                        const relative_move_server::RelativeMoveResultConstPtr& result)
+{
+  if(result->end_state != relative_move_server::RelativeMoveResult::GOAL_REACHED)
+  {
+    ROS_ERROR_NAMED(name_, "Relative move failed, and ended in the state: %i", result->end_state);
+    as_.setAborted(result_,"Relative move failed");
+    return;
+  }
+
+}

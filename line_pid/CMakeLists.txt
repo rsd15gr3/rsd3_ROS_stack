@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   actionlib
   zbar_decoder
+  relative_move_server
 )
 
 add_action_files(DIRECTORY action FILES FollowLine.action)
