@@ -62,7 +62,7 @@ Line_follower::Line_follower(string name)
   }
   back_up_goal.target_pose.header.frame_id = "base_link";
   back_up_goal.target_pose.header.stamp = ros::Time::now();
-  back_up_goal.target_pose.pose.position.x = 0.5;
+  back_up_goal.target_pose.pose.position.x = -0.05;
   back_up_goal.target_pose.pose.position.y = 0;
   back_up_goal.target_yaw = 0;
   // setup action server
