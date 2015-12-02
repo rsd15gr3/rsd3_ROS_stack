@@ -80,7 +80,7 @@
         <param name="kld_err" value="0.01" />
         <param name="kld_z" value="0.99" />
         <param name="update_min_d" value="0.1" />
-        <param name="update_min_a" value="0.2618" />
+        <param name="update_min_a" value="0.5236" />
         <param name="resample_interval" value="2" />
         <param name="transform_tolerance" value="0.2" />
 
