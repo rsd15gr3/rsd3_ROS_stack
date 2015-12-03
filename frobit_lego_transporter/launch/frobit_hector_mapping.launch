@@ -1,356 +1,58 @@
-<!-- -->
 <launch>
-    <!-- Frobit parameters -->
-    <param name="diff_steer_wheel_distance" value="0.375"/>
-    <param name="ticks_per_meter_left" value="700" />
-    <param name="ticks_per_meter_right" value="700" />
+    <include file="$(find frobit_lego_transporter)/launch/common.xml" />
+    <include file="$(find hmi_support_frobit)/launch/hmi_support_frobit.launch" />
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
 
-  <arg name="tf_map_scanmatch_transform_frame_name" default="scanmatcher_frame"/>
-  <arg name="base_frame" default="base_footprint"/>
-  <arg name="odom_frame" default="odom"/>
-  <arg name="pub_map_odom_transform" default="false"/>
-  <arg name="scan_subscriber_queue_size" default="5"/>
-  <arg name="scan_topic" default="/fmSensors/scan"/>
-  <arg name="map_size" default="1024"/>
+    <arg name="tf_map_scanmatch_transform_frame_name" default="scanmatcher_frame"/>
+    <arg name="base_frame" default="base_footprint"/>
+    <arg name="odom_frame" default="odom"/>
+    <arg name="pub_map_odom_transform" default="false"/>
+    <arg name="scan_subscriber_queue_size" default="5"/>
+    <arg name="scan_topic" default="/fmSensors/scan"/>
+    <arg name="map_size" default="1024"/>
 
-  <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+    <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+        <!-- Frame names -->
+        <param name="map_frame" value="map" />
+        <param name="base_frame" value="$(arg base_frame)" />
+        <param name="odom_frame" value="$(arg odom_frame)" />
 
-    <!-- Frame names -->
-    <param name="map_frame" value="map" />
-    <param name="base_frame" value="$(arg base_frame)" />
-    <param name="odom_frame" value="$(arg odom_frame)" />
+        <!-- Tf use -->
+        <param name="use_tf_scan_transformation" value="true"/>
+        <param name="use_tf_pose_start_estimate" value="false"/>
+        <param name="pub_map_odom_transform" value="$(arg pub_map_odom_transform)"/>
 
-    <!-- Tf use -->
-    <param name="use_tf_scan_transformation" value="true"/>
-    <param name="use_tf_pose_start_estimate" value="false"/>
-    <param name="pub_map_odom_transform" value="$(arg pub_map_odom_transform)"/>
+        <!-- Map size / start point -->
+        <param name="map_resolution" value="0.025"/>
+        <param name="map_size" value="$(arg map_size)"/>
+        <param name="map_start_x" value="0.5"/>
+        <param name="map_start_y" value="0.5" />
+        <param name="map_multi_res_levels" value="2" />
 
-    <!-- Map size / start point -->
-    <param name="map_resolution" value="0.025"/>
-    <param name="map_size" value="$(arg map_size)"/>
-    <param name="map_start_x" value="0.5"/>
-    <param name="map_start_y" value="0.5" />
-    <param name="map_multi_res_levels" value="2" />
+        <!-- Map update parameters -->
+        <param name="update_factor_free" value="0.4"/>
+        <param name="update_factor_occupied" value="0.9" />
+        <param name="map_update_distance_thresh" value="0.4"/>
+        <param name="map_update_angle_thresh" value="0.06" />
+        <param name="laser_z_min_value" value = "-1.0" />
+        <param name="laser_z_max_value" value = "1.0" />
 
-    <!-- Map update parameters -->
-    <param name="update_factor_free" value="0.4"/>
-    <param name="update_factor_occupied" value="0.9" />
-    <param name="map_update_distance_thresh" value="0.4"/>
-    <param name="map_update_angle_thresh" value="0.06" />
-    <param name="laser_z_min_value" value = "-1.0" />
-    <param name="laser_z_max_value" value = "1.0" />
+        <!-- Sensor parameters -->
+        <param name="laser_min_dist" value="0.05" />
+        <param name="laser_max_dist" value="4" />
 
-    <!-- Sensor parameters -->
-    <param name="laser_min_dist" value="0.05" />
-    <param name="laser_max_dist" value="4" />
+        <!-- Advertising config -->
+        <param name="advertise_map_service" value="true"/>
 
-    <!-- Advertising config -->
-    <param name="advertise_map_service" value="true"/>
+        <param name="scan_subscriber_queue_size" value="$(arg scan_subscriber_queue_size)"/>
+        <param name="scan_topic" value="$(arg scan_topic)"/>
 
-    <param name="scan_subscriber_queue_size" value="$(arg scan_subscriber_queue_size)"/>
-    <param name="scan_topic" value="$(arg scan_topic)"/>
-
-    <!-- Debug parameters -->
-    <!--
-      <param name="output_timing" value="false"/>
-      <param name="pub_drawings" value="true"/>
-      <param name="pub_debug_output" value="true"/>
-    -->
-    <param name="tf_map_scanmatch_transform_frame_name" value="$(arg tf_map_scanmatch_transform_frame_name)" />
-  </node>
-    <group ns="fmSafety">
-        <node pkg="basic_incident_handler" name="incident_handler" type="basic_incident_handler_node.py" output="screen">
-            <param name="deadman_enable" value="True" />
-            <param name="deadman_timeout" value="0.100" />
-            <param name="deadman_sub" value="/fmSafe/deadman" />
-            <param name="critical_fault_enable" value="False" />
-            <param name="critical_fault_timeout" value="0.100" />
-            <param name="critical_fault_sub" value="/fmSafe/critical_fault" />
-            <param name="obstacle_enable" value="False" />
-            <param name="obstacle_timeout" value="0.100" />
-            <param name="obstacle_sub" value="/fmSafe/obstacle" />
-            <param name="actuation_enable_pub" value="/fmSafe/actuation_enable" />
-        </node>
-    </group>
-
-    <group ns="fmLib">
-        <!-- Serial communication with the IMU -->
-        <node pkg="serial_string" name="imu_serial_string_node" type="serial_string_node" output="screen">
-            <param name="publisher_topic" value="/fmData/imu_rx" />
-            <param name="subscriber_topic" value="/fmData/imu_tx" />
-            <param name="device" value="/dev/imu" />
-            <param name="baudrate" value="115200" />
-            <param name="termination_character" value="10"/>
-        </node>
-
-        <!-- Frobit serial device and protocol interface -->
-        <node pkg="serial_nmea" name="frobit_nmea" type="serial_nmea_node" respawn="true" output="screen">
-            <param name="nmea_from_device_pub" value="/fmSignal/nmea_from_frobit"/>
-            <param name="nmea_to_device_sub" value="/fmSignal/nmea_to_frobit"/>
-            <param name="serial_device" value="/dev/frobit"/>
-            <param name="serial_baudrate" value="57600"/>
-            <param name="use_nmea_checksum" value="true"/>
-        </node>
-
-        <!-- Serial comm with Arduino -->
-        <node pkg="rosserial_python" name="rosserial_python" type="serial_node.py" output="screen" args="/dev/ttyACM0" /> <!-- TODO udev symlink -->
-    </group>
-
-    <group ns="fmSensors">
-        <!-- Vectornav VN-100 IMU -->
-        <node pkg="vectornav_vn100" name="imu_node" type="vectornav_vn100_node" output="screen">
-            <param name="vectornav_vn100_sub" value="/fmData/imu_rx" />
-            <param name="imu_pub" value="/fmInformation/imu" />
-            <param name="frame_id" value="imu_link" />
-            <param name="use_enu" value="true" />
-            <param name="covariance_x" value="0.01" />
-            <param name="covariance_y" value="0.01" />
-            <param name="covariance_z" value="0.01" />
-        </node>
-
-        <!-- SICK laser scanner -->
-        <node name="sick_tim310s01" pkg="sick_tim" type="sick_tim310s01" respawn="false" output="screen">
-            <param name="min_ang" type="double" value="-1.8326" />
-            <param name="max_ang" type="double" value="1.8326" />
-            <param name="intensity" type="bool" value="True" />
-            <param name="skip" type="int" value="0" />
-            <param name="frame_id" type="str" value="laser_link" />
-            <param name="time_offset" type="double" value="-0.001" />
-            <param name="publish_datagram" type="bool" value="False" />
-        </node>
-    </group>
-
-    <group ns="fmProcessors">
-        <!-- Calculate odometry based on wheel encoders and IMU yaw axis orientation -->
-        <node pkg="differential_odometry" name="differential_odometry" type="differential_odometry_node" output="screen">
-            <param name="enc_left_sub" value="/fmInformation/encoder_left" />
-            <param name="enc_right_sub" value="/fmInformation/encoder_right" />
-            <param name="imu_sub" value="/fmInformation/imu" />
-            <param name="odom_reset_sub" value="/fmInformation/odom_reset" />
-            <param name="odom_pub" value="odometry/wheels" />
-            <param name="encoder_output" value="absolute" />
-            <param name="max_ticks_per_update" value="200" />
-            <param name="yaw_angle_source" value="odometry" /> <!-- Do not use IMU as yaw source; EKF fuses the measurements -->
-            <param name="publish_transform" value="false" />
-            <param name="odom_estimate_frame" value="odom" />
-            <param name="vehicle_frame" value="base_link" />
-            <rosparam param="pose_covariance_diagonal">[0.3, 0.3, 0.3, 0.5, 0.5, 0.5]</rosparam>
-            <rosparam param="twist_covariance_diagonal">[0.1, 0.1, 0.1, 0.2, 0.2, 0.2]</rosparam>
-        </node>
-
-        <!-- MarkerLocator "GPS" -->
-        <node pkg="markerlocator_odometry" name="markerlocator_odometry" type="markerlocator_odometry_node.py" output="screen">
-            <param name="host" value="10.115.253.233" />
-            <param name="port" value="21212" />
-            <param name="frame_id" value="markerlocator" />
-            <param name="time_offset" type="double" value="0.0" />
-            <rosparam param="pose_covariance_diagonal">[0.01, 0.01, 0.01, 0.01, 0.01, 0.01]</rosparam>
-        </node>
-
-
-     <!-- EKF for fusing continous position data from wheel odometry and IMU -->
-     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_local" clear_params="true">
-         <param name="frequency" value="30"/>
-         <param name="sensor_timeout" value="0.1"/>
-         <param name="two_d_mode" value="true"/>
-
-         <param name="map_frame" value="map"/>
-         <param name="odom_frame" value="odom"/>
-         <param name="base_link_frame" value="base_link"/>
-         <param name="world_frame" value="odom"/>
-
-         <param name="transform_time_offset" value="0.0"/>
-
-         <param name="odom0" value="odometry/wheels"/>
-         <param name="imu0" value="/fmInformation/imu"/>
-
-         <!--
-         x,     y,      z,
-         roll,  pitch,  yaw,
-         vx,    vy,     vz,
-         vroll, vpitch, vyaw,
-         ax,    ay,     az
-          -->
-
-         <!-- Wheel odometry -->
-         <rosparam param="odom0_config">[false, false, false,
-                                         false, false, false,
-                                         true, true, false,
-                                         false, false, true,
-                                         false, false, false]</rosparam>
-
-         <!-- IMU -->
-         <rosparam param="imu0_config">[false, false, false,
-                                        false, false, true,
-                                        false, false, false,
-                                        false, false, true,
-                                        true,  false, false]</rosparam>
-
-         <param name="odom0_differential" value="false"/>
-         <param name="imu0_differential" value="false"/>
-
-         <param name="odom0_relative" value="true"/>
-         <param name="imu0_relative" value="true"/>
-
-         <param name="imu0_remove_gravitational_acceleration" value="true"/>
-
-         <!-- Reject measurements which are too far from current vehicle state -->
-         <param name="odom0_twist_rejection_threshold" value="1"/> <!-- Wheel odom -->
-         <param name="imu0_pose_rejection_threshold" value="0.3"/>
-         <param name="imu0_twist_rejection_threshold" value="0.1"/>
-         <param name="imu0_linear_acceleration_rejection_threshold" value="0.1"/>
-
-         <remap from="odometry/filtered" to="odometry/filtered/local"/>
-         <remap from="set_pose" to="/initialpose"/>
-     </node>
-
-     <!-- EKF for also fusing global absolute position data which is subject to discrete jumps -->
-     <node pkg="robot_localization" type="ekf_localization_node" name="ekf_loc_global" clear_params="true">
-         <param name="frequency" value="30"/>
-         <param name="sensor_timeout" value="0.1"/>
-         <param name="two_d_mode" value="true"/>
-
-         <param name="map_frame" value="map"/>
-         <param name="odom_frame" value="odom"/>
-         <param name="base_link_frame" value="base_link"/>
-         <param name="world_frame" value="map"/>
-
-         <param name="transform_time_offset" value="0.0"/>
-
-         <param name="odom0" value="odometry/wheels"/>
-         <param name="odom1" value="odometry/markerlocator"/>
-         <param name="imu0" value="/fmInformation/imu"/>
-         <param name="pose0" value="/poseupdate"/>
-
-         <!-- Wheel odometry -->
-         <rosparam param="odom0_config">[false, false, false,
-                                         false, false, false,
-                                         true, true, false,
-                                         false, false, true,
-                                         false, false, false]</rosparam>
-
-         <!-- MarkerLocator GPS -->
-         <rosparam param="odom1_config">[true, true, false,
-                                         false, false, true,
-                                         false, false, false,
-                                         false, false, false,
-                                         false, false, false]</rosparam>
-
-         <!-- IMU -->
-         <rosparam param="imu0_config">[false, false, false,
-                                        false, false, true,
-                                        false, false, false,
-                                        false, false, true,
-                                        true,  false, false]</rosparam>
-
-         <!-- AMCL -->
-         <rosparam param="pose0_config">[true, true, false,
-                                         false, false, true,
-                                         false, false, false,
-                                         false, false, false,
-                                         false, false, false]</rosparam>
-
-         <param name="odom0_differential" value="false"/>
-         <param name="odom1_differential" value="false"/>
-         <param name="imu0_differential" value="false"/>
-         <param name="pose0_differential" value="false"/>
-
-         <param name="odom0_relative" value="true"/>
-         <param name="odom1_relative" value="false"/>
-         <param name="imu0_relative" value="true"/>
-         <param name="pose0_relative" value="false"/>
-
-         <param name="imu0_remove_gravitational_acceleration" value="true"/>
-
-         <!-- Reject measurements which are too far from current vehicle state -->
-         <param name="odom0_twist_rejection_threshold" value="1"/> <!-- Wheel odom -->
-         <param name="odom1_pose_rejection_threshold" value="1"/> <!-- MarkerLocator -->
-         <param name="pose0_rejection_threshold" value="1"/> <!-- AMCL -->
-         <param name="imu0_pose_rejection_threshold" value="0.3"/>
-         <param name="imu0_twist_rejection_threshold" value="0.1"/>
-         <param name="imu0_linear_acceleration_rejection_threshold" value="0.1"/>
-
-         <remap from="odometry/filtered" to="odometry/filtered/global"/>
-         <remap from="set_pose" to="/initialpose"/>
-     </node>
-    </group>
-
-    <group ns="fmControllers">
-        <!-- Frobit interface -->
-        <node pkg="sdu_frobit_v2" name="frobit" type="frobit_interface_node.py" output="screen">
-            <param name="actuation_enable_sub" value="/fmSafe/actuation_enable" />
-            <param name="cmd_vel_sub" value="/fmCommand/cmd_vel" />
-            <param name="enc_left_pub" value="/fmInformation/encoder_left" />
-            <param name="enc_right_pub" value="/fmInformation/encoder_right" />
-            <param name="wheel_status_left_pub" value="/fmInformation/wheel_status_left" />
-            <param name="wheel_status_right_pub" value="/fmInformation/wheel_status_right" />
-            <param name="wheel_feedback_left_pub" value="/fmInformation/wheel_feedback_left" />
-            <param name="wheel_feedback_right_pub" value="/fmInformation/wheel_feedback_right" />
-            <param name="wheel_pid_left_pub" value="/fmInformation/wheel_pid_left" />
-            <param name="wheel_pid_right_pub" value="/fmInformation/wheel_pid_right" />
-            <param name="nmea_from_frobit_sub" value="/fmSignal/nmea_from_frobit" />
-            <param name="nmea_to_frobit_pub" value="/fmSignal/nmea_to_frobit" />
-            <param name="publish_wheel_status_rate" value="10" />
-            <param name="publish_wheel_feedback_rate" value="10" />
-            <param name="publish_wheel_pid_rate" value="10" />
-            <param name="castor_front" value="true" />
-            <param name="max_linear_acceleration" value="16.2" />
-            <param name="max_angular_acceleration" value="16.0" />
-            <param name="wheel_drive_feed_forward" value="85" />
-            <param name="wheel_drive_kp" value="5" />
-            <param name="wheel_drive_ki" value="10" />
-            <param name="wheel_drive_kd" value="5" />
-            <param name="wheel_drive_max_integral_output" value="300" />
-            <param name="wheel_turn_feed_forward" value="110" />
-            <param name="wheel_turn_kp" value="10" />
-            <param name="wheel_turn_ki" value="20" />
-            <param name="wheel_turn_kd" value="3" />
-            <param name="wheel_turn_max_integral_output" value="300" />
-            <param name="supply_voltage_scale_factor" value="0.03747" />
-            <param name="min_supply_voltage" value="12.1" />
-            <param name="show_voltage_interval" value="300" />
-        </node>
-    </group>
-
-    <!-- Frobit state publisher -->
-    <param name="robot_description" textfile="$(find frobit_description)/urdf/frobit.urdf" />
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" output="screen" />
-    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">
-        <param name="publish_frequency" value="100"/>
-    </node>
-
-    <group ns="fmDecisionMakers">
-        <!-- Keyboard control -->
-        <node pkg="frobit_wptnav_mission" name="wptnav_mission" type="wptnav_mission_node.py" output="screen">
-            <param name="remote_control_sub" value="/fmHMI/remote_control"/>
-            <param name="remote_control_feedback_pub" value="/fmHMI/remote_control_feedback" />
-            <param name="automode_pub" value="/fmPlan/automode" />
-            <param name="deadman_pub" value="/fmSafe/deadman" />
-            <param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
-            <param name="max_linear_velocity" value="0.7"/>
-            <param name="max_angular_velocity" value="0.6"/>
-            <param name="linear_velocity_step" value="0.1"/>
-            <param name="angular_velocity_step" value="0.2"/>
-        </node>
-
-        <node pkg="keyboard_remote_control" name="kbd_remote" type="keyboard_remote_control_node.py" output="screen" >
-            <param name="keyboard_sub" value="/fmHMI/keyboard"/>
-            <param name="remote_control_pub" value="/fmHMI/remote_control"/>
-        </node>
-
-        <node pkg="keyboard_interface" type="keyboard_node" name="keyboard" output="screen">
-            <param name="keyboard_pub" value="/fmHMI/keyboard" />
-        </node>
-    </group>
-
-    <node pkg="tf" type="static_transform_publisher" name="markerlocator_map_tf" args="-0.475 -1.489 0 0 0 0.710 0.704 map markerlocator 100" />
-
-    <node name="static_map_publisher" pkg="map_server" type="map_server" args="$(find frobit_lego_transporter)/map/robolab1.yaml" />
-
-  <include file="$(find free_navigation)/launch/move_base_launch.xml" />
-    <node pkg="twist_to_twiststamped" name="converter" type="cmd_vel_converter.py">
-        <param name="cmd_vel_sub" value="/cmd_vel" />
-        <param name="cmd_vel_pub" value="/fmCommand/cmd_vel" />
+        <!-- Debug parameters -->
+        <!--
+        <param name="output_timing" value="false"/>
+        <param name="pub_drawings" value="true"/>
+        <param name="pub_debug_output" value="true"/>
+        -->
+        <param name="tf_map_scanmatch_transform_frame_name" value="$(arg tf_map_scanmatch_transform_frame_name)" />
     </node>
 </launch>
-
