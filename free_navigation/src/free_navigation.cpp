@@ -177,6 +177,7 @@ void Navigation::sendMoveBaseGoal(move_base_msgs::MoveBaseGoal& goal_msg)
 void Navigation::doneCollectBricksCv(const actionlib::SimpleClientGoalState& state, const collect_bricks_pos::collect_bricks_posResultConstPtr& result)
 {
   current_position = Navigation::under_dispenser;
+  ros::Duration(5.0).sleep();
   as_.setSucceeded(result_);
 }
 
