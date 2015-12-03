@@ -24,6 +24,11 @@ int Route::getCurrentState()
     return currentState;
 }
 
+void Route::setCurrentState(int state)
+{
+    currentState = state;
+}
+
 int Route::next()
 {
     return route[0];

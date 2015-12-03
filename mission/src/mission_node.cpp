@@ -123,6 +123,9 @@ int main(int argc, char **argv)
     int loopRate;
     nodeHandler.param<int>("loopRate", loopRate, 10);
     ros::Rate rate(loopRate);
+    int start;
+    nodeHandler.param<int>("start", start, 6); //delivery
+    path.setCurrentState(start);
 
 	//init publishers
     action_publisher = nodeHandler.advertise<std_msgs::String>("mission/next_mission",1);

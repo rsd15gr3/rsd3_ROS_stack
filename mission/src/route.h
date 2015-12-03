@@ -21,6 +21,7 @@ class Route
         void goChargeInterupt();
         void infoRoute();
         int getCurrentState();
+        void setCurrentState(int state);
         bool empty();
         int  next();
         void pop();
