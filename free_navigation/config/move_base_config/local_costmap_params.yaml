@@ -8,10 +8,10 @@ local_costmap:
 
   static_map: false
   rolling_window: true
-  width: 3.0
-  height: 3.0
+  width: 1.5
+  height: 1.5
   origin_x: 0.0
-  origin_y: 0.0
+  origin_y: -0.75
   resolution: 0.025
 
   observation_sources: base_scan
