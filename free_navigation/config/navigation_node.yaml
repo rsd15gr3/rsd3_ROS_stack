@@ -11,4 +11,4 @@ charge:
 recovery_pose:
   [-3.022, -0.903, 1.41]
 stop_dist_to_wall: 0.1
-undock_relative_move: -0.80
+undock_relative_move: -0.70
