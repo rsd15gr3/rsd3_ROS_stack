@@ -61,7 +61,7 @@ void Navigation::goalCb()
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
   case Navigation::under_dispenser:
-      goal = getRelativeMove(-0.4,0,2.5);
+      goal = getRelativeMove(-0.4,0,0.0);
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
   case Navigation::at_transition:
@@ -90,8 +90,26 @@ void Navigation::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& stat
     return;
   }
   */
-  approachGoal();
-  current_position = Navigation::free;
+  relative_move_server::RelativeMoveGoal goal;
+  switch (current_position) {
+  case Navigation::docked:
+      goal = getRelativeMove(0,0,M_PI_4);
+      relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
+      current_position = Navigation::free;
+    break;
+  case Navigation::under_dispenser:
+    goal = getRelativeMove(0,0,M_PI_2 + M_PI_4);
+    relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
+    current_position = Navigation::free;
+  case Navigation::at_transition:
+  case Navigation::free:
+    approachGoal();
+    current_position = Navigation::free;
+    break;
+  default:
+    break;
+  }
+
 }
 
 void Navigation::preemtCb()
@@ -244,6 +262,5 @@ relative_move_server::RelativeMoveGoal Navigation::getRelativeMove(double dx, do
     goal.target_pose.pose.position.x = dx;
     goal.target_pose.pose.position.y = dy;
     goal.target_yaw = dth;
-
     return goal;
 }

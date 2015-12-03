@@ -80,20 +80,20 @@
         <param name="kld_err" value="0.01" />
         <param name="kld_z" value="0.99" />
         <param name="update_min_d" value="0.1" />
-        <param name="update_min_a" value="0.2618" />
+        <param name="update_min_a" value="0.25" />
         <param name="resample_interval" value="2" />
         <param name="transform_tolerance" value="0.2" />
 
-        <param name="recovery_alpha_slow" value="0.0" />
-        <param name="recovery_alpha_fast" value="0.0" />
+        <param name="recovery_alpha_slow" value="0.001" />
+        <param name="recovery_alpha_fast" value="0.1" />
 
         <!-- Inital pose -->
         <param name="initial_pose_x" value="0.0" />
         <param name="initial_pose_y" value="0.0" />
         <param name="initial_pose_a" value="0.0" />
-        <param name="initial_pose_xx" value="0.0" />
-        <param name="initial_pose_yy" value="0.0" />
-        <param name="initial_pose_aa" value="0.0" />
+        <param name="initial_cov_xx" value="0.25" />
+        <param name="initial_cov_yy" value="0.25" />
+        <param name="initial_cov_aa" value="0.0685" />
 
         <param name="gui_publish_rate" value="10.0" />
         <param name="save_pose_rate" value="0.5" />
@@ -325,7 +325,7 @@
         <param name="image_width" value="1280" />
         <param name="image_height" value="720" />
         <param name="pixel_format" value="mjpeg" />
-        <param name="camera_frame_id" value="/camera_link" />
+        <param name="camera_frame_id" value="camera_link" />
         <param name="framerate" value="30" />
         <param name="contrast" value="32" />
         <param name="brightness" value="32" />
