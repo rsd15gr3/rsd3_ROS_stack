@@ -11,7 +11,7 @@ local_costmap:
   width: 1.5
   height: 1.5
   origin_x: 0.0
-  origin_y: -0.75
+  origin_y: -1.5
   resolution: 0.025
 
   observation_sources: base_scan
