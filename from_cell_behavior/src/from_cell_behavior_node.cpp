@@ -162,7 +162,6 @@ void testAction::state_pick(int cell, bool active)
         if(active)
         {
             relative_move_server::RelativeMoveGoal goal;
-            cell = CELL_3;
             switch (cell)
             {
             case CELL_1:
