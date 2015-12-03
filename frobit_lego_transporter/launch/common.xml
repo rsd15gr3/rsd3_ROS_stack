@@ -84,8 +84,8 @@
         <param name="resample_interval" value="2" />
         <param name="transform_tolerance" value="0.2" />
 
-        <param name="recovery_alpha_slow" value="0.0" />
-        <param name="recovery_alpha_fast" value="0.0" />
+        <param name="recovery_alpha_slow" value="0.001" />
+        <param name="recovery_alpha_fast" value="0.1" />
 
         <!-- Inital pose -->
         <param name="initial_pose_x" value="0.0" />
