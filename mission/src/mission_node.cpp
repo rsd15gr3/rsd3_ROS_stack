@@ -187,6 +187,7 @@ int main(int argc, char **argv)
                     //std::cout << "Current state: " << path.getCurrentState() << std::endl;
                     if(path.getCurrentState() != CHARGE && path.getCurrentState() != CELL_1 && path.getCurrentState() != CELL_2 && path.getCurrentState() != CELL_3)
                     {
+                        ROS_INFO("current state: %i",path.getCurrentState());
                         path.goCharge();
                     }
                 }
