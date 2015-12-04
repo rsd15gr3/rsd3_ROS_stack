@@ -55,7 +55,7 @@
         <param name="pid_debug_pub" value="/fmInformation/pid" />
         <param name="laser_sub" value="/fmSensors/scan" />
         <param name="dock_speed" value="0.1" />
-        <param name="ramp_dist" value="0.2" />
+        <param name="ramp_dist" value="0.3" />
     </node>
 
     <node name="battery_monitor" pkg="battery_monitor" type="battery_monitor_node" >
