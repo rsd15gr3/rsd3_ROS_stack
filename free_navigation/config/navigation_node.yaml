@@ -10,5 +10,5 @@ charge:
   # [0.809, 0.483, 1.469] # dock 1
 recovery_pose:
   [-3.022, -0.903, 1.41]
-stop_dist_to_wall: 0.1
+stop_dist_to_wall: 0.2
 undock_relative_move: -0.75
