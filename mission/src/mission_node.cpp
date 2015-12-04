@@ -38,7 +38,6 @@ bool navigation_area = true;
 bool active_behavior = false;
 bool automode = false;
 bool should_charge = false;
-bool error = false;
 double voltage = 13;
 double voltage_filled = 13.3;
 
@@ -46,6 +45,13 @@ std::string get_string(int value);
 
 void doneCb(const actionlib::SimpleClientGoalState& state,
             const test_server::testResultConstPtr& result)
+{
+    active_behavior = false;
+    path.pop();
+}
+
+void doneCbNavigation(const actionlib::SimpleClientGoalState& state,
+            const free_navigation::NavigateFreelyResultConstPtr& result)
 {
     active_behavior = false;
     path.pop();
@@ -77,22 +83,6 @@ void doneCbFrom(const actionlib::SimpleClientGoalState& state,
     {
       msg.pose.covariance.at(i+i*std::sqrt(msg.pose.covariance.size())) = 0.1;
     }*/
-}
-
-void doneCbNavigation(const actionlib::SimpleClientGoalState& state,
-            const free_navigation::NavigateFreelyResultConstPtr& result)
-{
-    if(result->state != free_navigation::NavigateFreelyResult::SUCCESS)
-    {
-        error = false;
-        ROS_ERROR_NAMED("mission", "Move base failed to approach target");
-    }
-    else
-    {
-        error = true;
-    }
-    active_behavior = false;
-    path.pop();
 }
 
 void missionCallback(const msgs::IntStamped::ConstPtr& msg)
@@ -178,7 +168,7 @@ int main(int argc, char **argv)
 
         //fill up the next order if current is done--------
         //mission must never fill with more than 1 in this system
-        if(automode && !error)
+        if(automode)
         {
 
             if( path.empty() )
