@@ -125,6 +125,7 @@ int main(int argc, char **argv)
     ros::Rate rate(loopRate);
     int start;
     nodeHandler.param<int>("start", start, 6); //delivery
+    ROS_INFO("got start state: %i", start);
     path.setCurrentState(start);
 
 	//init publishers
