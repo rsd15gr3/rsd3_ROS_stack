@@ -118,14 +118,14 @@ void voltageCallback(const msgs::FloatStamped::ConstPtr& msg)
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "mission_node");
-	ros::NodeHandle nodeHandler;
+    ros::NodeHandle nodeHandler("~");
 
     int loopRate;
     nodeHandler.param<int>("loopRate", loopRate, 10);
     ros::Rate rate(loopRate);
     int start;
     nodeHandler.param<int>("start", start, 6); //delivery
-    ROS_INFO("got start state: %i", start);
+    //ROS_INFO("got start state: %i", start);
     path.setCurrentState(start);
 
 	//init publishers
@@ -188,7 +188,7 @@ int main(int argc, char **argv)
                     //std::cout << "Current state: " << path.getCurrentState() << std::endl;
                     if(path.getCurrentState() != CHARGE && path.getCurrentState() != CELL_1 && path.getCurrentState() != CELL_2 && path.getCurrentState() != CELL_3)
                     {
-                        ROS_INFO("current state: %i",path.getCurrentState());
+                        //ROS_INFO("current state: %i",path.getCurrentState());
                         path.goCharge();
                     }
                 }

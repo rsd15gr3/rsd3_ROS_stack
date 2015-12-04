@@ -25,7 +25,7 @@
 
     <node name="mission" pkg="mission" type="mission_node" output="screen" >
         <param name="loopRate" value="10" />
-        <param name="start" value="10" /> <!-- start from cell 3 -->
+        <param name="start" value="4" /> <!-- start from charge -->
     </node>
 
     <node name="action_tipper" pkg="test_server" type="test_server_node" output="screen" >
