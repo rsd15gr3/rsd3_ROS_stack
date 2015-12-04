@@ -3,6 +3,6 @@
       <!-- <remap from="/tag" to="qr_tag" /> -->
       <param name="tag_scale_factor" value="0.5" />
       <param name="debounce_size" value="1" />
-      <param name="threshold" value="180" />
+      <param name="threshold" value="190" />
     </node>
 </launch>
