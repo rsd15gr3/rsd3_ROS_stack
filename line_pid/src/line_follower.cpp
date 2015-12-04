@@ -131,40 +131,43 @@ double Line_follower::getMovingGoalTargetAngle()
 
 void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
 {
-  current_position = msg.pose.pose.position;
-  if(aligning_with_crossing)
+  if(line_follow_enabled)
   {
-    double dx = tag_position.x - current_position.x;
-    double dy = tag_position.y - current_position.y;
-    double dist_to_tag = cos(angle_error)*hypot(dx,dy);
-    dist_to_tag -= stop_before_tag_dist;
-    ROS_DEBUG("Distance to tag: %f", dist_to_tag);
-    ROS_DEBUG("dx = %f",dx);
-    ROS_DEBUG("dy = %f",dy);
-    if(dist_to_tag > ramp_distance)
+    current_position = msg.pose.pose.position;
+    if(aligning_with_crossing)
     {
-      ramp_speed = forward_speed;
-    }
-    else if(dist_to_tag > stop_point_tolerance)
-    {
-      const double ramp_p = forward_speed/ramp_distance;
-      ramp_speed = ramp_p * dist_to_tag;
-    }
-    else
-    {
-      publishVelCommand(0,0);
-      heading_controller.reset();
-      line_follow_enabled = false;
-      aligning_with_crossing = false;
-      result_.distance_to_goal = dist_to_tag;
-      as_.setSucceeded(result_);
+      double dx = tag_position.x - current_position.x;
+      double dy = tag_position.y - current_position.y;
+      double dist_to_tag = cos(angle_error)*hypot(dx,dy);
+      dist_to_tag -= stop_before_tag_dist;
+      ROS_DEBUG("Distance to tag: %f", dist_to_tag);
+      ROS_DEBUG("dx = %f",dx);
+      ROS_DEBUG("dy = %f",dy);
+      if(dist_to_tag > ramp_distance)
+      {
+        ramp_speed = forward_speed;
+      }
+      else if(dist_to_tag > stop_point_tolerance)
+      {
+        const double ramp_p = forward_speed/ramp_distance;
+        ramp_speed = ramp_p * dist_to_tag;
+      }
+      else
+      {
+        publishVelCommand(0,0);
+        heading_controller.reset();
+        line_follow_enabled = false;
+        aligning_with_crossing = false;
+        result_.distance_to_goal = dist_to_tag;
+        as_.setSucceeded(result_);
+      }
     }
   }
 }
 
 void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
 {
-  if(qr_tag_entered.data)
+  if(qr_tag_entered.data && line_follow_enabled)
   {
     ROS_DEBUG("Stopping to read tag");
     zbar_decoder::decode_qr qr_request;
