@@ -21,7 +21,7 @@ int main(int argc, char **argv){
 
     ros::Rate loop_rate(20);
 
-    while(n.ok()){
+    while(ros::ok()){
         msgs::BoolStamped msg_pub;
         msg_pub.header.stamp = ros::Time::now();
         msg_pub.data = deadman;
