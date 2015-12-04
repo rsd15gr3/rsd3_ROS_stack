@@ -74,10 +74,10 @@ void doneCbFrom(const actionlib::SimpleClientGoalState& state,
     msg.pose.pose.position.x = 5.23196131368;
     msg.pose.pose.position.y = 0.838434089243;
     msg.pose.pose.position.z = 0.0;
-    const double covariance = 0.1;
-    msg.pose.covariance[0] = covariance;
-    msg.pose.covariance[7] = covariance;
-    msg.pose.covariance[35] = covariance;
+    //const double covariance = 0.1;
+    msg.pose.covariance[0] = 0.25;
+    msg.pose.covariance[7] = 0.25;
+    msg.pose.covariance[35] = 0.0653;
     pose_publisher.publish(msg);
     /*for(int i=0; i<std::sqrt(msg.pose.covariance.size()); i++)
     {
