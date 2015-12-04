@@ -78,8 +78,9 @@ int main(int argc, char **argv){
     ROS_INFO("Debounce size %i", debounce_size);
   }
   ros::Subscriber sub = n.subscribe("/usb_cam/image_raw",1, camCallback);
-  ros::ServiceServer service = n.advertiseService("/get_qr_id", getQrIdCallback);
-  scanner.set_config(ZBAR_NONE, ZBAR_CFG_ENABLE, 1);
+  ros::ServiceServer service = n.advertiseService("/get_qr_id", getQrIdCallback);  
+  scanner.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 0); // Disable all symbologies
+  scanner.set_config(ZBAR_QRCODE, ZBAR_CFG_ENABLE, 1); // Enable QR tag
   // setup qr pose estimator
   cv::Mat camera_matrix(3,3,cv::DataType<double>::type);
   camera_matrix.at<double>(0,0) = 1232.80104*scale_factor; // fx/2 due to downscaling of image
