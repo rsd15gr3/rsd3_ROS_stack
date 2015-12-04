@@ -101,7 +101,7 @@ int main(int argc, char **argv){
 bool imHasQRTag(const Mat &im)
 {
   Mat binary_im;
-  threshold( im, binary_im, 0, 255, CV_THRESH_BINARY | CV_THRESH_OTSU );
+  threshold( im, binary_im, threshold_value, 255, CV_THRESH_BINARY  );
   Mat mask;
   unsigned roi_size = getLargestContourROI(binary_im, mask, min_white_area);
   if(roi_size > min_white_area)
