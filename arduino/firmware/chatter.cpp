@@ -107,9 +107,15 @@ void setup() {
     nh.advertise(switch_pub);
     if(digitalRead(Button)){
         deadman_activated = true;
+        deadman_switch_.data = deadman_activated;
+        deadman_switch_.header.stamp = nh.now();
+        switch_pub.publish(&deadman_switch_);
     }
     else{
         deadman_activated = false;
+        deadman_switch_.data = deadman_activated;
+        deadman_switch_.header.stamp = nh.now();
+        switch_pub.publish(&deadman_switch_);
     }
 
     down();
