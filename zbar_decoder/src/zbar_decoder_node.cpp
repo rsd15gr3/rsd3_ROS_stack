@@ -24,7 +24,7 @@ using namespace cv;
 const string node_name("zbar_decoder_node");
 string frame_id("camera_link");
 const double min_white_area = 60000;
-const unsigned min_tag_area = 20000;
+const unsigned min_tag_area = 23000;
 int threshold_value = 190;
 ImageScanner scanner;
 bool prev_tag_found;
