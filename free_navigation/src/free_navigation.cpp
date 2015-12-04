@@ -65,10 +65,10 @@ void Navigation::goalCb()
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
   case Navigation::at_transition:
-      goal = getRelativeMove(0,0, M_PI);
-      relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
+      goal = getRelativeMove(0,0, 3.0);
+      relative_move_ac_.sendGoal(goal);
       relative_move_ac_.waitForResult(ros::Duration(10.0));
-      relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
+      relative_move_ac_.sendGoal(goal);
       relative_move_ac_.waitForResult(ros::Duration(10.0));
     break;
   case Navigation::free:
@@ -87,7 +87,7 @@ void Navigation::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& stat
   /* relative move returns failed even when it reaches a reasonable pose??
   if(result->end_state != relative_move_server::RelativeMoveResult::GOAL_REACHED)
   {
-    ROS_ERROR_NAMED(name_, "Relative move failed, and ended in the state: %i", result->end_state);    
+    ROS_ERROR_NAMED(name_, "Relative move failed, and ended in the state: %i", result->end_state);
     result_.state = free_navigation::NavigateFreelyResult::FAILED;
     as_.setAborted(result_,"Relative move failed");
     return;
@@ -96,14 +96,15 @@ void Navigation::doneRelativeMoveCb(const actionlib::SimpleClientGoalState& stat
   relative_move_server::RelativeMoveGoal goal;
   switch (current_position) {
   case Navigation::docked:
-      goal = getRelativeMove(0,0,M_PI_4);
-      relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
-      current_position = Navigation::free;
+    goal = getRelativeMove(0,0,M_PI_4);
+    relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
+    current_position = Navigation::free;
     break;
   case Navigation::under_dispenser:
     goal = getRelativeMove(0,0,M_PI_2 + M_PI_4);
     relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     current_position = Navigation::free;
+    break;
   case Navigation::at_transition:
   case Navigation::free:
     approachGoal();
@@ -205,7 +206,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
   }
   else
   {
-    //ROS_INFO_NAMED(name_,"Finished in state: %s", state.getText().c_str());    
+    //ROS_INFO_NAMED(name_,"Finished in state: %s", state.getText().c_str());
     switch (goal_) {
     case CHARGE:
         ROS_INFO_NAMED(name_,"Docking in CHARGER: %i", BOX_CHARGE);
@@ -219,7 +220,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
         }
         break;
     case DELIVERY:
-        ROS_INFO_NAMED(name_,"Tipping of at DELIVERY: %i", DELIVERY);        
+        ROS_INFO_NAMED(name_,"Tipping of at DELIVERY: %i", DELIVERY);
         as_.setSucceeded(result_);
         current_position = Navigation::free;
         break;
