@@ -262,6 +262,7 @@ void testAction::state_pick(int cell, bool active)
                 goal.header.stamp = ros::Time::now();
                 tipper_command_pub.publish(goal);
                 active_action = true;
+                ros::Duration(1.0).sleep();
             }
             else
             {
