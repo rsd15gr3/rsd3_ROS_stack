@@ -17,6 +17,7 @@ int In2 = 10;
 int In3 = 11;
 int In4 = 12;
 int EnB = 13;
+bool deadman_activated;
 Stepper StepMotor(stepsPerRevolution, In2, In1, In3, In4);
 
 int state_ = -1;
@@ -32,7 +33,7 @@ ros::Subscriber<msgs::IntStamped> sub("arduino_goal", &tipper);
 msgs::IntStamped answer_;
 ros::Publisher answer_pub("arduino_answer", &answer_);
 msgs::BoolStamped deadman_switch_;
-ros::Publisher switch_pub("/fmSafe/deadman", &deadman_switch_);
+ros::Publisher switch_pub("/arduino/deadman", &deadman_switch_);
 
 void tipper(const msgs::IntStamped& msg){
     switch(msg.data){
@@ -104,19 +105,32 @@ void setup() {
     nh.subscribe(sub);
     nh.advertise(answer_pub);
     nh.advertise(switch_pub);
+    if(digitalRead(Button)){
+        deadman_activated = true;
+    }
+    else{
+        deadman_activated = false;
+    }
+
     down();
 }
 
 void loop() {
-    // put your main code here, to run repeatedly:
-    if(digitalRead(Button)){
-        deadman_switch_.data = true;
+    
+    if(digitalRead(Button) && deadman_activated == false){
+        deadman_activated = true;
+        deadman_switch_.data = deadman_activated;
+        deadman_switch_.header.stamp = nh.now();
+        switch_pub.publish(&deadman_switch_);
     }
-    else{
-        deadman_switch_.data = false;
+
+    else if(!digitalRead(Button) && deadman_activated == true){
+        deadman_activated = false;
+        deadman_switch_.data = deadman_activated;
+        deadman_switch_.header.stamp = nh.now();
+        switch_pub.publish(&deadman_switch_);
     }
-    deadman_switch_.header.stamp = nh.now();
-    switch_pub.publish(&deadman_switch_);
+
     nh.spinOnce();
     delay(50);
 }
