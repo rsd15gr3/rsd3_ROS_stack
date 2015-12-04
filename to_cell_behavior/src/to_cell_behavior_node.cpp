@@ -157,6 +157,12 @@ void testAction::state_pick(int cell, bool active)
         case 0:
             if(active)
             {
+                //Disable safety nodes inside workcell
+                msgs::BoolStamped disable_msg;
+                disable_msg.header.stamp = ros::Time::now();
+                disable_msg.data = false;
+                disable_safety_pub.publish(disable_msg);
+
                 line_pid::FollowLineGoal goal;
                 goal.dist = 0.0;
                 active_action = true;
