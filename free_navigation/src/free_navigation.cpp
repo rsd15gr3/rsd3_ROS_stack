@@ -65,11 +65,7 @@ void Navigation::goalCb()
       relative_move_ac_.sendGoal(goal, boost::bind(&Navigation::doneRelativeMoveCb, this, _1, _2));
     break;
   case Navigation::at_transition:
-      goal = getRelativeMove(0,0, 3.0);
-      relative_move_ac_.sendGoal(goal);
-      relative_move_ac_.waitForResult(ros::Duration(10.0));
-      relative_move_ac_.sendGoal(goal);
-      relative_move_ac_.waitForResult(ros::Duration(10.0));
+      approachGoal();
     break;
   case Navigation::free:
       approachGoal();
