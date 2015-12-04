@@ -150,6 +150,14 @@ public:
 
 void testAction::state_pick(int cell, bool active)
 {
+    if(active)
+    {
+        ROS_INFO("calling server, with state counter %i", state_counter);
+    }
+    else
+    {
+        ROS_INFO("got a terminate in 'to cell'");
+    }
     std::cout << "executeing action: " << state_counter << std::endl;
     switch (state_counter)
     {
