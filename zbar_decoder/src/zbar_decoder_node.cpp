@@ -116,7 +116,7 @@ bool imHasQRTag(const Mat &im)
   }
   return false;
 }
-int im_count = 0; // only for debug
+//int im_count = 0; // only for debug
 bool getQrIdCallback(zbar_decoder::decode_qr::Response &req, zbar_decoder::decode_qr::Response &res)
 {
   // extreact qr code
@@ -132,11 +132,13 @@ bool getQrIdCallback(zbar_decoder::decode_qr::Response &req, zbar_decoder::decod
   ROS_DEBUG("n=%i",n);
   if(n != 1)
   {
+    /*
     char buffer [127];
     sprintf(buffer, "%i", im_count);
     string im_name = string("/home/frobit3/qr_detect_errors/down_scaled_im_") + string(buffer) + ".png";
     imwrite(im_name, down_scaled_im);
     im_count++;
+    */
     ROS_ERROR_NAMED(node_name,"Error decoding image with Image scan");
     return false;
   }
