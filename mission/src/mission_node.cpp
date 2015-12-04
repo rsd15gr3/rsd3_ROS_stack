@@ -108,8 +108,7 @@ void voltageCallback(const msgs::FloatStamped::ConstPtr& msg)
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "mission_node");
-    ros::NodeHandle nodeHandler("~");
-
+    ros::NodeHandle nodeHandler("~"), global_nh;
     int loopRate;
     nodeHandler.param<int>("loopRate", loopRate, 10);
     ros::Rate rate(loopRate);
@@ -119,13 +118,13 @@ int main(int argc, char **argv)
     path.setCurrentState(start);
 
 	//init publishers
-    action_publisher = nodeHandler.advertise<std_msgs::String>("mission/next_mission",1);
-    pose_publisher = nodeHandler.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose",1);
+    action_publisher = global_nh.advertise<std_msgs::String>("mission/next_mission",1);
+    pose_publisher = global_nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("/initialpose",1);
 
-    mission_subscriber = nodeHandler.subscribe("ui/mes", 5, missionCallback);
-    automode_subscriber = nodeHandler.subscribe("fmPlan/automode", 5, automodeCallback);
-    charge_subscriber = nodeHandler.subscribe("battery_monitor/too_low_battery", 1, chargeCallback);
-    voltage_subscriber = nodeHandler.subscribe("battery_monitor/battery_level", 5, voltageCallback);
+    mission_subscriber = global_nh.subscribe("ui/mes", 5, missionCallback);
+    automode_subscriber = global_nh.subscribe("fmPlan/automode", 5, automodeCallback);
+    charge_subscriber = global_nh.subscribe("battery_monitor/too_low_battery", 1, chargeCallback);
+    voltage_subscriber = global_nh.subscribe("battery_monitor/battery_level", 5, voltageCallback);
 
     actionlib::SimpleActionClient<free_navigation::NavigateFreelyAction> action_navigation("free_navigator", true);
     actionlib::SimpleActionClient<test_server::testAction> action_to_cell("action_to_cell", true);
