@@ -1,34 +1,39 @@
 #include "ros/ros.h"
-#include "std_msgs/String.h"
+#include <msgs/BoolStamped.h>
 #include <sstream>
 
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "arduinoTalker");
+bool deadman;
 
-  ros::NodeHandle n;
+void deadmanCb(const msgs::BoolStamped::ConstPtr& msg){
+    deadman = msg->data;
+}
 
-  ros::Publisher unload_pub = n.advertise<std_msgs::String>("unload", 1000);
+int main(int argc, char **argv){
+    ros::init(argc, argv, "arduinoTalker");
 
-  ros::Rate loop_rate(0.05);
+    ros::NodeHandle n;
 
-  while (ros::ok())
-  {
+    ros::Publisher deadman_pub = n.advertise<msgs::BoolStamped>("/fmSafe/deadman", 1);
 
-    std_msgs::String msg;
+    std::string deadman_sub_topic;
+    n.param("deadman_sub", deadman_sub_topic, std::string("/arduino/deadman"));
+    ros::Subscriber deadman_sub = n.subscribe(deadman_sub_topic, 1, deadmanCb);
 
-    std::stringstream unload;
-    unload << "unload";
-    msg.data = unload.str();
+    ros::Rate loop_rate(20);
 
-    unload_pub.publish(msg);
+    while(n.ok()){
+        msgs::BoolStamped msg_pub;
+        msg_pub.header.stamp = ros::Time::now();
+        msg_pub.data = deadman;
 
-    ros::spinOnce();
+        deadman_pub.publish(msg_pub);
 
-    loop_rate.sleep();
-  }
+        ros::spinOnce();
+
+        loop_rate.sleep();
+    }
 
 
-  return 0;
+    return 0;
 }
 
