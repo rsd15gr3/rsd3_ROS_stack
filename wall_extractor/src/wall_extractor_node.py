@@ -48,7 +48,7 @@ class WallExtractorNode():
 
         row_msg = row()
         row_msg.header.stamp = rospy.Time.now()
-        row_msg.header.frame_id = "laser"
+        row_msg.header.frame_id = "laser_link"
         row_msg.rightvalid = right_valid
         row_msg.rightdistance = right_model.params[0]
         row_msg.rightangle = right_angle
