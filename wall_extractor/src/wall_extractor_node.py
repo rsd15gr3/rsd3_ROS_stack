@@ -81,7 +81,7 @@ class WallExtractorNode():
     def publish_visualization_marker(self, x, y, mtype, ns, rgb):
         marker_msg = Marker()
         marker_msg.header.stamp = rospy.Time.now()
-        marker_msg.header.frame_id = "laser"
+        marker_msg.header.frame_id = "laser_link"
         marker_msg.type = mtype
         marker_msg.action = marker_msg.ADD
         marker_msg.ns = ns
