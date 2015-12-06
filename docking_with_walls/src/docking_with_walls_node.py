@@ -15,9 +15,9 @@ class DockingActionNode():
         """ Node Instance Initialization """
 
         ''' Topics '''
-        self.tp_scan = '/fmSensors/scan'
+        #self.tp_scan = '/fmSensors/scan'
         self.tp_scan = '/base_scan'
-        #self.tp_frobit_automode = '/fmPlan/automode'
+        self.tp_frobit_automode = '/fmPlan/automode'
         self.tp_cmd_vel = '/fmCommand/cmd_vel'
 
         ''' Publishers '''
@@ -36,6 +36,7 @@ class DockingActionNode():
         self.vel_lin = 0.0
         self.vel_ang = 0.0
         self.right_wall = 0.4
+        self.left_wall = 0.0
         self.front_left_wall = 0
         self.front_right_wall = 0
 
@@ -46,7 +47,7 @@ class DockingActionNode():
         ''' ActionServer '''
         self.finished = False
         self.success = True
-        self.action_name = 'collect_bricks_pos_node'
+        self.action_name = 'docking_with_walls_server'
         self.action_server = actionlib.SimpleActionServer(self.action_name, docking_with_wallsAction, execute_cb=self.run_action, auto_start=False)
         self.action_server.start()
 
@@ -69,36 +70,30 @@ class DockingActionNode():
         if self.scan_ranges:
             try:
                 self.right_wall = np.mean(self.scan_ranges[30:80])
-                self.front_left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2+10:len(self.scan_ranges)/2+30])
-                self.front_right_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2-30:len(self.scan_ranges)/2-10])
+                self.left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2+50:len(self.scan_ranges)/2+100])
+                self.front_left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2:len(self.scan_ranges)/2+10])
+                self.front_right_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2-10:len(self.scan_ranges)/2])
             except IndexError:
                 pass
+        print '\nleft:', self.left_wall
+        print 'frong left', self.front_left_wall
+        print 'front right', self.front_right_wall
 
-        if 0.25 < self.front_left_wall < 0.6 and 0.25 < self.front_right_wall < 0.6:
-            print 'front wall seen', self.front_left_wall, self.front_right_wall
+        if abs(self.front_left_wall-0.1) < 0.01 and abs(self.front_right_wall-0.1) < 0.01:
+            self.action_server.set_succeeded()
+            self.finished = True
             self.stop_frobit()
-            if abs(self.front_right_wall-self.front_left_wall) > 0.1:
-                if self.front_right_wall > self.front_left_wall:
-                    self.vel_ang = 0.1
-                else:
-                    self.vel_ang = -0.1
-            else:
-                self.action_server.set_succeeded()
-                self.finished = True
-                self.stop_frobit()
+            print 'Mission completed.'
         else:
-            self.vel_lin = 0.15
+            self.vel_lin = 0.1
 
-            if self.right_wall < 0.45:
-                self.vel_ang = 0.35
-                print 'right wall close, turning left', self.right_wall
-            elif self.right_wall > 0.50:
-                self.vel_ang = -0.15
-                print 'right wall far away, turning right', self.right_wall
-            else:
+            if self.left_wall > 0.4:
                 self.vel_ang = 0.0
-        #print 'front distance:', self.front_left_wall, self.front_right_wall
-
+            else:
+                if self.left_wall < 0.299:
+                    self.vel_ang = -0.05
+                elif self.left_wall > 0.31:
+                    self.vel_ang = 0.05
         self.publish_tp_cmd_vel_message()
 
     def stop_frobit(self):
