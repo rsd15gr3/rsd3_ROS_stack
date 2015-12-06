@@ -18,7 +18,7 @@ class DockingActionNode():
         self.tp_scan = '/fmSensors/scan'
         #self.tp_scan = '/base_scan'
         self.tp_frobit_automode = '/fmPlan/automode'
-        self.tp_cmd_vel = '/fmCommand/cmd_vel'
+        self.tp_cmd_vel = '/fmCommand/safe_vel'
 
         ''' Publishers '''
         self.tp_cmd_vel_message = TwistStamped()
