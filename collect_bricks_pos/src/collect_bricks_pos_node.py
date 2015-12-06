@@ -116,6 +116,10 @@ class LoadPosActionNode():
                 self.go_to_goal()
             self.publishing_rate.sleep()
 
+        ''' Re-Init for next time '''
+        self.finished = False
+        self.success = True
+
 if __name__ == '__main__':
     """ The program starts here by naming the node and initializing it. """
 
