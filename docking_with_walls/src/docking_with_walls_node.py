@@ -97,9 +97,9 @@ class DockingActionNode():
                 self.vel_ang = 0.0
             else:
                 if self.left_wall < 0.295:
-                    self.vel_ang = -0.15
+                    self.vel_ang = -0.25
                 elif self.left_wall > 0.299:
-                    self.vel_ang = 0.15
+                    self.vel_ang = 0.25
         self.publish_tp_cmd_vel_message()
 
     def stop_frobit(self):
