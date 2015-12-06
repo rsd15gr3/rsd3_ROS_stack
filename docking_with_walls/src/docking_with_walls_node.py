@@ -21,6 +21,7 @@ from sensor_msgs.msg import LaserScan
 from docking_with_walls.msg import docking_with_wallsAction, docking_with_wallsResult
 import numpy as np
 import actionlib
+import threading
 
 
 class DockingActionNode():
@@ -49,6 +50,7 @@ class DockingActionNode():
         self.left_wall = 0.0
         self.front_left_wall = 0
         self.front_right_wall = 0
+        self.scan_lock = threading.Lock()
 
         ''' Subscribers '''
         rospy.Subscriber(self.tp_scan, LaserScan, self.on_tp_scan)
@@ -64,10 +66,11 @@ class DockingActionNode():
         self.action_server.start()
 
     def on_tp_scan(self, msg):
-        del self.scan_ranges[:]
-        for i, a_range in enumerate(msg.ranges):
-            if msg.range_min < a_range < msg.range_max:
-                self.scan_ranges.append(a_range)
+        with self.scan_lock:
+            del self.scan_ranges[:]
+            for a_range in msg.ranges:
+                if msg.range_min < a_range < msg.range_max:
+                    self.scan_ranges.append(a_range)
 
     def on_tp_frobit_automode(self, msg):
         self.frobit_automode = msg.data
@@ -79,11 +82,14 @@ class DockingActionNode():
         self.tp_cmd_vel_publisher.publish(self.tp_cmd_vel_message)
 
     def go_to_goal(self):
-        if self.scan_ranges:
+        with self.scan_lock:
+            ranges = self.scan_ranges
+
+        if ranges:
             try:
-                self.left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)-20:len(self.scan_ranges)-10])
-                self.front_left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2:len(self.scan_ranges)/2+10])
-                self.front_right_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2-10:len(self.scan_ranges)/2])
+                self.left_wall = np.mean(self.ranges[len(self.ranges)-20:len(self.ranges)-10])
+                self.front_left_wall = np.mean(self.ranges[len(self.ranges)/2:len(self.ranges)/2+10])
+                self.front_right_wall = np.mean(self.ranges[len(self.ranges)/2-10:len(self.ranges)/2])
             except IndexError:
                 pass
 
