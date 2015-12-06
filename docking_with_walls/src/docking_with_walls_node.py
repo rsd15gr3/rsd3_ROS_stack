@@ -15,8 +15,8 @@ class DockingActionNode():
         """ Node Instance Initialization """
 
         ''' Topics '''
-        #self.tp_scan = '/fmSensors/scan'
-        self.tp_scan = '/base_scan'
+        self.tp_scan = '/fmSensors/scan'
+        #self.tp_scan = '/base_scan'
         self.tp_frobit_automode = '/fmPlan/automode'
         self.tp_cmd_vel = '/fmCommand/cmd_vel'
 
@@ -76,9 +76,9 @@ class DockingActionNode():
             except IndexError:
                 pass
         print '\nleft:', self.left_wall
-        print 'frong left', self.front_left_wall
+        print 'front left', self.front_left_wall
         print 'front right', self.front_right_wall
-
+        '''
         if abs(self.front_left_wall-0.1) < 0.01 and abs(self.front_right_wall-0.1) < 0.01:
             self.action_server.set_succeeded()
             self.finished = True
@@ -95,7 +95,7 @@ class DockingActionNode():
                 elif self.left_wall > 0.31:
                     self.vel_ang = 0.05
         self.publish_tp_cmd_vel_message()
-
+        '''
     def stop_frobit(self):
         self.vel_ang = 0.0
         self.vel_lin = 0.0
