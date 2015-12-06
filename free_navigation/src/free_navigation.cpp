@@ -4,7 +4,7 @@
 #include <mission/action_states.h>
 Navigation::Navigation(std::string name)
     : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("obstacle_map"),
-      docking_with_walls_ac_("/docker", true), relative_move_ac_("/relative_move_action", true),
+      docking_with_walls_ac_("/docking_with_walls", true), relative_move_ac_("/relative_move_action", true),
       collect_bricks_ac_("/collect_bricks_pos_node", true)
 
 {
