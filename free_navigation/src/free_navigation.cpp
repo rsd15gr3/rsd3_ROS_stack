@@ -207,6 +207,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
         {
           docking_with_walls::docking_with_wallsGoal dock_goal;
           docking_with_walls_ac_.cancelAllGoals();
+          ros::Duration(0.1).sleep();
           docking_with_walls_ac_.sendGoal(dock_goal, boost::bind(&Navigation::doneCbWalls,this,_1,_2));
         }
         break;
