@@ -1,5 +1,19 @@
 #!/usr/bin/env python
 
+"""
+ActionServer Node for docking Frobit to the charger
+
+action server name: docking_with_walls_server
+
+subscribing:
+- /fmPlan/automode
+- /fmSensors/scan
+
+publishing:
+- /fmCommand/cmd_vel    (20Hz if automode=1, Control for docking, TwistStamped)
+
+"""
+
 import rospy
 from msgs.msg import IntStamped
 from geometry_msgs.msg import TwistStamped
@@ -12,11 +26,11 @@ import actionlib
 class DockingActionNode():
 
     def __init__(self):
-        """ Node Instance Initialization """
+        """ Node for Docking ActionServer Instance Initialization """
 
         ''' Topics '''
-        self.tp_scan = '/fmSensors/scan'
-        #self.tp_scan = '/base_scan'
+        self.tp_scan = '/fmSensors/scan'    # Real Cruel World
+        #self.tp_scan = '/base_scan'        # Sim
         self.tp_frobit_automode = '/fmPlan/automode'
         self.tp_cmd_vel = '/fmCommand/cmd_vel'
 
@@ -27,15 +41,11 @@ class DockingActionNode():
         ''' Publishing rate '''
         self.publishing_rate = rospy.Rate(10)          # [Hz]
 
-        ''' Parameters '''
-        # Hardcoded parameters here when optimized
-
         ''' Variables '''
         self.frobit_automode = 0
         self.scan_ranges = list()
         self.vel_lin = 0.0
         self.vel_ang = 0.0
-        self.right_wall = 0.4
         self.left_wall = 0.0
         self.front_left_wall = 0
         self.front_right_wall = 0
@@ -69,15 +79,11 @@ class DockingActionNode():
     def go_to_goal(self):
         if self.scan_ranges:
             try:
-                self.right_wall = np.mean(self.scan_ranges[30:80])
                 self.left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)-20:len(self.scan_ranges)-10])
                 self.front_left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2:len(self.scan_ranges)/2+10])
                 self.front_right_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2-10:len(self.scan_ranges)/2])
             except IndexError:
                 pass
-        print '\nleft:', self.left_wall
-        print 'front left', self.front_left_wall
-        print 'front right', self.front_right_wall
         
         if abs(self.front_left_wall-0.08) < 0.02 and abs(self.front_right_wall-0.08) < 0.02:
             self.action_server.set_succeeded()
