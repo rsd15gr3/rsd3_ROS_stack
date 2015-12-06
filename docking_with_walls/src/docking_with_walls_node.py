@@ -70,7 +70,7 @@ class DockingActionNode():
         if self.scan_ranges:
             try:
                 self.right_wall = np.mean(self.scan_ranges[30:80])
-                self.left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2+50:len(self.scan_ranges)/2+100])
+                self.left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)-20:len(self.scan_ranges)-10])
                 self.front_left_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2:len(self.scan_ranges)/2+10])
                 self.front_right_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2-10:len(self.scan_ranges)/2])
             except IndexError:
@@ -79,7 +79,7 @@ class DockingActionNode():
         print 'front left', self.front_left_wall
         print 'front right', self.front_right_wall
         
-        if abs(self.front_left_wall-0.1) < 0.1 and abs(self.front_right_wall-0.1) < 0.1:
+        if abs(self.front_left_wall-0.1) < 0.03 and abs(self.front_right_wall-0.1) < 0.03:
             self.action_server.set_succeeded()
             self.finished = True
             self.stop_frobit()
@@ -87,15 +87,15 @@ class DockingActionNode():
         else:
             self.vel_lin = 0.1
 
-            if self.left_wall > 0.4:
+            if self.left_wall > 0.35:
                 self.vel_ang = 0.0
             else:
-                if self.left_wall < 0.23:
-                    self.vel_ang = -0.05
-                elif self.left_wall > 0.245:
-                    self.vel_ang = 0.05
+                if self.left_wall < 0.287:
+                    self.vel_ang = -0.2
+                elif self.left_wall > 0.3:
+                    self.vel_ang = 0.2
         self.publish_tp_cmd_vel_message()
-        
+
     def stop_frobit(self):
         self.vel_ang = 0.0
         self.vel_lin = 0.0
@@ -107,8 +107,8 @@ class DockingActionNode():
                 self.action_server.set_preempted()
                 self.success = False
                 break
-            if self.frobit_automode:
-                self.go_to_goal()
+            #if self.frobit_automode:
+            self.go_to_goal()
             self.publishing_rate.sleep()
 
 if __name__ == '__main__':
