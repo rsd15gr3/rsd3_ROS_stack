@@ -18,7 +18,7 @@ import rospy
 from msgs.msg import IntStamped
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import LaserScan
-from docking_with_walls.msg import docking_with_wallsAction
+from docking_with_walls.msg import docking_with_wallsAction, docking_with_wallsResult
 import numpy as np
 import actionlib
 
@@ -27,6 +27,7 @@ class DockingActionNode():
 
     def __init__(self):
         """ Node for Docking ActionServer Instance Initialization """
+        self._result = docking_with_wallsResult()
 
         ''' Topics '''
         self.tp_scan = '/fmSensors/scan'    # Real Cruel World
@@ -86,7 +87,7 @@ class DockingActionNode():
                 pass
         
         if abs(self.front_left_wall-0.08) < 0.02 and abs(self.front_right_wall-0.08) < 0.02:
-            self.action_server.set_succeeded()
+            self.action_server.set_succeeded(self._result)
             self.finished = True
             self.stop_frobit()
         else:
