@@ -18,7 +18,7 @@ class DockingActionNode():
         self.tp_scan = '/fmSensors/scan'
         #self.tp_scan = '/base_scan'
         self.tp_frobit_automode = '/fmPlan/automode'
-        self.tp_cmd_vel = '/fmCommand/safe_vel'
+        self.tp_cmd_vel = '/fmCommand/cmd_vel'
 
         ''' Publishers '''
         self.tp_cmd_vel_message = TwistStamped()
@@ -79,7 +79,7 @@ class DockingActionNode():
         print 'front left', self.front_left_wall
         print 'front right', self.front_right_wall
         
-        if abs(self.front_left_wall-0.1) < 0.03 and abs(self.front_right_wall-0.1) < 0.03:
+        if abs(self.front_left_wall-0.08) < 0.02 and abs(self.front_right_wall-0.08) < 0.02:
             self.action_server.set_succeeded()
             self.finished = True
             self.stop_frobit()
@@ -90,10 +90,10 @@ class DockingActionNode():
             if self.left_wall > 0.35:
                 self.vel_ang = 0.0
             else:
-                if self.left_wall < 0.287:
-                    self.vel_ang = -0.2
-                elif self.left_wall > 0.3:
-                    self.vel_ang = 0.2
+                if self.left_wall < 0.295:
+                    self.vel_ang = -0.15
+                elif self.left_wall > 0.299:
+                    self.vel_ang = 0.15
         self.publish_tp_cmd_vel_message()
 
     def stop_frobit(self):
@@ -107,8 +107,8 @@ class DockingActionNode():
                 self.action_server.set_preempted()
                 self.success = False
                 break
-            #if self.frobit_automode:
-            self.go_to_goal()
+            if self.frobit_automode:
+                self.go_to_goal()
             self.publishing_rate.sleep()
 
 if __name__ == '__main__':
