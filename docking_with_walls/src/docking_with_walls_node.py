@@ -86,7 +86,7 @@ class DockingActionNode():
                 self.front_right_wall = np.mean(self.scan_ranges[len(self.scan_ranges)/2-10:len(self.scan_ranges)/2])
             except IndexError:
                 pass
-
+        
         if abs(self.front_left_wall-0.08) < 0.02 and abs(self.front_right_wall-0.08) < 0.02:
             rospy.loginfo('Goal was set to suceeded as this mission is completed.')
             self.action_server.set_succeeded(self.action_result)
@@ -126,8 +126,5 @@ if __name__ == '__main__':
     """ The program starts here by naming the node and initializing it. """
 
     rospy.init_node('docking_with_walls_node')
-
-    try:
-        DockingActionNode()
-    except rospy.ROSInterruptException:
-        pass
+    DockingActionNode()
+    rospy.spin()
