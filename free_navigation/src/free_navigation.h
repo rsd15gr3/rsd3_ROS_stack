@@ -8,9 +8,11 @@
 #include <msgs/IntStamped.h>
 #include <actionlib/server/simple_action_server.h>
 #include "free_navigation/NavigateFreelyAction.h"
-#include "dock_with_tape/DockWithTapeAction.h"
+//#include "dock_with_tape/DockWithTapeAction.h"
+#include "docking_with_walls/docking_with_wallsAction.h"
+
 #include <relative_move_server/RelativeMoveAction.h>
-#include <collect_bricks_pos/collect_bricks_posAction.h>
+
 using std::string;
 using std::vector;
 using geometry_msgs::Pose;
@@ -23,7 +25,7 @@ public:
 private:
     enum position_state
     {
-      docked, under_dispenser, free, at_transition
+      docked, under_dispenser, free
     } current_position;
     void approachGoal();
     string name_;
@@ -34,8 +36,10 @@ private:
     uint8_t goal_;
     uint8_t prev_action_state_ = 255;
     // Move base client
-    Pose line_to_manipulator_pose_, delivery_pose_, charge_pose_;
-    Pose load_bricks_pose_, recovery_;
+    Pose line_to_manipulator_pose_;
+    Pose delivery_pose_;
+    Pose charge_pose_;
+    Pose load_bricks_pose_;
     string static_frame_id;
     MoveBaseClient move_base_ac_;
     void doneCb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result);    
@@ -44,21 +48,16 @@ private:
     void activeCb();
     void feedbackCb(const move_base_msgs::MoveBaseFeedbackConstPtr& feedback);
     static Pose convertVecToPose(const vector<double>& poses);
-    void sendMoveBaseGoal(move_base_msgs::MoveBaseGoal& goal_msg);
     // Docking client
-    actionlib::SimpleActionClient<dock_with_tape::DockWithTapeAction> dock_with_tape_ac_;
-    void doneCbLine(const actionlib::SimpleClientGoalState& state,
-                const dock_with_tape::DockWithTapeResultConstPtr& result);
-    dock_with_tape::DockWithTapeGoal dock_goal;
+    actionlib::SimpleActionClient<docking_with_walls::docking_with_wallsAction> dock_with_walls_ac_;
+    void doneCbWall(const actionlib::SimpleClientGoalState& state,
+                const docking_with_walls::docking_with_wallsResultConstPtr& result);
+    docking_with_walls::docking_with_wallsGoal dock_goal;
     double stop_dist_to_wall;
     // relative move
     void doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state, const relative_move_server::RelativeMoveResultConstPtr& result);
     actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> relative_move_ac_;
     relative_move_server::RelativeMoveGoal getRelativeMove(double dx, double dy, double dth);
     double undock_relative_move;
-    bool in_recovery_mode;
-    // collect client
-    actionlib::SimpleActionClient<collect_bricks_pos::collect_bricks_posAction> collect_bricks_ac_;
-    void doneCollectBricksCv(const actionlib::SimpleClientGoalState& state, const collect_bricks_pos::collect_bricks_posResultConstPtr& result);
 };
 #endif // Navigation_H
