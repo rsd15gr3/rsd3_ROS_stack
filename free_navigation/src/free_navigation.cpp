@@ -1,4 +1,3 @@
-
 #include "free_navigation.h"
 #include<boost/bind.hpp>
 #include <tf/tf.h>
