@@ -88,7 +88,6 @@ class DockingActionNode():
                 pass
         
         if abs(self.front_left_wall-0.08) < 0.02 and abs(self.front_right_wall-0.08) < 0.02:
-            self.current_goal.set_succeeded()
             rospy.loginfo('Goal was set to suceeded as this mission is completed.')
             self.action_server.set_succeeded(self.action_result)
             self.finished = True
