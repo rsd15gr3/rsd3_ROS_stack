@@ -206,6 +206,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
         ROS_INFO_NAMED(name_,"Docking in CHARGER: %i", BOX_CHARGE);
         {
           docking_with_walls::docking_with_wallsGoal dock_goal;
+          docking_with_walls_ac_.cancelAllGoals();
           docking_with_walls_ac_.sendGoal(dock_goal, boost::bind(&Navigation::doneCbWalls,this,_1,_2));
         }
         break;
@@ -213,6 +214,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
         ROS_INFO_NAMED(name_,"going in to collect bricks: %i", BRICK);
         {
           collect_bricks_pos::collect_bricks_posGoal collect_bricks_goal;
+          collect_bricks_ac_.cancelAllGoals();
           collect_bricks_ac_.sendGoal(collect_bricks_goal, boost::bind(&Navigation::doneCollectBricksCv,this,_1,_2));
         }
         break;
