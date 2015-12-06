@@ -1,6 +1,8 @@
 #goal definition
+bool goal_test
 ---
 #result definition
 bool done
 ---
 #feedback
+bool feedback_test

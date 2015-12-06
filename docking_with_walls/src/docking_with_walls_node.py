@@ -27,7 +27,6 @@ class DockingActionNode():
 
     def __init__(self):
         """ Node for Docking ActionServer Instance Initialization """
-        self._result = docking_with_wallsResult()
 
         ''' Topics '''
         self.tp_scan = '/fmSensors/scan'    # Real Cruel World
@@ -59,6 +58,8 @@ class DockingActionNode():
         self.finished = False
         self.success = True
         self.action_name = 'docking_with_walls_server'
+        self.action_result = docking_with_wallsResult()
+        self.current_goal = None
         self.action_server = actionlib.SimpleActionServer(self.action_name, docking_with_wallsAction, execute_cb=self.run_action, auto_start=False)
         self.action_server.start()
 
@@ -87,7 +88,9 @@ class DockingActionNode():
                 pass
         
         if abs(self.front_left_wall-0.08) < 0.02 and abs(self.front_right_wall-0.08) < 0.02:
-            self.action_server.set_succeeded(self._result)
+            self.current_goal.set_succeeded()
+            rospy.loginfo('Goal was set to suceeded as this mission is completed.')
+            self.action_server.set_succeeded(self.action_result)
             self.finished = True
             self.stop_frobit()
         else:
@@ -107,6 +110,7 @@ class DockingActionNode():
         self.vel_lin = 0.0
 
     def run_action(self, _goal_):
+        self.current_goal = _goal_
         while not self.finished and self.success and not rospy.is_shutdown():
             if self.action_server.is_preempt_requested():
                 rospy.loginfo('%s: Preempted' % self.action_name)
