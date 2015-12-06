@@ -40,7 +40,7 @@
         <param name="/fmExecutors/wptnav/max_angular_velocity" value="0.5" />
     </node>
 
-    <node pkg="dock_with_tape" name="docker" type="dock_with_tape_node" output="screen">
+    <!--<node pkg="dock_with_tape" name="docker" type="dock_with_tape_node" output="screen">
         <param name="update_rate" value="20"/>
         <param name="drive_kp" value="10.0"/>
         <param name="drive_ki" value="3.5"/>
@@ -56,7 +56,9 @@
         <param name="laser_sub" value="/fmSensors/scan" />
         <param name="dock_speed" value="0.1" />
         <param name="ramp_dist" value="0.3" />
-    </node>
+    </node> -->
+
+
 
     <node name="battery_monitor" pkg="battery_monitor" type="battery_monitor_node" >
         <param name="min_battery_level" value="12.2" />
@@ -70,4 +72,6 @@
     </node>
 
     <node pkg="collect_bricks_pos" name="collect_bricks_pos_node" type="collect_bricks_pos_node.py" output="screen" />
+
+    <node pkg="docking_with_walls" name="docking_with_walls_node" type="docking_with_walls_node.py" output="screen" />
 </launch>
