@@ -4,7 +4,7 @@
 #include <mission/action_states.h>
 Navigation::Navigation(std::string name)
     : name_(name), as_(nh_, name, false),move_base_ac_("move_base", true), static_frame_id("obstacle_map"),
-      dock_with_tape_ac_("/docker", true), relative_move_ac_("/relative_move_action", true),
+      docking_with_walls_ac_("/docker", true), relative_move_ac_("/relative_move_action", true),
       collect_bricks_ac_("/collect_bricks_pos_node", true)
 
 {
@@ -31,7 +31,7 @@ Navigation::Navigation(std::string name)
   while(!move_base_ac_.waitForServer(ros::Duration(5.0)) && ros::ok()){
       ROS_INFO_NAMED(name_,"Waiting for the move_base action server to come up");
   }
-  while(!dock_with_tape_ac_.waitForServer(ros::Duration(5.0)) && ros::ok())
+  while(!docking_with_walls_ac_.waitForServer(ros::Duration(5.0)) && ros::ok())
   {
       ROS_INFO_NAMED(name_,"Waiting for the dock with tape server to come up");
   }
@@ -43,8 +43,6 @@ Navigation::Navigation(std::string name)
   {
       ROS_INFO_NAMED(name_,"Waiting for the collect bricks pos server to come up");
   }
-  nh_.param<double>("stop_dist_to_wall", stop_dist_to_wall, 0.1);
-  dock_goal.dist = stop_dist_to_wall;
   current_position = Navigation::free;
   ROS_DEBUG("Starting action server");
   nh_.param<double>("undock_relative_move", undock_relative_move, -1.0);
@@ -119,12 +117,12 @@ void Navigation::preemtCb()
   // cancel all actions
   move_base_ac_.cancelAllGoals();
   relative_move_ac_.cancelAllGoals();
-  dock_with_tape_ac_.cancelAllGoals();
+  docking_with_walls_ac_.cancelAllGoals();
   collect_bricks_ac_.cancelAllGoals();
 }
 
-void Navigation::doneCbLine(const actionlib::SimpleClientGoalState& state,
-            const dock_with_tape::DockWithTapeResultConstPtr &result)
+void Navigation::doneCbWalls(const actionlib::SimpleClientGoalState& state,
+            const docking_with_walls::docking_with_wallsResultConstPtr& result)
 {
   current_position = Navigation::docked;
   as_.setSucceeded(result_); // first set succeeded in collecting doneCb
@@ -206,7 +204,10 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
     switch (goal_) {
     case CHARGE:
         ROS_INFO_NAMED(name_,"Docking in CHARGER: %i", BOX_CHARGE);
-        dock_with_tape_ac_.sendGoal(dock_goal, boost::bind(&Navigation::doneCbLine,this,_1,_2));
+        {
+          docking_with_walls::docking_with_wallsGoal dock_goal;
+          docking_with_walls_ac_.sendGoal(dock_goal, boost::bind(&Navigation::doneCbWalls,this,_1,_2));
+        }
         break;
     case BRICK:
         ROS_INFO_NAMED(name_,"going in to collect bricks: %i", BRICK);

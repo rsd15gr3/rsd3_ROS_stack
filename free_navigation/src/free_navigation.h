@@ -8,9 +8,11 @@
 #include <msgs/IntStamped.h>
 #include <actionlib/server/simple_action_server.h>
 #include "free_navigation/NavigateFreelyAction.h"
-#include "dock_with_tape/DockWithTapeAction.h"
+//#include "dock_with_tape/DockWithTapeAction.h"
 #include <relative_move_server/RelativeMoveAction.h>
 #include <collect_bricks_pos/collect_bricks_posAction.h>
+#include <docking_with_walls/docking_with_wallsAction.h>
+
 using std::string;
 using std::vector;
 using geometry_msgs::Pose;
@@ -46,11 +48,8 @@ private:
     static Pose convertVecToPose(const vector<double>& poses);
     void sendMoveBaseGoal(move_base_msgs::MoveBaseGoal& goal_msg);
     // Docking client
-    actionlib::SimpleActionClient<dock_with_tape::DockWithTapeAction> dock_with_tape_ac_;
-    void doneCbLine(const actionlib::SimpleClientGoalState& state,
-                const dock_with_tape::DockWithTapeResultConstPtr& result);
-    dock_with_tape::DockWithTapeGoal dock_goal;
-    double stop_dist_to_wall;
+    actionlib::SimpleActionClient<docking_with_walls::docking_with_wallsAction> docking_with_walls_ac_;
+    void doneCbWalls(const actionlib::SimpleClientGoalState& state, const docking_with_walls::docking_with_wallsResultConstPtr& result);
     // relative move
     void doneRelativeMoveCb(const actionlib::SimpleClientGoalState& state, const relative_move_server::RelativeMoveResultConstPtr& result);
     actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> relative_move_ac_;
@@ -60,5 +59,6 @@ private:
     // collect client
     actionlib::SimpleActionClient<collect_bricks_pos::collect_bricks_posAction> collect_bricks_ac_;
     void doneCollectBricksCv(const actionlib::SimpleClientGoalState& state, const collect_bricks_pos::collect_bricks_posResultConstPtr& result);
+
 };
 #endif // Navigation_H
