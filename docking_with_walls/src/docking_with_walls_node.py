@@ -89,17 +89,16 @@ class DockingActionNode():
             self.action_server.set_succeeded()
             self.finished = True
             self.stop_frobit()
-            print 'Mission completed.'
         else:
             self.vel_lin = 0.1
 
-            if self.left_wall > 0.35:
+            if self.left_wall > 0.45:
                 self.vel_ang = 0.0
             else:
                 if self.left_wall < 0.295:
-                    self.vel_ang = -0.25
+                    self.vel_ang = -0.15
                 elif self.left_wall > 0.299:
-                    self.vel_ang = 0.25
+                    self.vel_ang = 0.15
         self.publish_tp_cmd_vel_message()
 
     def stop_frobit(self):
