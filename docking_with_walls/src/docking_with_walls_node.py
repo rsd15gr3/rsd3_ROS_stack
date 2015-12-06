@@ -78,8 +78,8 @@ class DockingActionNode():
         print '\nleft:', self.left_wall
         print 'front left', self.front_left_wall
         print 'front right', self.front_right_wall
-        '''
-        if abs(self.front_left_wall-0.1) < 0.01 and abs(self.front_right_wall-0.1) < 0.01:
+        
+        if abs(self.front_left_wall-0.1) < 0.1 and abs(self.front_right_wall-0.1) < 0.1:
             self.action_server.set_succeeded()
             self.finished = True
             self.stop_frobit()
@@ -90,12 +90,12 @@ class DockingActionNode():
             if self.left_wall > 0.4:
                 self.vel_ang = 0.0
             else:
-                if self.left_wall < 0.299:
+                if self.left_wall < 0.23:
                     self.vel_ang = -0.05
-                elif self.left_wall > 0.31:
+                elif self.left_wall > 0.245:
                     self.vel_ang = 0.05
         self.publish_tp_cmd_vel_message()
-        '''
+        
     def stop_frobit(self):
         self.vel_ang = 0.0
         self.vel_lin = 0.0
