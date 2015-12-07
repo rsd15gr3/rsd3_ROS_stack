@@ -46,11 +46,11 @@ relative_move_server::RelativeMoveGoal getRelativeMove(double dx, double dy, dou
     return goal;
 }
 
-void arduinoAnswerCb(msgs::IntStampedConstPtr msg)
+/*void arduinoAnswerCb(msgs::IntStampedConstPtr msg)
 {
   active_action = false;
   state_counter++;
-}
+}*/
 
 class testAction
 {
@@ -65,7 +65,7 @@ protected:
   test_server::testResult result_;
   actionlib::SimpleActionClient<line_pid::FollowLineAction> action_line_follow;
   actionlib::SimpleActionClient<relative_move_server::RelativeMoveAction> action_free_navigation;
-  actionlib::SimpleActionClient<test_server::testAction> action_tipper;
+  //actionlib::SimpleActionClient<test_server::testAction> action_tipper;
   ros::Publisher tipper_command_pub;
   ros::Subscriber tipper_state_sub;
   ros::Publisher disable_safety_pub;
@@ -77,8 +77,8 @@ public:
     as_(nh_, name, boost::bind(&testAction::executeCB, this, _1), false),
     action_name_(name),
     action_line_follow("/action_line_follow", true),
-    action_free_navigation("/relative_move_action", true),
-    action_tipper("action_tipper", true)
+    action_free_navigation("/relative_move_action", true)
+    //action_tipper("action_tipper", true)
   {
     as_.start();
     if(action_line_follow.waitForServer() )
@@ -91,11 +91,11 @@ public:
         ROS_INFO("succesfully connected");
     }
 
-    if(action_tipper.waitForServer() )
+    /*if(action_tipper.waitForServer() )
     {
         ROS_INFO("succesfully connected");
-    }
-    tipper_command_pub = nh_.advertise<msgs::IntStamped>("/arduino_goal", 1);
+    }*/
+    //tipper_command_pub = nh_.advertise<msgs::IntStamped>("/arduino_goal", 1);
     tipper_state_sub = nh_.subscribe<msgs::IntStamped>("/arduino_answer", 1, &arduinoAnswerCb);
     disable_safety_pub = nh_.advertise<msgs::BoolStamped>("/disable_safety_speed", 1);
   }
@@ -257,12 +257,13 @@ void testAction::state_pick(int cell, bool active)
         case 3:
             if(active)
             {
-                msgs::IntStamped goal;
+                state_counter++;
+                /*msgs::IntStamped goal;
                 goal.data = 0;
                 goal.header.stamp = ros::Time::now();
                 tipper_command_pub.publish(goal);
                 active_action = true;
-                ros::Duration(10.0).sleep();
+                ros::Duration(10.0).sleep();*/
             }
             else
             {
@@ -272,11 +273,12 @@ void testAction::state_pick(int cell, bool active)
         case 4:
             if(active)
             {
-                msgs::IntStamped goal;
+                state_counter++;
+                /*msgs::IntStamped goal;
                 goal.data = 2;
                 goal.header.stamp = ros::Time::now();
                 tipper_command_pub.publish(goal);
-                active_action = true;
+                active_action = true;*/
             }
             else
             {
