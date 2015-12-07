@@ -216,6 +216,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
         {
           collect_bricks_pos::collect_bricks_posGoal collect_bricks_goal;
           collect_bricks_ac_.cancelAllGoals();
+          ros::Duration(0.1).sleep();
           collect_bricks_ac_.sendGoal(collect_bricks_goal, boost::bind(&Navigation::doneCollectBricksCv,this,_1,_2));
         }
         break;
