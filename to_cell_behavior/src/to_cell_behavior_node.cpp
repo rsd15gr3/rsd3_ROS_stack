@@ -96,7 +96,7 @@ public:
         ROS_INFO("succesfully connected");
     }*/
     //tipper_command_pub = nh_.advertise<msgs::IntStamped>("/arduino_goal", 1);
-    tipper_state_sub = nh_.subscribe<msgs::IntStamped>("/arduino_answer", 1, &arduinoAnswerCb);
+    //tipper_state_sub = nh_.subscribe<msgs::IntStamped>("/arduino_answer", 1, &arduinoAnswerCb);
     disable_safety_pub = nh_.advertise<msgs::BoolStamped>("/disable_safety_speed", 1);
   }
 
