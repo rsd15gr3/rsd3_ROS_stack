@@ -225,7 +225,7 @@ void testAction::state_pick(int cell, bool active)
             if(active)
             {
                 line_pid::FollowLineGoal goal;
-                goal.dist = 0.25;
+                goal.dist = 0.15;
                 switch (cell)
                 {
                     case CELL_1:
@@ -262,7 +262,7 @@ void testAction::state_pick(int cell, bool active)
                 goal.header.stamp = ros::Time::now();
                 tipper_command_pub.publish(goal);
                 active_action = true;
-                ros::Duration(5.0).sleep();
+                ros::Duration(10.0).sleep();
             }
             else
             {

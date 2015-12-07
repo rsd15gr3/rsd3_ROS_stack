@@ -218,6 +218,7 @@ void Navigation::doneCb(const actionlib::SimpleClientGoalState& state,
         break;
     case DELIVERY:
         ROS_INFO_NAMED(name_,"Tipping of at DELIVERY: %i", DELIVERY);
+        ros::Duration(2.0).sleep();
         as_.setSucceeded(result_);
         current_position = Navigation::free;
         break;
