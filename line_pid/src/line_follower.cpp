@@ -132,17 +132,14 @@ double Line_follower::getMovingGoalTargetAngle()
 void Line_follower::odometryCb(const nav_msgs::Odometry &msg)
 {
   if(line_follow_enabled)
-  {
-    current_position = msg.pose.pose.position;
+  {    
     if(aligning_with_crossing)
     {
-      double dx = tag_position.x - current_position.x;
-      double dy = tag_position.y - current_position.y;
-      double dist_to_tag = cos(angle_error)*hypot(dx,dy);
+      tf::Vector3 robot_pose(msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z);
+      tf::Vector3 robot_relative_to_tag = odom_to_tag_transform * robot_pose;
+      double dist_to_tag = robot_relative_to_tag.x();
       dist_to_tag -= stop_before_tag_dist;
       ROS_DEBUG("Distance to tag: %f", dist_to_tag);
-      ROS_DEBUG("dx = %f",dx);
-      ROS_DEBUG("dy = %f",dy);
       if(dist_to_tag > ramp_distance)
       {
         ramp_speed = forward_speed;
@@ -183,12 +180,6 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
       relative_move_ac_.sendGoal(back_up_goal);
       relative_move_ac_.waitForResult(); // block wait for result
       ros::Duration(0.5).sleep();
-      /*
-      publishVelCommand(-0.5,0);
-      ros::Duration(0.2).sleep();
-      publishVelCommand(0,0);
-      ros::Duration(0.5).sleep();
-      */
       i++;
     }
     if(get_qr_client.call(qr_request))
@@ -208,10 +199,8 @@ void Line_follower::qrTagDetectCb(const msgs::BoolStamped& qr_tag_entered)
           ROS_ERROR("%s",ex.what());
           ros::Duration(1.0).sleep();
         }
-        ROS_DEBUG("pos in camera: [%f, %f, %f]", pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
-        ROS_DEBUG("pos in base link: [%f, %f, %f]", pose_in_base_link.pose.position.x, pose_in_base_link.pose.position.y, pose_in_base_link.pose.position.z);
-        tag_position.x = pose_in_base_link.pose.position.x;
-        tag_position.y = pose_in_base_link.pose.position.y;
+        tf::poseStampedMsgToTF(pose_in_base_link, odom_to_tag_transform);
+        odom_to_tag_transform.setData(odom_to_tag_transform.inverse());
         aligning_with_crossing = true;
       }
       else

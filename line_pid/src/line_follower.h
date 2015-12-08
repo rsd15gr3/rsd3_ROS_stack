@@ -3,6 +3,7 @@
 #include "pid_controller.h"
 
 #include <ros/ros.h>
+#include <tf/tf.h>
 #include <msgs/BoolStamped.h>
 #include <line_detection/line.h>
 #include <nav_msgs/Odometry.h>
@@ -10,6 +11,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <line_pid/FollowLineAction.h>
 #include <relative_move_server/RelativeMoveAction.h>
+
 class Line_follower
 {
 public:
@@ -28,10 +30,10 @@ public:
   ros::Timer timerPid;
   // stop at crossing variables
   const std::string camera_frame_id = "/camera_link";
-  const std::string base_footprint_id = "/base_footprint";
-  geometry_msgs::Point current_position, tag_position; // to calculate vector from robot to tag
+  const std::string base_footprint_id = "/base_footprint";  
   double initial_distance_to_tag;
   bool line_follow_enabled, aligning_with_crossing;// state variables
+  tf::Stamped<tf::Pose> odom_to_tag_transform;
   // action server
   actionlib::SimpleActionServer<line_pid::FollowLineAction> as_;
   line_pid::FollowLineResult result_;
